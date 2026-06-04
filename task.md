@@ -1,0 +1,29 @@
+# Kế Hoạch Nhiệm Vụ (Task Breakdown)
+
+- [x] Giai đoạn 1: Khởi tạo Project & Cấu hình Core
+  - [x] Phân tích và Thiết lập Database Schema & Migrations (Products, Media, Reviews, Warranties, Settings, News, Orders, Menus).
+  - [x] Cấu hình Base Layout & Theming UI/UX cho Website công nghiệp.
+- [x] Giai đoạn 2: Tính năng cốt lõi (Core Features)
+  - [x] Thiết kế & Xây dựng Media Library Module.
+  - [x] Tích hợp cơ chế Queue convert ảnh sang định dạng chuẩn WebP trên Upload API.
+  - [x] Tích hợp Advanced Text Editor (chèn MediaBox, kéo thả, custom block).
+  - [x] Xây dựng Menu Manager Module (Kéo thả đa cấp - MegaMenu).
+  - [x] Module Sản phẩm (CRUD) & Tích hợp 360 Product Viewer Component.
+- [x] Giai đoạn 3: Tương tác Khách hàng & Đơn hàng
+  - [x] Logic hiển thị Button "Giá 0 -> Liên hệ" và "Thêm vào giỏ > 0".
+  - [x] Xây dựng form Checkout & Luồng API tạo Đơn hàng (Orders).
+  - [x] Admin Module: Quản lý Backend danh sách Đơn hàng & Cập nhật trạng thái.
+  - [x] Tra cứu Đơn hàng cho Khách (Guest Lookup).
+  - [x] Thiết kế và Backend xử lý Submit form đánh giá mở (Guest Review) & luồng Approve kiểm duyệt.
+  - [x] Hệ thống tra cứu bảo hành qua Serial Number.
+- [x] Giai đoạn 4: Tin tức & Nội dung
+  - [x] Module Danh mục Tin tức (Phân cấp con/cha).
+  - [x] Module Bài viết tin tức với Advanced Editor tích hợp Media.
+  - [x] Giao diện Listing & Chi tiết bài viết.
+- [x] Giai đoạn 5: SEO & Giao Diện Cấu Hình Động
+  - [x] Dynamic About Us Builder: Tạo Component lưới động Setting để build trang Corporate Landing Page (có Parallax).
+  - [x] Homepage & App Setting: Module quản lý UI/Text hardcode linh hoạt.
+  - [x] SEO Meta Manager Engine & Tự động sinh JSON-LD Generator.
+- [x] Giai đoạn 6: Testing & Tối ưu hoá
+  - [x] Kiểm thử Performance, UI/UX các luồng chính.
+  - [x] Audit ứng dụng cho các khía cạnh về SEO và Speed (Lighthouse, Rich Results).
