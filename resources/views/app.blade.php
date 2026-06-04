@@ -25,7 +25,7 @@
 
         {{-- Primary color: AFTER @vite so it overrides app.css defaults --}}
         @php
-            $pc = ($primaryColor && preg_match('/^#[0-9A-Fa-f]{6}$/', $primaryColor)) ? $primaryColor : '#09DE52';
+            $pc = ($primaryColor && preg_match('/^#[0-9A-Fa-f]{6}$/', $primaryColor)) ? $primaryColor : '#ffd400';
             $r = hexdec(substr($pc, 1, 2)); $g = hexdec(substr($pc, 3, 2)); $b = hexdec(substr($pc, 5, 2));
             $rf = $r/255; $gf = $g/255; $bf = $b/255;
             $mx = max($rf, $gf, $bf); $mn = min($rf, $gf, $bf);

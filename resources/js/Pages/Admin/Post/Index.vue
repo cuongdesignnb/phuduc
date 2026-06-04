@@ -51,8 +51,8 @@ const deletePost = (id) => { if (confirm('Xóa bài viết này?')) router.delet
                         </thead>
                         <tbody class="divide-y divide-white/[.03]">
                             <tr v-for="post in posts.data" :key="post.id" class="hover:bg-white/[.02] transition-colors">
-                                <td class="px-6 py-4 text-sm font-medium text-white">{{ post.title }}</td>
-                                <td class="px-6 py-4 text-sm text-carbon-400">{{ post.category?.name || '—' }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-white">{{ $fixText(post.title) }}</td>
+                                <td class="px-6 py-4 text-sm text-carbon-400">{{ post.category?.name ? $fixText(post.category.name) : '—' }}</td>
                                 <td class="px-6 py-4"><span :class="post.status === 'published' ? 'bg-volt-500/10 text-volt-400 border-volt-500/20' : 'bg-carbon-500/10 text-carbon-400 border-carbon-500/20'" class="inline-flex rounded-lg px-2.5 py-0.5 text-xs font-medium border">{{ post.status === 'published' ? 'Đã đăng' : 'Nháp' }}</span></td>
                                 <td class="px-6 py-4 text-sm text-carbon-500">{{ new Date(post.created_at).toLocaleDateString('vi-VN') }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-right text-sm">

@@ -26,11 +26,11 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + '₫';
                     <div class="rounded-2xl border border-white/5 bg-carbon-900/50 backdrop-blur-sm p-6">
                         <h3 class="text-lg font-display font-semibold text-white mb-4">Thông tin khách hàng</h3>
                         <dl class="space-y-3 text-sm">
-                            <div class="flex justify-between"><dt class="text-carbon-500">Tên:</dt><dd class="text-white">{{ order.customer_name }}</dd></div>
+                            <div class="flex justify-between"><dt class="text-carbon-500">Tên:</dt><dd class="text-white">{{ $fixText(order.customer_name) }}</dd></div>
                             <div class="flex justify-between"><dt class="text-carbon-500">SĐT:</dt><dd class="text-white">{{ order.customer_phone }}</dd></div>
                             <div class="flex justify-between"><dt class="text-carbon-500">Email:</dt><dd class="text-white">{{ order.customer_email || '—' }}</dd></div>
-                            <div><dt class="text-carbon-500 mb-1">Địa chỉ giao:</dt><dd class="text-carbon-300">{{ order.shipping_address }}</dd></div>
-                            <div v-if="order.notes"><dt class="text-carbon-500 mb-1">Ghi chú:</dt><dd class="text-carbon-300">{{ order.notes }}</dd></div>
+                            <div><dt class="text-carbon-500 mb-1">Địa chỉ giao:</dt><dd class="text-carbon-300">{{ $fixText(order.shipping_address) }}</dd></div>
+                            <div v-if="order.notes"><dt class="text-carbon-500 mb-1">Ghi chú:</dt><dd class="text-carbon-300">{{ $fixText(order.notes) }}</dd></div>
                         </dl>
                     </div>
                     <div class="rounded-2xl border border-white/5 bg-carbon-900/50 backdrop-blur-sm p-6">
@@ -60,7 +60,7 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + '₫';
                         </tr></thead>
                         <tbody class="divide-y divide-white/[.03]">
                             <tr v-for="item in order.items" :key="item.id" class="hover:bg-white/[.02] transition-colors">
-                                <td class="px-4 py-3 text-sm text-white">{{ item.product_name }}</td>
+                                <td class="px-4 py-3 text-sm text-white">{{ $fixText(item.product_name) }}</td>
                                 <td class="px-4 py-3 text-sm text-carbon-400">{{ formatPrice(item.price) }}</td>
                                 <td class="px-4 py-3 text-sm text-carbon-400">{{ item.quantity }}</td>
                                 <td class="px-4 py-3 text-sm text-volt-400 font-semibold">{{ formatPrice(item.total) }}</td>

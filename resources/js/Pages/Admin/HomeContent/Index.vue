@@ -55,11 +55,26 @@ const defaultSections = Object.keys(sectionMeta).map((key, index) => ({
     items: [],
 }));
 
+const fixText = (value) => {
+    if (typeof value !== 'string') return value;
+    const codes = Array.from(value).map((char) => char.charCodeAt(0));
+    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
+        || codes.some((code) => code >= 0x80 && code <= 0x9f)
+        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
+    if (!isBroken) return value;
+    try {
+        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    } catch {
+        return value;
+    }
+};
+
 const cloneItem = (item = {}) => ({
     id: item.id || null,
-    title: item.title || '',
-    subtitle: item.subtitle || '',
-    description: item.description || '',
+    title: item.title ? fixText(item.title) : '',
+    subtitle: item.subtitle ? fixText(item.subtitle) : '',
+    description: item.description ? fixText(item.description) : '',
     image: item.image || '',
     icon: item.icon || '',
     url: item.url || '',
@@ -70,9 +85,9 @@ const cloneItem = (item = {}) => ({
 
 const cloneSection = (section = {}) => ({
     key: section.key,
-    title: section.title || sectionMeta[section.key]?.label || section.key,
-    subtitle: section.subtitle || '',
-    description: section.description || '',
+    title: section.title ? fixText(section.title) : (sectionMeta[section.key]?.label || section.key),
+    subtitle: section.subtitle ? fixText(section.subtitle) : '',
+    description: section.description ? fixText(section.description) : '',
     is_enabled: section.is_enabled ?? true,
     sort_order: section.sort_order ?? 0,
     settings_json: section.settings_json || {},

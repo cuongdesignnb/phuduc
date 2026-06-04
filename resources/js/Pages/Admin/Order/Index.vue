@@ -55,7 +55,7 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + '₫';
                         <tbody class="divide-y divide-white/[.03]">
                             <tr v-for="order in orders.data" :key="order.id" class="hover:bg-white/[.02] transition-colors">
                                 <td class="whitespace-nowrap px-6 py-4 text-sm font-mono font-medium text-industrial-400">{{ order.order_number }}</td>
-                                <td class="px-6 py-4 text-sm text-white">{{ order.customer_name }}</td>
+                                <td class="px-6 py-4 text-sm text-white">{{ $fixText(order.customer_name) }}</td>
                                 <td class="px-6 py-4 text-sm text-carbon-400">{{ order.customer_phone }}</td>
                                 <td class="px-6 py-4 text-sm text-volt-400 font-semibold">{{ formatPrice(order.total_amount) }}</td>
                                 <td class="px-6 py-4"><span :class="statusColors[order.status]" class="inline-flex rounded-lg px-2.5 py-0.5 text-xs font-medium border">{{ statusLabels[order.status] }}</span></td>

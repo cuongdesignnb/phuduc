@@ -51,7 +51,7 @@ const statusColors = { active: 'bg-green-500/10 text-green-400 border border-gre
                         <tbody class="divide-y divide-white/5">
                             <tr v-for="w in warranties.data" :key="w.id" class="hover:bg-white/[.02] transition">
                                 <td class="px-6 py-4 text-sm font-mono text-white">{{ w.serial_number }}</td>
-                                <td class="px-6 py-4 text-sm text-white">{{ w.product_name }}</td>
+                                <td class="px-6 py-4 text-sm text-white">{{ $fixText(w.product_name) }}</td>
                                 <td class="px-6 py-4 text-sm text-carbon-400">{{ w.order?.order_number || '—' }}</td>
                                 <td class="px-6 py-4 text-sm text-carbon-400">{{ w.activation_date || '—' }}</td>
                                 <td class="px-6 py-4 text-sm text-carbon-400">{{ w.expiration_date || '—' }}</td>

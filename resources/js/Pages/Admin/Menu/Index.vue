@@ -39,7 +39,7 @@ const deleteMenu = (id) => {
                         </thead>
                         <tbody class="divide-y divide-white/[.03]">
                             <tr v-for="menu in menus" :key="menu.id" class="hover:bg-white/[.02] transition-colors">
-                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-white">{{ menu.name }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-white">{{ $fixText(menu.name) }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-carbon-400">{{ menu.location || '—' }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-carbon-400">{{ menu.all_items_count }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-right text-sm">

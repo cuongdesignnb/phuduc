@@ -25,7 +25,7 @@ class SettingSeeder extends Seeder
             ['key' => 'site.zalo', 'value' => 'https://zalo.me/0909123456', 'type' => 'text'],
             ['key' => 'site.youtube', 'value' => 'https://youtube.com/@phuducev', 'type' => 'text'],
             ['key' => 'site.map_embed', 'value' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.0!2d106.7!3d10.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1', 'type' => 'text'],
-            ['key' => 'site.primary_color', 'value' => '#09DE52', 'type' => 'color'],
+            ['key' => 'site.primary_color', 'value' => '#ffd400', 'type' => 'color'],
 
             // ─── Home Page ───
             ['key' => 'home.hero_title', 'value' => 'Giải pháp xe điện', 'type' => 'text'],

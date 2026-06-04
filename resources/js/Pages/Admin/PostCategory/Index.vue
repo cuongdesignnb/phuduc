@@ -25,7 +25,7 @@ const deleteCategory = (id) => { if (confirm('Xóa danh mục này?')) router.de
                     <template v-for="cat in categories" :key="cat.id">
                         <div class="flex justify-between items-center py-3.5 border-b border-white/5">
                             <div>
-                                <span class="font-medium text-white">{{ cat.name }}</span>
+                                <span class="font-medium text-white">{{ $fixText(cat.name) }}</span>
                                 <span class="ml-2 text-xs text-carbon-500">({{ cat.posts_count }} bài)</span>
                                 <span class="ml-3 text-xs text-carbon-600 font-mono">{{ cat.slug }}</span>
                             </div>
@@ -37,7 +37,7 @@ const deleteCategory = (id) => { if (confirm('Xóa danh mục này?')) router.de
                         <div v-if="cat.all_children?.length" class="ml-8">
                             <div v-for="child in cat.all_children" :key="child.id" class="flex justify-between items-center py-2.5 border-b border-white/[.03]">
                                 <div>
-                                    <span class="text-sm text-carbon-300">↳ {{ child.name }}</span>
+                                    <span class="text-sm text-carbon-300">↳ {{ $fixText(child.name) }}</span>
                                     <span class="ml-3 text-xs text-carbon-600 font-mono">{{ child.slug }}</span>
                                 </div>
                                 <div class="flex gap-3">

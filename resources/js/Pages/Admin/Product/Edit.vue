@@ -7,14 +7,29 @@ import { ref, computed } from 'vue';
 
 const props = defineProps({ product: Object });
 
+const fixText = (value) => {
+    if (typeof value !== 'string') return value;
+    const codes = Array.from(value).map((char) => char.charCodeAt(0));
+    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
+        || codes.some((code) => code >= 0x80 && code <= 0x9f)
+        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
+    if (!isBroken) return value;
+    try {
+        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    } catch {
+        return value;
+    }
+};
+
 const form = useForm({
-    name: props.product?.name || '',
+    name: props.product?.name ? fixText(props.product.name) : '',
     slug: props.product?.slug || '',
-    description: props.product?.description || '',
+    description: props.product?.description ? fixText(props.product.description) : '',
     price: props.product?.price || 0,
     sku: props.product?.sku || '',
     stock: props.product?.stock || 0,
-    specifications: props.product?.specifications || [],
+    specifications: (props.product?.specifications || []).map(s => ({ key: fixText(s.key), value: fixText(s.value) })),
     status: props.product?.status || 'active',
 });
 
@@ -75,11 +90,11 @@ const handleMediaSelect = (media) => {
 </script>
 
 <template>
-    <Head :title="product ? 'Sửa: ' + product.name : 'Thêm sản phẩm mới'" />
+    <Head :title="product ? 'Sửa: ' + $fixText(product.name) : 'Thêm sản phẩm mới'" />
     <AuthenticatedLayout>
         <template #header>
             <h2 class="text-2xl font-display font-bold text-white">
-                {{ product ? 'Sửa sản phẩm: ' + product.name : 'Thêm sản phẩm mới' }}
+                {{ product ? 'Sửa sản phẩm: ' + $fixText(product.name) : 'Thêm sản phẩm mới' }}
             </h2>
         </template>
 

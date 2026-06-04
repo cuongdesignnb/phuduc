@@ -17,6 +17,25 @@ export default {
                 display: ['var(--font-display)', ...defaultTheme.fontFamily.sans],
             },
             colors: {
+                brand: {
+                    primary: '#ffd400',
+                    hover: '#e5be00',
+                    light: '#fffbeb',
+                },
+                ink: {
+                    primary: '#1f2937',
+                    secondary: '#4b5563',
+                    light: '#9ca3af',
+                },
+                surface: {
+                    bg: '#f5f6f8',
+                    card: '#ffffff',
+                    border: '#e2e8f0',
+                    muted: '#f1f5f9',
+                },
+                success: '#10b981',
+                info: '#3b82f6',
+                danger: '#ef4444',
                 industrial: {
                     50: '#eef7ff',
                     100: '#d8edff',

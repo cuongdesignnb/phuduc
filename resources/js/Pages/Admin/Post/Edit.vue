@@ -8,12 +8,27 @@ import { ref } from 'vue';
 const props = defineProps({ post: Object, categories: Array });
 const showMediaPicker = ref(false);
 
+const fixText = (value) => {
+    if (typeof value !== 'string') return value;
+    const codes = Array.from(value).map((char) => char.charCodeAt(0));
+    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
+        || codes.some((code) => code >= 0x80 && code <= 0x9f)
+        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
+    if (!isBroken) return value;
+    try {
+        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    } catch {
+        return value;
+    }
+};
+
 const form = useForm({
-    title: props.post?.title || '',
+    title: props.post?.title ? fixText(props.post.title) : '',
     slug: props.post?.slug || '',
     post_category_id: props.post?.post_category_id || '',
-    summary: props.post?.summary || '',
-    content: props.post?.content || '',
+    summary: props.post?.summary ? fixText(props.post.summary) : '',
+    content: props.post?.content ? fixText(props.post.content) : '',
     featured_image: props.post?.featured_image || '',
     status: props.post?.status || 'draft',
 });
@@ -55,7 +70,7 @@ const selectFeaturedImage = (media) => {
                                 <label class="block text-sm font-medium text-carbon-300 mb-1.5">Danh mục</label>
                                 <select v-model="form.post_category_id" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition">
                                     <option value="">— Không có —</option>
-                                    <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                                    <option v-for="c in categories" :key="c.id" :value="c.id">{{ $fixText(c.name) }}</option>
                                 </select>
                             </div>
                             <div>

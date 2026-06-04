@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
             },
             'primaryColor' => function () {
                 if (!Schema::hasTable('settings')) return null;
-                return Setting::get('site.primary_color', '#09DE52');
+                return Setting::get('site.primary_color', '#ffd400');
             },
         ]);
     }

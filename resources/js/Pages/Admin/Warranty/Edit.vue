@@ -4,9 +4,24 @@ import { Head, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({ warranty: Object, orders: Array });
 
+const fixText = (value) => {
+    if (typeof value !== 'string') return value;
+    const codes = Array.from(value).map((char) => char.charCodeAt(0));
+    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
+        || codes.some((code) => code >= 0x80 && code <= 0x9f)
+        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
+    if (!isBroken) return value;
+    try {
+        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    } catch {
+        return value;
+    }
+};
+
 const form = useForm({
     serial_number: props.warranty?.serial_number || '',
-    product_name: props.warranty?.product_name || '',
+    product_name: props.warranty?.product_name ? fixText(props.warranty.product_name) : '',
     order_id: props.warranty?.order_id || '',
     activation_date: props.warranty?.activation_date || '',
     expiration_date: props.warranty?.expiration_date || '',
@@ -45,7 +60,7 @@ const save = () => {
                             <label class="block text-sm font-medium text-carbon-300 mb-1.5">Đơn hàng</label>
                             <select v-model="form.order_id" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition">
                                 <option value="">— Không liên kết —</option>
-                                <option v-for="o in orders" :key="o.id" :value="o.id">{{ o.order_number }} — {{ o.customer_name }}</option>
+                                <option v-for="o in orders" :key="o.id" :value="o.id">{{ o.order_number }} — {{ $fixText(o.customer_name) }}</option>
                             </select>
                         </div>
                         <div>

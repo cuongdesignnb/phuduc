@@ -82,7 +82,7 @@ const formatPrice = (price) => {
                                     <img v-if="product.images?.length" :src="'/storage/' + product.images[0].image_path" class="w-12 h-12 object-cover rounded-lg border border-white/10" />
                                     <div v-else class="w-12 h-12 bg-carbon-800 rounded-lg flex items-center justify-center text-xs text-carbon-600 border border-white/5">N/A</div>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-medium text-white">{{ product.name }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-white">{{ $fixText(product.name) }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-carbon-400 font-mono">{{ product.sku || '—' }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-volt-400 font-semibold">{{ formatPrice(product.price) }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-carbon-400">{{ product.stock }}</td>

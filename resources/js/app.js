@@ -28,6 +28,22 @@ createInertiaApp({
             .use(plugin)
             .use(ZiggyVue);
 
+        // Register global helper to fix broken encoding from database
+        app.config.globalProperties.$fixText = (value) => {
+            if (typeof value !== 'string') return value;
+            const codes = Array.from(value).map((char) => char.charCodeAt(0));
+            const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
+                || codes.some((code) => code >= 0x80 && code <= 0x9f)
+                || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
+            if (!isBroken) return value;
+            try {
+                const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
+                return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+            } catch {
+                return value;
+            }
+        };
+
         // Global mixin for font and color loading on every page
         app.mixin({
             setup() {
@@ -42,13 +58,13 @@ createInertiaApp({
         const toast = useToast();
         router.on('navigate', (event) => {
             const flash = event.detail.page.props?.flash;
-            if (flash?.success) toast.success(flash.success);
-            if (flash?.error) toast.error(flash.error);
+            if (flash?.success) toast.success(app.config.globalProperties.$fixText(flash.success));
+            if (flash?.error) toast.error(app.config.globalProperties.$fixText(flash.error));
         });
 
         return vueApp;
     },
     progress: {
-        color: '#09DE52',
+        color: '#ffd400',
     },
 });

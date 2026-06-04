@@ -8,8 +8,23 @@ import { useToast } from '@/Composables/useToast';
 
 const props = defineProps({ settings: Object });
 
+const fixText = (value) => {
+    if (typeof value !== 'string') return value;
+    const codes = Array.from(value).map((char) => char.charCodeAt(0));
+    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
+        || codes.some((code) => code >= 0x80 && code <= 0x9f)
+        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
+    if (!isBroken) return value;
+    try {
+        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    } catch {
+        return value;
+    }
+};
+
 const allSettings = ref(Object.entries(props.settings || {}).flatMap(([group, items]) =>
-    items.map(s => ({ ...s }))
+    items.map(s => ({ ...s, value: s.value ? fixText(s.value) : '' }))
 ));
 
 // Default settings structure if empty
@@ -22,7 +37,7 @@ if (!allSettings.value.length) {
         { key: 'site.hotline', value: '', type: 'text' },
         { key: 'site.email', value: '', type: 'text' },
         { key: 'site.address', value: '', type: 'text' },
-        { key: 'site.primary_color', value: '#09DE52', type: 'color' },
+        { key: 'site.primary_color', value: '#ffd400', type: 'color' },
         { key: 'font.heading', value: 'Rajdhani', type: 'font' },
         { key: 'font.body', value: 'Inter', type: 'font' },
         { key: 'home.hero_title', value: '', type: 'text' },
@@ -202,7 +217,8 @@ const currentItems = computed(() => groupedSettings.value[activeTab.value] || []
 
 // Preset colors for quick selection
 const presetColors = [
-    { hex: '#09DE52', label: 'Xanh lá (Mặc định)' },
+    { hex: '#ffd400', label: 'Vàng công nghiệp (Mặc định)' },
+    { hex: '#09DE52', label: 'Xanh lá neon' },
     { hex: '#3B82F6', label: 'Xanh dương' },
     { hex: '#EF4444', label: 'Đỏ' },
     { hex: '#F59E0B', label: 'Vàng cam' },
@@ -211,7 +227,6 @@ const presetColors = [
     { hex: '#14B8A6', label: 'Xanh ngọc' },
     { hex: '#F97316', label: 'Cam' },
     { hex: '#06B6D4', label: 'Cyan' },
-    { hex: '#84CC16', label: 'Xanh chanh' },
 ];
 
 const showMediaBox = ref(false);
