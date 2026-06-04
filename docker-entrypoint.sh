@@ -22,6 +22,9 @@ php artisan migrate --force 2>/dev/null || true
 # Storage link
 php artisan storage:link 2>/dev/null || true
 
+# Install node dependencies
+npm install --legacy-peer-deps
+
 # Build frontend assets
 npm run build
 
