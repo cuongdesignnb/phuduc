@@ -8,8 +8,6 @@ const flashMessage = ref(null);
 const flashType = ref('success');
 
 const labels = {
-    brand: 'PH\u00da \u0110\u1ee8C BIKE',
-    tagline: 'N\u0103ng l\u01b0\u1ee3ng xanh - Hi\u1ec7u su\u1ea5t v\u01b0\u1ee3t tr\u1ed9i',
     allCategories: 'T\u1ea5t c\u1ea3 danh m\u1ee5c',
     searchPlaceholder: 'B\u1ea1n c\u1ea7n t\u00ecm s\u1ea3n ph\u1ea9m n\u00e0o?',
     categoryMenu: 'Danh m\u1ee5c s\u1ea3n ph\u1ea9m',
@@ -19,7 +17,6 @@ const labels = {
     login: '\u0110\u0103ng nh\u1eadp / \u0110\u0103ng k\u00fd',
     cart: 'Gi\u1ecf h\u00e0ng',
     mobileSearch: 'T\u00ecm s\u1ea3n ph\u1ea9m',
-    footerCopy: 'Cung c\u1ea5p gi\u1ea3i ph\u00e1p xe \u0111i\u1ec7n v\u00e0 thi\u1ebft b\u1ecb \u0111i\u1ec7n c\u00f4ng nghi\u1ec7p ch\u1ea5t l\u01b0\u1ee3ng cao, ti\u1ebft ki\u1ec7m n\u0103ng l\u01b0\u1ee3ng, th\u00e2n thi\u1ec7n v\u1edbi m\u00f4i tr\u01b0\u1eddng.',
     contact: 'Th\u00f4ng tin li\u00ean h\u1ec7',
     showroom: 'Showroom & h\u1ec7 th\u1ed1ng',
     policy: 'Ch\u00ednh s\u00e1ch',
@@ -32,30 +29,9 @@ const labels = {
     shipping: 'Ch\u00ednh s\u00e1ch v\u1eadn chuy\u1ec3n',
 };
 
-const looksBrokenUtf8 = (value) => {
-    if (typeof value !== 'string') return false;
-    const codes = Array.from(value).map((char) => char.charCodeAt(0));
-
-    return codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
-        || codes.some((code) => code >= 0x80 && code <= 0x9f)
-        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
-};
-
-const fixText = (value) => {
-    if (typeof value !== 'string' || !looksBrokenUtf8(value)) return value;
-
-    try {
-        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
-        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-    } catch {
-        return value;
-    }
-};
-
-const site = computed(() => {
-    const raw = page.props.siteSettings || {};
-    return Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, fixText(value)]));
-});
+const site = computed(() => page.props.site || {});
+const contactPhone = computed(() => site.value.hotline || site.value.phone || '');
+const copyright = computed(() => site.value.copyright || '');
 
 const fallbackNavLinks = [
     { label: 'Trang ch\u1ee7', href: route('home') },
@@ -67,21 +43,20 @@ const fallbackNavLinks = [
     { label: 'Li\u00ean h\u1ec7', href: route('about') },
 ];
 
-const normalizeMenuItem = (item) => ({
-    label: fixText(item.title),
+const normalizeNavigationItem = (item) => ({
+    ...item,
     href: item.url || '#',
-    dropdown: (item.all_children || item.children || []).length > 0,
-    children: (item.all_children || item.children || []).map(normalizeMenuItem),
+    dropdown: (item.children || []).length > 0,
+    children: (item.children || []).map(normalizeNavigationItem),
 });
 
 const headerLinks = computed(() => {
-    const items = page.props.menus?.header?.items || [];
-    return items.length ? items.map(normalizeMenuItem) : fallbackNavLinks;
+    const items = page.props.navigation?.header || [];
+    return items.length ? items.map(normalizeNavigationItem) : fallbackNavLinks;
 });
 
 const footerGroups = computed(() => {
-    const items = page.props.menus?.footer?.items || [];
-    return items.map(normalizeMenuItem);
+    return (page.props.navigation?.footer || []).map(normalizeNavigationItem);
 });
 
 const currentPath = computed(() => (page.url || '/').split('?')[0]);
@@ -93,10 +68,10 @@ const cartCount = computed(() => {
 
 watch(() => page.props.flash, (flash) => {
     if (flash?.success) {
-        flashMessage.value = fixText(flash.success);
+        flashMessage.value = flash.success;
         flashType.value = 'success';
     } else if (flash?.error) {
-        flashMessage.value = fixText(flash.error);
+        flashMessage.value = flash.error;
         flashType.value = 'error';
     }
 
@@ -112,12 +87,10 @@ watch(() => page.props.flash, (flash) => {
             <div class="mx-auto max-w-[1780px] px-5 2xl:px-8">
                 <div class="flex h-[72px] items-center gap-5">
                     <Link :href="route('home')" class="flex min-w-[310px] shrink-0 items-center gap-3">
-                        <div class="grid h-[48px] w-[48px] place-items-center rounded-[10px] bg-[#ffd400] shadow-[inset_-8px_-8px_0_rgba(0,0,0,.08)]">
-                            <span class="text-[30px] font-black italic text-white">P</span>
-                        </div>
+                        <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name" class="h-[48px] w-auto max-w-[160px] object-contain" />
                         <div class="min-w-0">
-                            <div class="truncate text-[25px] font-black uppercase leading-none tracking-tight text-[#a6abb2]">{{ labels.brand }}</div>
-                            <div class="mt-1 max-w-[250px] text-[10px] font-extrabold uppercase leading-tight tracking-[.12em] text-[#6f7680]">{{ labels.tagline }}</div>
+                            <div class="truncate text-[25px] font-black uppercase leading-none tracking-tight text-[#747b86]">{{ site.name }}</div>
+                            <div v-if="site.tagline" class="mt-1 max-w-[250px] text-[10px] font-extrabold uppercase leading-tight tracking-[.12em] text-[#6f7680]">{{ site.tagline }}</div>
                         </div>
                     </Link>
 
@@ -135,13 +108,13 @@ watch(() => page.props.flash, (flash) => {
                     </div>
 
                     <div class="ml-auto hidden shrink-0 items-center gap-5 xl:flex">
-                        <a :href="`tel:${site['site.phone'] || '1800888688'}`" class="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
+                        <a :href="contactPhone ? `tel:${contactPhone}` : '#'" class="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
                             <span class="grid h-10 w-10 place-items-center rounded-full border border-[#e1e4e8] bg-white">
                                 <svg class="h-6 w-6 text-[#80652a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 0 0-1.173.417l-.97 1.293a1.125 1.125 0 0 1-1.21.38 12.035 12.035 0 0 1-7.143-7.143 1.125 1.125 0 0 1 .38-1.21l1.293-.97c.356-.267.52-.723.417-1.173L6.963 3.102A1.125 1.125 0 0 0 5.872 2.25H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
                             </span>
                             <span class="leading-tight">
                                 <span class="block text-xs text-[#7b828e]">{{ labels.hotline }}</span>
-                                <span class="block text-[17px] font-black leading-tight text-[#ff9d00]">{{ site['site.phone'] || '1800 888 688' }}</span>
+                                <span class="block text-[17px] font-black leading-tight text-[#ff9d00]">{{ contactPhone || 'Liên hệ' }}</span>
                                 <span class="block text-xs text-[#7b828e]">{{ labels.freeCall }}</span>
                             </span>
                         </a>
@@ -207,25 +180,26 @@ watch(() => page.props.flash, (flash) => {
             <div class="mx-auto grid max-w-[2040px] gap-8 px-5 py-8 lg:grid-cols-[1.3fr_1fr_1.2fr_1fr_1.4fr] 2xl:px-20">
                 <div>
                     <Link :href="route('home')" class="mb-4 flex items-center gap-3">
-                        <div class="grid h-12 w-12 place-items-center rounded-[10px] bg-[#ffd400] text-3xl font-black italic text-white">P</div>
-                        <div class="text-[24px] font-black uppercase text-[#a4a8ae]">{{ labels.brand }}</div>
+                        <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name" class="h-12 w-auto max-w-[160px] object-contain" />
+                        <div class="text-[24px] font-black uppercase text-[#747b86]">{{ site.name }}</div>
                     </Link>
-                    <p class="max-w-sm text-sm leading-6 text-[#59616e]">{{ labels.footerCopy }}</p>
+                    <p v-if="site.description" class="max-w-sm text-sm leading-6 text-[#59616e]">{{ site.description }}</p>
                 </div>
                 <div>
                     <h3 class="mb-4 text-base font-black uppercase">{{ labels.contact }}</h3>
                     <div class="space-y-2 text-sm leading-6 text-[#59616e]">
-                        <p>Hotline: {{ site['site.phone'] || '1800 888 688' }}</p>
-                        <p>Email: {{ site['site.email'] || 'info@phuducbike.vn' }}</p>
-                        <p>{{ site['site.address'] || 'L\u00f4 B3, KCN B\u1eafc Th\u0103ng Long, H\u00e0 N\u1ed9i' }}</p>
+                        <p v-if="contactPhone">Hotline: {{ contactPhone }}</p>
+                        <p v-if="site.email">Email: {{ site.email }}</p>
+                        <p v-if="site.address">{{ site.address }}</p>
+                        <p v-if="site.working_hours">{{ site.working_hours }}</p>
                     </div>
                 </div>
                 <div v-if="!footerGroups.length">
                     <h3 class="mb-4 text-base font-black uppercase">{{ labels.showroom }}</h3>
                     <div class="space-y-2 text-sm leading-6 text-[#59616e]">
-                        <p>H\u00e0 N\u1ed9i: S\u1ed1 8, Ph\u1ed1 Tr\u1ea7n Th\u00e1i T\u00f4ng</p>
-                        <p>\u0110\u00e0 N\u1eb5ng: 35 Nguy\u1ec5n V\u0103n Linh</p>
-                        <p>TP. HCM: 123 \u0110\u01b0\u1eddng s\u1ed1 7</p>
+                        <p v-if="site.address">{{ site.address }}</p>
+                        <p v-if="site.working_hours">{{ site.working_hours }}</p>
+                        <p v-if="!site.address && !site.working_hours">Thông tin showroom đang được cập nhật.</p>
                     </div>
                 </div>
                 <template v-else>
@@ -253,7 +227,7 @@ watch(() => page.props.flash, (flash) => {
                     </div>
                 </div>
             </div>
-            <div class="border-t border-[#d8dce4] py-4 text-center text-xs text-[#7b828e]">Copyright 2026 {{ labels.brand }}. All Rights Reserved.</div>
+            <div class="border-t border-[#d8dce4] py-4 text-center text-xs text-[#7b828e]">{{ copyright }}</div>
         </footer>
     </div>
 </template>

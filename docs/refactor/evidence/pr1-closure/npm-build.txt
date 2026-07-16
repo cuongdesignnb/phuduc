@@ -1,0 +1,10 @@
+COMMAND: npm run build
+RESULT: PASS
+
+vite v7.3.1 building client environment for production...
+863 modules transformed.
+Build completed in 12.73s.
+
+NON_BLOCKING_WARNING: Node.js 20.15.1 is below Vite's declared 20.19+ or 22.12+ engine range.
+INSTALL_NOTE: plain npm install is blocked by the pre-existing Vite 7 / @vitejs/plugin-vue 5 peer range mismatch; npm ci --legacy-peer-deps installed the committed lock successfully without modifying package.json or package-lock.json.
+AUDIT_NOTE: npm reports 13 existing dependency vulnerabilities (1 low, 5 moderate, 5 high, 2 critical). Dependency remediation is outside PR 1.

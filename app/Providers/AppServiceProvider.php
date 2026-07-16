@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\Setting;
-use Illuminate\Support\Facades\Schema;
+use App\Services\Storefront\NavigationService;
+use App\Services\Storefront\SiteConfigurationService;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -15,7 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(SiteConfigurationService::class);
+        $this->app->scoped(NavigationService::class);
     }
 
     /**
@@ -25,23 +27,18 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
+        View::composer('app', function ($view): void {
+            $view->with('rootSite', app(SiteConfigurationService::class)->get());
+        });
+
         Inertia::share([
-            'cart' => fn() => session()->get('cart', []),
-            'flash' => fn() => [
+            'cart' => fn () => session()->get('cart', []),
+            'flash' => fn () => [
                 'success' => session('success'),
                 'error' => session('error'),
             ],
-            'fontSettings' => function () {
-                if (!Schema::hasTable('settings')) return null;
-                return [
-                    'heading' => Setting::get('font.heading', 'Rajdhani'),
-                    'body' => Setting::get('font.body', 'Inter'),
-                ];
-            },
-            'primaryColor' => function () {
-                if (!Schema::hasTable('settings')) return null;
-                return Setting::get('site.primary_color', '#ffd400');
-            },
+            'fontSettings' => fn () => app(SiteConfigurationService::class)->get()['fonts'],
+            'primaryColor' => fn () => app(SiteConfigurationService::class)->get()['primary_color'],
         ]);
     }
 }

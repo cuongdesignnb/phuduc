@@ -1,0 +1,35 @@
+COMMAND: git status --short
+
+ M app/Http/Controllers/Admin/HomeContentController.php
+ M app/Http/Controllers/Admin/SettingController.php
+ M app/Http/Controllers/Guest/PageController.php
+ M app/Http/Middleware/HandleInertiaRequests.php
+ M app/Models/HomeSection.php
+ M app/Models/HomeSectionItem.php
+ M app/Models/Product.php
+ M app/Models/User.php
+ M app/Providers/AppServiceProvider.php
+ M bootstrap/app.php
+ M database/factories/UserFactory.php
+ M database/seeders/DatabaseSeeder.php
+ M database/seeders/HomeContentSeeder.php
+ M database/seeders/SettingSeeder.php
+ M resources/js/Layouts/GuestPageLayout.vue
+ M resources/js/Pages/Admin/HomeContent/Index.vue
+ M resources/js/Pages/Admin/Setting/Index.vue
+ M resources/js/Pages/Guest/Home.vue
+ M resources/views/app.blade.php
+ M routes/web.php
+?? app/Http/Middleware/EnsureUserIsAdmin.php
+?? app/Http/Requests/Admin/
+?? app/Services/Storefront/
+?? app/Support/
+?? database/migrations/2026_07_16_000000_standardize_storefront_content_schema.php
+?? database/seeders/DemoContentSeeder.php
+?? database/seeders/ProductionDefaultsSeeder.php
+?? docs/
+?? resources/js/Components/Home/
+?? tests/Feature/Admin/
+?? tests/Feature/Seeders/
+?? tests/Feature/Storefront/
+?? tests/Unit/Storefront/

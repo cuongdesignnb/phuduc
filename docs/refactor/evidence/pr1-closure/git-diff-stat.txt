@@ -1,0 +1,82 @@
+COMMAND: git diff --stat origin/main
+
+.../Controllers/Admin/HomeContentController.php    | 203 ++++++----
+ app/Http/Controllers/Admin/SettingController.php   |  14 +-
+ app/Http/Controllers/Guest/PageController.php      |  53 +--
+ app/Http/Middleware/EnsureUserIsAdmin.php          |  17 +
+ app/Http/Middleware/HandleInertiaRequests.php      |  39 +-
+ app/Http/Requests/Admin/SaveHomeContentRequest.php | 124 ++++++
+ app/Models/HomeSection.php                         |   4 +-
+ app/Models/HomeSectionItem.php                     |   3 +-
+ app/Models/Product.php                             |   9 +
+ app/Models/User.php                                |   2 +
+ app/Providers/AppServiceProvider.php               |  29 +-
+ app/Services/Storefront/HomePageDataService.php    | 188 +++++++++
+ app/Services/Storefront/MediaUrlService.php        |  31 ++
+ app/Services/Storefront/NavigationService.php      |  53 +++
+ .../Storefront/ProductPresentationService.php      | 101 +++++
+ .../Storefront/SiteConfigurationService.php        |  94 +++++
+ app/Services/Storefront/StorefrontPageService.php  |  45 +++
+ app/Support/Homepage/HomeSectionRegistry.php       | 188 +++++++++
+ bootstrap/app.php                                  |   4 +
+ database/factories/UserFactory.php                 |   8 +
+ ...00000_standardize_storefront_content_schema.php | 199 ++++++++++
+ database/seeders/DatabaseSeeder.php                |  32 +-
+ database/seeders/DemoContentSeeder.php             |  20 +
+ database/seeders/HomeContentSeeder.php             | 186 ++++-----
+ database/seeders/ProductionDefaultsSeeder.php      |  16 +
+ database/seeders/SettingSeeder.php                 |   9 +-
+ docs/refactor/HOMEPAGE-ADMIN-MAPPING.md            |  21 +
+ docs/refactor/HOMEPAGE-CONTENT-CONTRACT.md         |  79 ++++
+ docs/refactor/HOMEPAGE-MIGRATION-NOTES.md          |  31 ++
+ docs/refactor/PR1-CLOSURE-AUDIT.md                 | 194 +++++++++
+ docs/refactor/PR1-PULL-REQUEST.md                  |  82 ++++
+ docs/refactor/UTF8-DATA-DEBT.md                    |  25 ++
+ .../evidence/pr1-closure/changed-files.txt         |  82 ++++
+ .../evidence/pr1-closure/git-diff-stat.txt         |  82 ++++
+ .../evidence/pr1-closure/git-status-before.txt     |  35 ++
+ .../evidence/pr1-closure/hardcode-search.txt       |  63 +++
+ .../pr1-closure/legacy-settings-search.txt         |  43 ++
+ docs/refactor/evidence/pr1-closure/manual-qa.md    |  52 +++
+ .../evidence/pr1-closure/mysql-integrity-check.txt |  56 +++
+ .../pr1-closure/mysql-migrate-status-before.txt    |  46 +++
+ .../evidence/pr1-closure/mysql-migrate.txt         |  67 ++++
+ .../evidence/pr1-closure/mysql-relevant-tests.txt  |  29 ++
+ .../evidence/pr1-closure/mysql-remigrate.txt       |  42 ++
+ .../evidence/pr1-closure/mysql-rollback.txt        |  21 +
+ docs/refactor/evidence/pr1-closure/npm-build.txt   |  10 +
+ docs/refactor/evidence/pr1-closure/php-tests.txt   |  13 +
+ docs/refactor/evidence/pr1-closure/pint.txt        |   8 +
+ .../evidence/pr1-closure/route-list-admin.txt      | 208 ++++++++++
+ .../pr1-closure/screenshots/admin-section-tabs.png | Bin 0 -> 77233 bytes
+ .../pr1-closure/screenshots/branding-logo.png      | Bin 0 -> 64691 bytes
+ .../pr1-closure/screenshots/favicon-http-asset.png | Bin 0 -> 23893 bytes
+ .../pr1-closure/screenshots/favicon-setting.png    | Bin 0 -> 7468 bytes
+ .../featured-products-manual-picker.png            | Bin 0 -> 3039 bytes
+ .../pr1-closure/screenshots/hero-editor.png        | Bin 0 -> 4340 bytes
+ .../pr1-closure/screenshots/homepage-desktop.png   | Bin 0 -> 29965 bytes
+ .../pr1-closure/screenshots/homepage-mobile.png    | Bin 0 -> 28045 bytes
+ .../pr1-closure/screenshots/section-reorder.png    | Bin 0 -> 10576 bytes
+ .../js/Components/Home/HomeSectionRenderer.vue     |  39 ++
+ .../Home/Sections/BenefitStripSection.vue          |  15 +
+ .../Home/Sections/CategoryCardsSection.vue         |  28 ++
+ .../Home/Sections/ConsultationStepsSection.vue     |  17 +
+ .../Home/Sections/EnergyBannerSection.vue          |  19 +
+ .../js/Components/Home/Sections/HeroSection.vue    |  28 ++
+ .../Home/Sections/IndustrySolutionsSection.vue     |  21 +
+ .../Components/Home/Sections/PartnersSection.vue   |  15 +
+ .../Home/Sections/PostCollectionSection.vue        |  16 +
+ .../Home/Sections/ProductCollectionSection.vue     |  34 ++
+ .../Home/Sections/TestimonialsSection.vue          |  21 +
+ resources/js/Layouts/GuestPageLayout.vue           |  82 ++--
+ resources/js/Pages/Admin/HomeContent/Index.vue     | 437 +++++++++------------
+ resources/js/Pages/Admin/Setting/Index.vue         |  65 +--
+ resources/js/Pages/Guest/Home.vue                  | 420 +-------------------
+ resources/views/app.blade.php                      |  11 +-
+ routes/web.php                                     |  26 +-
+ tests/Feature/Admin/AdminAuthorizationTest.php     |  27 ++
+ tests/Feature/Admin/HomeContentSaveTest.php        | 129 ++++++
+ .../Seeders/ProductionDefaultsSeederTest.php       |  46 +++
+ tests/Feature/Storefront/HomepageContractTest.php  | 179 +++++++++
+ tests/Unit/Storefront/MediaUrlServiceTest.php      |  19 +
+ 79 files changed, 3552 insertions(+), 1102 deletions(-)

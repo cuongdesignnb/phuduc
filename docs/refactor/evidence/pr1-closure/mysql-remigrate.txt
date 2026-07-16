@@ -1,0 +1,42 @@
+VERIFICATION_DATABASE: phuduc_pr1_verification
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan migrate --force
+
+   INFO  Running migrations.
+
+  2026_07_16_000000_standardize_storefront_content_schema ...... 373.94ms DONE
+
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan db:seed --class=ProductionDefaultsSeeder --force
+
+   INFO  Seeding database.
+
+  Database\Seeders\SettingSeeder ..................................... RUNNING
+  Database\Seeders\SettingSeeder .................................. 27 ms DONE
+
+  Database\Seeders\HomeContentSeeder ................................. RUNNING
+  Database\Seeders\HomeContentSeeder .............................. 19 ms DONE
+
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan migrate:status
+
+  Migration name .............................................. Batch / Status
+  0001_01_01_000000_create_users_table ............................... [1] Ran
+  0001_01_01_000001_create_cache_table ............................... [1] Ran
+  0001_01_01_000002_create_jobs_table ................................ [1] Ran
+  2026_03_04_075731_create_products_table ............................ [1] Ran
+  2026_03_04_075732_create_media_libraries_table ..................... [1] Ran
+  2026_03_04_075732_create_orders_table .............................. [1] Ran
+  2026_03_04_075732_create_product_images_table ...................... [1] Ran
+  2026_03_04_075733_create_menus_table ............................... [1] Ran
+  2026_03_04_075733_create_order_items_table ......................... [1] Ran
+  2026_03_04_075733_create_reviews_table ............................. [1] Ran
+  2026_03_04_075733_create_warranties_table .......................... [1] Ran
+  2026_03_04_075734_create_menu_items_table .......................... [1] Ran
+  2026_03_04_075734_create_post_categories_table ..................... [1] Ran
+  2026_03_04_075735_create_posts_table ............................... [1] Ran
+  2026_03_04_075735_create_settings_table ............................ [1] Ran
+  2026_04_09_040000_add_seo_and_video_to_products .................... [1] Ran
+  2026_05_12_100000_create_home_sections_table ....................... [1] Ran
+  2026_05_12_100001_create_home_section_items_table .................. [1] Ran
+  2026_07_16_000000_standardize_storefront_content_schema ............ [2] Ran

@@ -1,0 +1,21 @@
+VERIFICATION_DATABASE: phuduc_pr1_verification
+ADMIN_USERS_BEFORE: admin@phuducev.vn
+NORMAL_USERS_BEFORE: normal@local.test
+DEFAULT_IS_ADMIN: 0
+LEGACY_VALUE_BEFORE: Legacy Hero Value
+ADMIN_CONTENT_BEFORE: Admin preserved hero
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan migrate:rollback --step=1 --force
+
+   INFO  Rolling back migrations.
+
+  2026_07_16_000000_standardize_storefront_content_schema ...... 172.19ms DONE
+
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan tinker --execute="DB::table('home_section_items')->insert(['section_key'=>'benefits','title'=>'Legacy backfill item','is_active'=>1,'sort_order'=>999,'created_at'=>now(),'updated_at'=>now()]); dump(['is_admin_column_after_rollback'=>Schema::hasColumn('users','is_admin'),'home_section_id_after_rollback'=>Schema::hasColumn('home_section_items','home_section_id'),'benefits_key_restored'=>DB::table('home_sections')->where('key','benefits')->exists(),'legacy_setting_preserved'=>DB::table('settings')->where('key','home.hero_title')->value('value')]);"
+array:4 [
+  "is_admin_column_after_rollback" => false
+  "home_section_id_after_rollback" => false
+  "benefits_key_restored" => true
+  "legacy_setting_preserved" => "Legacy Hero Value"
+] // vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:2

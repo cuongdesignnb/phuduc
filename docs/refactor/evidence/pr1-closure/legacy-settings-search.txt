@@ -1,0 +1,43 @@
+CLASSIFICATION:
+- MIGRATION_COMPATIBILITY: legacy keys appear in the migration and migration documentation.
+- DOCUMENTATION: contract/migration evidence may name legacy keys.
+- TEST_GUARD: tests verify Settings cannot write legacy keys.
+- ACTIVE_STOREFRONT_USAGE: 0
+- LEGACY_WRITE_FROM_SETTINGS: 0
+
+$ rg -n "home\.(hero_|featured_products|energy_|latest_posts)" app database resources tests docs/refactor --glob "!evidence/**"
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:16:| `home.hero_title` | `hero.title` |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:17:| `home.hero_subtitle` | `hero.subtitle` |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:18:| `home.hero_image` | `hero.settings_json.image` |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:19:| `home.hero_primary_*` | `hero.settings_json.primary_cta` |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:20:| `home.hero_secondary_label` | `hero.settings_json.secondary_cta.label` |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:21:| `home.featured_products_*` | `featured_products` title/config |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:22:| `home.energy_*` | `energy_banner` heading/config/stats |
+docs/refactor\HOMEPAGE-MIGRATION-NOTES.md:23:| `home.latest_posts_*` | `latest_posts` title/config |
+docs/refactor\evidence\pr1-closure\mysql-rollback.txt:15:$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan tinker --execute="DB::table('home_section_items')->insert(['section_key'=>'benefits','title'=>'Legacy backfill item','is_active'=>1,'sort_order'=>999,'created_at'=>now(),'updated_at'=>now()]); dump(['is_admin_column_after_rollback'=>Schema::hasColumn('users','is_admin'),'home_section_id_after_rollback'=>Schema::hasColumn('home_section_items','home_section_id'),'benefits_key_restored'=>DB::table('home_sections')->where('key','benefits')->exists(),'legacy_setting_preserved'=>DB::table('settings')->where('key','home.hero_title')->value('value')]);"
+tests\Feature\Admin\HomeContentSaveTest.php:86:        Setting::set('home.hero_title', 'Legacy title');
+tests\Feature\Admin\HomeContentSaveTest.php:90:                'key' => 'home.hero_title',
+tests\Feature\Admin\HomeContentSaveTest.php:96:        $this->assertSame('Legacy title', Setting::get('home.hero_title'));
+docs/refactor\evidence\pr1-closure\mysql-integrity-check.txt:4:$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan tinker --execute="dump(['foreign_key'=>DB::table('information_schema.table_constraints')->where('constraint_schema','phuduc_pr1_verification')->where('table_name','home_section_items')->where('constraint_type','FOREIGN KEY')->get()->pluck('CONSTRAINT_NAME')->all(),'home_section_indexes'=>DB::table('information_schema.statistics')->where('table_schema','phuduc_pr1_verification')->where('table_name','home_sections')->select('index_name','non_unique')->distinct()->orderBy('index_name')->get()->toArray(),'json_columns'=>DB::table('information_schema.columns')->where('table_schema','phuduc_pr1_verification')->whereIn('table_name',['home_sections','home_section_items'])->whereIn('column_name',['settings_json','metadata_json'])->select('table_name','column_name','data_type')->get()->toArray(),'orphan_items'=>DB::table('home_section_items as i')->leftJoin('home_sections as s','s.id','=','i.home_section_id')->whereNull('s.id')->count(),'duplicate_section_keys'=>DB::table('home_sections')->select('key')->groupBy('key')->havingRaw('COUNT(*) > 1')->pluck('key')->all(),'section_count'=>DB::table('home_sections')->count(),'legacy_setting_after'=>DB::table('settings')->where('key','home.hero_title')->value('value'),'hero_after'=>DB::table('home_sections')->where('key','hero')->value('title'),'hero_config_after'=>DB::table('home_sections')->where('key','hero')->value('settings_json'),'legacy_item_backfilled'=>DB::table('home_section_items')->where('title','Legacy backfill item')->whereNotNull('home_section_id')->exists(),'benefit_strip_normalized'=>DB::table('home_sections')->where('key','benefit_strip')->exists(),'admin_users_after'=>DB::table('users')->where('is_admin',1)->pluck('email')->all(),'normal_users_promoted_unexpectedly'=>DB::table('users')->where('email','normal@local.test')->where('is_admin',1)->count(),'normal_users_after'=>DB::table('users')->where('is_admin',0)->pluck('email')->all(),'total_users_after_seed_rerun'=>DB::table('users')->count(),'default_is_admin'=>DB::table('information_schema.columns')->where('table_schema','phuduc_pr1_verification')->where('table_name','users')->where('column_name','is_admin')->value('column_default')]);"
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:101:                'title' => $settings->get('home.hero_title'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:102:                'subtitle' => $settings->get('home.hero_subtitle'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:104:                    'image' => $settings->get('home.hero_image'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:106:                        'label' => $settings->get('home.hero_primary_label'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:107:                        'url' => $settings->get('home.hero_primary_url'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:110:                        'label' => $settings->get('home.hero_secondary_label'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:116:                'title' => $settings->get('home.featured_products_title'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:119:                    'limit' => (int) ($settings->get('home.featured_products_limit') ?: 4),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:124:                'title' => $settings->get('home.energy_title'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:125:                'description' => $settings->get('home.energy_description'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:127:                    'eyebrow' => $settings->get('home.energy_eyebrow'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:129:                        ['label' => $settings->get('home.energy_stat_1_label'), 'value' => $settings->get('home.energy_stat_1_value')],
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:130:                        ['label' => $settings->get('home.energy_stat_2_label'), 'value' => $settings->get('home.energy_stat_2_value')],
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:135:                'title' => $settings->get('home.latest_posts_title'),
+database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php:138:                    'limit' => (int) ($settings->get('home.latest_posts_limit') ?: 3),
+
+$ rg -n "home\.(hero_|featured_products|energy_|latest_posts)" app/Services resources/js
+(no matches)
+$ rg -n "starts_with\(.*home\.|startsWith\('home\." app resources/js
+app\Http\Controllers\Admin\SettingController.php:16:            ->reject(fn (Setting $setting) => str_starts_with($setting->key, 'home.'))
+app\Http\Controllers\Admin\SettingController.php:33:        if (collect($validated['settings'])->contains(fn (array $item) => str_starts_with($item['key'], 'home.'))) {
+resources/js\Pages\Admin\Setting\Index.vue:12:    items.filter(s => !s.key.startsWith('home.')).map(s => ({ ...s, value: s.value || '' }))

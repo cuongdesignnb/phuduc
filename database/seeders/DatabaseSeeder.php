@@ -10,26 +10,22 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Admin user
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@phuducev.vn',
-        ]);
+        $this->call(ProductionDefaultsSeeder::class);
 
-        $this->call([
-            SettingSeeder::class,
-            ProductSeeder::class,
-            MenuSeeder::class,
-            PostSeeder::class,
-            RealImageSeeder::class,
-            HomeContentSeeder::class,
-            ReviewSeeder::class,
-            OrderSeeder::class,
-        ]);
+        if (! app()->environment('production')) {
+            User::query()->firstOrCreate(
+                ['email' => 'admin@phuducev.vn'],
+                [
+                    'name' => 'Admin',
+                    'password' => 'password',
+                    'is_admin' => true,
+                    'email_verified_at' => now(),
+                ],
+            );
+
+            $this->call(DemoContentSeeder::class);
+        }
     }
 }

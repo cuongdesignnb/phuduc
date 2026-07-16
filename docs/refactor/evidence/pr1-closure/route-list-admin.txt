@@ -1,0 +1,208 @@
+$ docker compose exec -T app php artisan route:list --path=admin -v
+
+  GET|HEAD        admin/home-content admin.home-content.index â€º Admin\HomeContentController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/home-content admin.home-content.save â€º Admin\HomeContentController@save
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/media admin.media.index â€º Admin\MediaLibraryController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/media admin.media.store â€º Admin\MediaLibraryController@store
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/media/{id} admin.media.destroy â€º Admin\MediaLibraryController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/menus . admin.menus.index â€º Admin\MenuController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/menus . admin.menus.store â€º Admin\MenuController@store
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/menus/create admin.menus.create â€º Admin\MenuController@create
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/menus/{menu} admin.menus.show â€º Admin\MenuController@show
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PUT|PATCH       admin/menus/{menu} admin.menus.update â€º Admin\MenuController@update
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/menus/{menu} admin.menus.destroy â€º Admin\MenuController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/menus/{menu}/edit admin.menus.edit â€º Admin\MenuController@edit
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/menus/{menu}/items admin.menus.items â€º Admin\MenuController@saveItems
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/orders admin.orders.index â€º Admin\OrderController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/orders/{order} admin.orders.show â€º Admin\OrderController@show
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PATCH           admin/orders/{order}/status admin.orders.updateStatus â€º Admin\OrderController@updateStatus
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/post-categories admin.post-categories.index â€º Admin\PostCategoryController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/post-categories admin.post-categories.store â€º Admin\PostCategoryController@store
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/post-categories/create admin.post-categories.create â€º Admin\PostCategoryController@create
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PUT|PATCH       admin/post-categories/{post_category} admin.post-categories.update â€º Admin\PostCategoryController@update
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/post-categories/{post_category} admin.post-categories.destroy â€º Admin\PostCategoryController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/post-categories/{post_category}/edit admin.post-categories.edit â€º Admin\PostCategoryController@edit
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/posts . admin.posts.index â€º Admin\PostController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/posts . admin.posts.store â€º Admin\PostController@store
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/posts/create admin.posts.create â€º Admin\PostController@create
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/posts/{post} admin.posts.show â€º Admin\PostController@show
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PUT|PATCH       admin/posts/{post} admin.posts.update â€º Admin\PostController@update
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/posts/{post} admin.posts.destroy â€º Admin\PostController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/posts/{post}/edit admin.posts.edit â€º Admin\PostController@edit
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/products admin.products.index â€º Admin\ProductController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/products admin.products.store â€º Admin\ProductController@store
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/products/create admin.products.create â€º Admin\ProductController@create
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/products/{product} admin.products.show â€º Admin\ProductController@show
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PUT|PATCH       admin/products/{product} admin.products.update â€º Admin\ProductController@update
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/products/{product} admin.products.destroy â€º Admin\ProductController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/products/{product}/edit admin.products.edit â€º Admin\ProductController@edit
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/products/{product}/images admin.products.images.upload â€º Admin\ProductController@uploadImages
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/products/{product}/images/from-media admin.products.images.from-media â€º Admin\ProductController@addImageFromMedia
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/products/{product}/images/reorder admin.products.images.reorder â€º Admin\ProductController@reorderImages
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/products/{product}/images/{image} admin.products.images.delete â€º Admin\ProductController@deleteImage
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/reviews admin.reviews.index â€º Admin\ReviewController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/reviews/{review} admin.reviews.destroy â€º Admin\ReviewController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PATCH           admin/reviews/{review}/status admin.reviews.updateStatus â€º Admin\ReviewController@updateStatus
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/settings admin.settings.index â€º Admin\SettingController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/settings admin.settings.save â€º Admin\SettingController@save
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/warranties admin.warranties.index â€º Admin\WarrantyController@index
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  POST            admin/warranties admin.warranties.store â€º Admin\WarrantyController@store
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/warranties/create admin.warranties.create â€º Admin\WarrantyController@create
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  PUT|PATCH       admin/warranties/{warranty} admin.warranties.update â€º Admin\WarrantyController@update
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  DELETE          admin/warranties/{warranty} admin.warranties.destroy â€º Admin\WarrantyController@destroy
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+  GET|HEAD        admin/warranties/{warranty}/edit admin.warranties.edit â€º Admin\WarrantyController@edit
+                  â‡‚ web
+                  â‡‚ Illuminate\Auth\Middleware\Authenticate
+                  â‡‚ App\Http\Middleware\EnsureUserIsAdmin
+
+                                                           Showing [51] routes

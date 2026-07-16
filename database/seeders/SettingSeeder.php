@@ -27,13 +27,6 @@ class SettingSeeder extends Seeder
             ['key' => 'site.map_embed', 'value' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.0!2d106.7!3d10.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1', 'type' => 'text'],
             ['key' => 'site.primary_color', 'value' => '#ffd400', 'type' => 'color'],
 
-            // ─── Home Page ───
-            ['key' => 'home.hero_title', 'value' => 'Giải pháp xe điện', 'type' => 'text'],
-            ['key' => 'home.hero_subtitle', 'value' => 'Công nghiệp hiện đại - Nâng tầm hiệu suất vận chuyển nội bộ với dòng xe điện thế hệ mới, mạnh mẽ, bền bỉ và tiết kiệm chi phí vận hành.', 'type' => 'textarea'],
-            ['key' => 'home.hero_image', 'value' => null, 'type' => 'image'],
-            ['key' => 'home.about_text', 'value' => 'Phú Đức tự hào là đơn vị tiên phong cung cấp giải pháp xe điện công nghiệp tại Việt Nam. Với hơn 10 năm kinh nghiệm, chúng tôi đã đồng hành cùng hàng trăm doanh nghiệp, khu công nghiệp, resort và sân golf trên toàn quốc. Cam kết mang đến sản phẩm chất lượng châu Âu, dịch vụ hậu mãi tận tâm và giá thành cạnh tranh nhất thị trường.', 'type' => 'textarea'],
-            ['key' => 'home.about_image', 'value' => null, 'type' => 'image'],
-
             // ─── About Page ───
             ['key' => 'about.title', 'value' => 'Về Phú Đức', 'type' => 'text'],
             ['key' => 'about.content', 'value' => '<p>Công ty TNHH Phú Đức được thành lập năm 2014, chuyên cung cấp xe điện công nghiệp, xe điện chở hàng, xe điện du lịch phục vụ cho các khu công nghiệp, nhà máy, sân golf, resort và các đơn vị có nhu cầu vận chuyển nội bộ.</p><p>Với đội ngũ kỹ sư giàu kinh nghiệm và hệ thống showroom, xưởng bảo trì hiện đại, Phú Đức cam kết mang đến những sản phẩm chất lượng cao nhất, dịch vụ hậu mãi tốt nhất cho khách hàng.</p><p>Tầm nhìn: Trở thành nhà cung cấp xe điện công nghiệp số 1 Việt Nam, góp phần xây dựng nền công nghiệp xanh và bền vững.</p>', 'type' => 'textarea'],
@@ -48,7 +41,7 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            Setting::updateOrCreate(
+            Setting::firstOrCreate(
                 ['key' => $setting['key']],
                 ['value' => $setting['value'], 'type' => $setting['type']]
             );

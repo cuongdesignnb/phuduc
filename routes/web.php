@@ -1,28 +1,26 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\MediaLibraryController;
-use App\Http\Controllers\Admin\MenuController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\ReviewController;
-use App\Http\Controllers\Admin\WarrantyController;
-use App\Http\Controllers\Admin\PostCategoryController;
-use App\Http\Controllers\Admin\PostController;
-use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HomeContentController;
-use App\Http\Controllers\Guest\ProductController as GuestProductController;
+use App\Http\Controllers\Admin\MediaLibraryController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PostCategoryController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\Guest\CartController;
 use App\Http\Controllers\Guest\CheckoutController;
+use App\Http\Controllers\Guest\NewsController;
 use App\Http\Controllers\Guest\OrderLookupController;
+use App\Http\Controllers\Guest\PageController;
+use App\Http\Controllers\Guest\ProductController as GuestProductController;
 use App\Http\Controllers\Guest\ReviewController as GuestReviewController;
 use App\Http\Controllers\Guest\WarrantyLookupController;
-use App\Http\Controllers\Guest\NewsController;
-use App\Http\Controllers\Guest\PageController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 // ─── Public / Guest Routes ───────────────────────────────────────
 
@@ -62,7 +60,7 @@ Route::get('/gioi-thieu', [PageController::class, 'about'])->name('about');
 // ─── Auth Routes ─────────────────────────────────────────────────
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])->name('dashboard');
+    ->middleware(['auth', 'verified', 'admin'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -70,7 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ─── Admin Routes ────────────────────────────────────────────
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         // Media
         Route::get('media', [MediaLibraryController::class, 'index'])->name('media.index');
         Route::post('media', [MediaLibraryController::class, 'store'])->name('media.store');
@@ -116,4 +114,4 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

@@ -1,0 +1,13 @@
+COMMAND: docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: app php artisan test
+ENVIRONMENT: isolated SQLite in-memory test database
+RESULT: PASS
+
+Tests:    40 passed (179 assertions)
+Duration: 26.04s
+
+Suites covered:
+- Unit storefront media URL service
+- Admin authorization and homepage save validation
+- Authentication/profile regression suite
+- Production-safe seeders
+- Canonical homepage contract, product source rules, empty state, and settings query batching

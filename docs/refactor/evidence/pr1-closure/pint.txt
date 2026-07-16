@@ -1,0 +1,8 @@
+CHANGED_FILE_GATE_COMMAND: docker compose exec -T app vendor/bin/pint --dirty --test
+CHANGED_FILE_GATE_RESULT: PASS
+FILES_CHECKED: 32
+
+FULL_REPOSITORY_BASELINE_COMMAND: docker compose exec -T app vendor/bin/pint --test
+FULL_REPOSITORY_BASELINE_RESULT: FAIL - 40 style issues in 123 files
+CLASSIFICATION: PRE-EXISTING / OUTSIDE PR 1
+DECISION: Do not mass-format unrelated controllers, jobs, models, migrations, and seeders during closure. All PHP files changed by PR 1 pass Pint.
