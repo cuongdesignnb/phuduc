@@ -41,11 +41,11 @@ onMounted(() => {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
                     Tin tức & Cập nhật
                 </p>
-                <h1 class="section-title">Tin tức <span class="text-gradient">ngành xe điện</span></h1>
+                <h1 class="section-title">Tin tức <span class="text-brand-hover">ngành xe điện</span></h1>
             </div>
         </section>
 
-        <div class="neon-line"></div>
+        <div class="storefront-divider"></div>
 
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <!-- Filters -->
@@ -63,7 +63,7 @@ onMounted(() => {
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Link v-for="(post, i) in posts.data" :key="post.id" :href="route('news.show', post.slug)" class="group glass-card-hover overflow-hidden reveal bg-white border border-surface-border" :style="`transition-delay: ${(i % 3) * 80}ms`">
+                <Link v-for="(post, i) in posts.data" :key="post.id" :href="route('news.show', post.slug)" class="group storefront-card-interactive overflow-hidden reveal bg-white border border-surface-border" :style="`transition-delay: ${(i % 3) * 80}ms`">
                     <div class="aspect-video bg-surface-muted overflow-hidden border-b border-surface-border">
                         <img v-if="post.featured_image" :src="'/storage/' + post.featured_image" :alt="post.title" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                     </div>

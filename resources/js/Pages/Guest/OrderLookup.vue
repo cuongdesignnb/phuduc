@@ -18,7 +18,7 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', c
         <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16">
             <h1 class="text-2xl font-display font-bold text-ink-primary text-center mb-8">Tra cứu Đơn hàng</h1>
 
-            <form @submit.prevent="submit" class="glass-card p-6 space-y-4">
+            <form @submit.prevent="submit" class="storefront-card p-6 space-y-4">
                 <div>
                     <label class="block text-sm text-ink-secondary mb-1">Mã đơn hàng</label>
                     <input v-model="form.order_number" type="text" placeholder="ORD-..." required class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition" />
@@ -31,7 +31,7 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', c
             </form>
 
             <Transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0">
-                <div v-if="searched && order" class="mt-8 glass-card p-6">
+                <div v-if="searched && order" class="mt-8 storefront-card p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-display font-bold text-ink-primary">{{ order.order_number }}</h3>
                         <span :class="statusColors[order.status]" class="inline-flex rounded-full px-3 py-1 text-xs font-semibold border">{{ statusLabels[order.status] }}</span>
@@ -52,7 +52,7 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', c
                 </div>
             </Transition>
 
-            <div v-if="searched && !order" class="mt-8 glass-card border-red-500/20 p-6 text-center">
+            <div v-if="searched && !order" class="mt-8 storefront-card border-red-500/20 p-6 text-center">
                 <p class="text-red-500">Không tìm thấy đơn hàng. Vui lòng kiểm tra lại mã đơn và số điện thoại.</p>
             </div>
         </div>

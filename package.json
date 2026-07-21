@@ -3,6 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "audit:storefront-theme": "node scripts/audit-storefront-theme.mjs",
         "build": "vite build",
         "dev": "vite"
     },

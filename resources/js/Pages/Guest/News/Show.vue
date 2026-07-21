@@ -27,7 +27,7 @@ defineProps({ post: Object, relatedPosts: Array, seo: Object, jsonLd: [Object, A
                 <img :src="'/storage/' + post.featured_image" :alt="$fixText(post.title)" class="w-full object-cover" />
             </div>
 
-            <div class="neon-line mb-10"></div>
+            <div class="storefront-divider mb-10"></div>
 
             <!-- Content -->
             <div class="prose prose-p:text-ink-secondary prose-headings:font-display prose-headings:text-ink-primary prose-a:text-brand-hover prose-strong:text-ink-primary prose-img:rounded-xl max-w-none" v-html="$fixText(post.content)"></div>
@@ -36,7 +36,7 @@ defineProps({ post: Object, relatedPosts: Array, seo: Object, jsonLd: [Object, A
             <div v-if="relatedPosts?.length" class="mt-14 border-t border-surface-border pt-8">
                 <h2 class="text-xl font-display font-bold text-ink-primary mb-6">Bài viết liên quan</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link v-for="rp in relatedPosts" :key="rp.id" :href="route('news.show', rp.slug)" class="group flex gap-4 items-start glass-card-hover p-3">
+                    <Link v-for="rp in relatedPosts" :key="rp.id" :href="route('news.show', rp.slug)" class="group flex gap-4 items-start storefront-card-interactive p-3">
                         <div v-if="rp.featured_image" class="w-24 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-muted">
                             <img :src="'/storage/' + rp.featured_image" :alt="$fixText(rp.title)" class="w-full h-full object-cover" />
                         </div>

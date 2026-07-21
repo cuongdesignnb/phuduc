@@ -25,7 +25,7 @@ const removeItem = (productId) => {
             <h1 class="text-2xl font-display font-bold text-ink-primary mb-8">Giỏ hàng</h1>
 
             <div v-if="cart.length" class="space-y-6">
-                <div class="glass-card overflow-hidden">
+                <div class="storefront-card overflow-hidden">
                     <div v-for="item in cart" :key="item.product_id" class="flex items-center gap-4 p-4 border-b border-surface-border last:border-0">
                         <img v-if="item.image" :src="'/storage/' + item.image" class="w-16 h-16 object-cover rounded-lg border border-surface-border" />
                         <div v-else class="w-16 h-16 bg-surface-muted rounded-lg border border-surface-border"></div>
@@ -45,7 +45,7 @@ const removeItem = (productId) => {
                     </div>
                 </div>
 
-                <div class="glass-card p-6 flex justify-between items-center">
+                <div class="storefront-card p-6 flex justify-between items-center">
                     <span class="text-lg font-medium text-ink-secondary">Tổng cộng:</span>
                     <span class="text-2xl font-display font-bold text-brand-hover">{{ formatPrice(total) }}</span>
                 </div>
