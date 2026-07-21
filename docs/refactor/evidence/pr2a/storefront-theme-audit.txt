@@ -1,0 +1,7 @@
+Command: npm run audit:storefront-theme
+Result: PASS
+Scope: 43 public storefront files
+Forbidden patterns checked: 13
+
+Output:
+Storefront theme audit passed (43 files, 13 forbidden patterns).

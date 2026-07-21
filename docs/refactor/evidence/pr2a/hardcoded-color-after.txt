@@ -1,0 +1,27 @@
+Static audit scope:
+- resources/js/Layouts/GuestPageLayout.vue
+- resources/js/Components/Storefront/**
+- resources/js/Components/Home/**
+- resources/js/Pages/Guest/**
+
+Files scanned: 43
+
+Forbidden pattern counts after PR 2A:
+#ffd400: 0
+#ffc400: 0
+#e5be00: 0
+#f3c800: 0
+#d49d00: 0
+#e4a900: 0
+#f1b900: 0
+bg-volt-: 0
+text-volt-: 0
+border-volt-: 0
+glass-card: 0
+neon-line: 0
+glow-border: 0
+
+Result: PASS
+
+The default #ffd400 remains only in the application-owned ThemeTokenService fallback.
+Legacy Admin compatibility aliases remain outside the public storefront audit scope.

@@ -1,0 +1,18 @@
+Command: vendor/bin/pint --test <PR 2A changed PHP scope>
+Result: PASS
+Files checked: 11
+
+Checked:
+- app/Http/Controllers/Admin/SettingController.php
+- app/Providers/AppServiceProvider.php
+- app/Services/Storefront/NavigationService.php
+- app/Services/Storefront/SiteConfigurationService.php
+- app/Services/Storefront/StorefrontPageService.php
+- app/Services/Storefront/ThemeTokenService.php
+- resources/views/app.blade.php
+- tests/Feature/Storefront/HomepageContractTest.php
+- tests/Feature/Storefront/SiteThemeContractTest.php
+- tests/Feature/Storefront/ThemeBootstrapTest.php
+- tests/Unit/Storefront/ThemeTokenServiceTest.php
+
+Full-repository Pint was intentionally not used to avoid mass-formatting unrelated legacy code.

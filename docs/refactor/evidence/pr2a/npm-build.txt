@@ -1,0 +1,14 @@
+Command: npm ci --legacy-peer-deps
+Result: PASS
+Packages installed: 212
+Known advisories: 13 (deferred; npm audit fix/update was not run)
+
+Command: npm run build
+Result: PASS
+Vite: 7.3.1
+Modules transformed: 874
+Main CSS: 97.91 kB (15.27 kB gzip)
+Main JS: 324.26 kB (117.31 kB gzip)
+
+Environment note: Node.js 20.15.1 is below Vite's recommended 20.19+ or 22.12+.
+The build completed successfully; dependency versions were not changed in PR 2A.

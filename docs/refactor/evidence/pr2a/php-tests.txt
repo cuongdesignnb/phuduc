@@ -1,0 +1,11 @@
+Command: php artisan test
+Result: PASS
+Tests: 68 passed
+Assertions: 394
+Duration: 2.58s
+
+Covered suites include PR 1 regression, Admin authorization/content, auth/profile,
+production migration/seeder safety, storefront contracts, theme bootstrap and tokens.
+
+Environment note: the host PHP installation emits pre-existing warnings for optional
+OCI and Firebird extensions that are not installed. They do not affect the test result.

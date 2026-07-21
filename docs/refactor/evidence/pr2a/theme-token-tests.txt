@@ -1,0 +1,21 @@
+Command:
+php artisan test tests/Unit/Storefront/ThemeTokenServiceTest.php \
+  tests/Feature/Storefront/ThemeBootstrapTest.php \
+  tests/Feature/Storefront/SiteThemeContractTest.php
+
+Result: PASS
+Tests: 13 passed
+Assertions: 151
+Duration: 0.52s
+
+Primary color matrix:
+- #ffd400
+- #111827
+- #ffffff
+- #000000
+- #2563eb
+- #ef4444
+- invalid input -> #ffd400 fallback
+
+Each primary, hover and active background is checked against the canonical foreground
+for WCAG AA contrast. Brand text is separately checked against a white surface.

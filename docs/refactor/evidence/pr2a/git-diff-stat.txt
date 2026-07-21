@@ -1,0 +1,12 @@
+PR 2A diff stat is generated from:
+  base: ead76be1deec5c46b19c971403aeb6ff21604429
+  head: final branch state before publish
+
+Application/source plus baseline documents before closure evidence:
+  80 files changed, 2381 insertions(+), 918 deletions(-)
+
+Final staged PR including Lighthouse JSON and all screenshots/evidence:
+  113 files changed, 72961 insertions(+), 918 deletions(-)
+
+The apparent insertion increase is dominated by eight machine-generated Lighthouse
+JSON reports. Dependency lockfiles and package versions are unchanged.
