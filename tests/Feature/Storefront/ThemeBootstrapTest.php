@@ -22,7 +22,9 @@ class ThemeBootstrapTest extends TestCase
             ->assertSee('--ds-brand-contrast:', false)
             ->assertDontSee('--user-controlled:', false);
 
-        $this->assertLessThan(strpos($content, '@vite'), strpos($content, 'id="storefront-theme"'));
+        $appScriptPosition = strpos($content, '<script type="module"');
+        $this->assertNotFalse($appScriptPosition);
+        $this->assertLessThan($appScriptPosition, strpos($content, 'id="storefront-theme"'));
         $this->assertStringNotContainsString('--volt-', $content);
     }
 

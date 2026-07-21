@@ -9,6 +9,7 @@ const allowedVariables = new Set([
     '--ds-brand-muted',
     '--ds-brand-border',
     '--ds-brand-contrast',
+    '--ds-brand-text',
     '--ds-focus-ring',
     '--ds-surface-page',
     '--ds-surface-card',
@@ -80,9 +81,9 @@ function applyTheme(theme) {
 export function useThemeRuntime() {
     const page = usePage();
 
-    onMounted(() => applyTheme(page.props.site?.theme));
+    onMounted(() => applyTheme(page.props?.site?.theme));
     watch(
-        () => page.props.site?.theme,
+        () => page.props?.site?.theme,
         (theme) => applyTheme(theme),
         { deep: true },
     );

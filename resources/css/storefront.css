@@ -56,7 +56,7 @@
     }
 
     .section-tag {
-        @apply mb-3 inline-flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.18em] text-brand-hover;
+        @apply mb-3 inline-flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.18em] text-brand-text;
     }
 
     .product-card {
@@ -89,7 +89,7 @@
     }
 
     .stat-number {
-        @apply font-display text-5xl font-bold text-brand-hover md:text-6xl;
+        @apply font-display text-5xl font-bold text-brand-text md:text-6xl;
     }
 
     .stat-label {

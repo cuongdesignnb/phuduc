@@ -23,7 +23,12 @@ defineProps({
             class="h-full w-full"
             :class="objectFit === 'contain' ? 'object-contain' : 'object-cover'"
         >
-        <div v-else class="flex h-full w-full items-center justify-center text-sm font-medium text-content-muted" aria-hidden="true">
+        <div
+            v-else
+            class="flex h-full w-full items-center justify-center text-sm font-medium text-content-muted"
+            role="img"
+            :aria-label="alt ? `${alt}: Không có hình ảnh` : 'Không có hình ảnh'"
+        >
             Không có hình ảnh
         </div>
     </div>

@@ -16,6 +16,7 @@ class StorefrontPageService
     public function home(): array
     {
         $site = $this->siteConfiguration->get();
+        $description = $site['description'] ?: $site['tagline'] ?: "Trang thông tin chính thức của {$site['name']}.";
 
         return [
             'site' => $site,
@@ -24,7 +25,7 @@ class StorefrontPageService
                 'type' => 'home',
                 'seo' => [
                     'title' => $site['name'],
-                    'description' => $site['description'],
+                    'description' => $description,
                     'canonical' => url('/'),
                     'robots' => 'index, follow',
                 ],

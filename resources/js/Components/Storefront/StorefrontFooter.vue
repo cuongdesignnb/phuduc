@@ -35,8 +35,8 @@ const linkComponent = (url) => (isExternal(url) ? 'a' : Link);
                 <div class="lg:col-span-3">
                     <h2 class="font-display text-base font-bold uppercase tracking-wide">Liên hệ</h2>
                     <address class="mt-4 space-y-2 text-sm not-italic leading-6 text-content-secondary">
-                        <p v-if="contactPhone"><a :href="`tel:${contactPhone}`" class="hover:text-brand-hover">{{ contactPhone }}</a></p>
-                        <p v-if="site.email"><a :href="`mailto:${site.email}`" class="break-all hover:text-brand-hover">{{ site.email }}</a></p>
+                        <p v-if="contactPhone"><a :href="`tel:${contactPhone}`" class="hover:text-brand-text">{{ contactPhone }}</a></p>
+                        <p v-if="site.email"><a :href="`mailto:${site.email}`" class="break-all hover:text-brand-text">{{ site.email }}</a></p>
                         <p v-if="site.address">{{ site.address }}</p>
                         <p v-if="site.working_hours">{{ site.working_hours }}</p>
                     </address>
@@ -47,7 +47,7 @@ const linkComponent = (url) => (isExternal(url) ? 'a' : Link);
                         <h2 class="font-display text-base font-bold uppercase tracking-wide">{{ group.label }}</h2>
                         <ul class="mt-4 space-y-2 text-sm text-content-secondary">
                             <li v-for="child in group.children.filter((item) => item.url)" :key="child.id || child.label">
-                                <component :is="linkComponent(child.url)" :href="child.url" :target="isExternal(child.url) ? '_blank' : undefined" :rel="isExternal(child.url) ? 'noopener noreferrer' : undefined" class="inline-flex min-h-8 items-center hover:text-brand-hover">{{ child.label }}</component>
+                                <component :is="linkComponent(child.url)" :href="child.url" :target="isExternal(child.url) ? '_blank' : undefined" :rel="isExternal(child.url) ? 'noopener noreferrer' : undefined" class="inline-flex min-h-8 items-center hover:text-brand-text">{{ child.label }}</component>
                             </li>
                         </ul>
                     </section>
@@ -56,9 +56,9 @@ const linkComponent = (url) => (isExternal(url) ? 'a' : Link);
                 <div v-if="!validGroups.length" class="lg:col-span-3">
                     <h2 class="font-display text-base font-bold uppercase tracking-wide">Hỗ trợ</h2>
                     <ul class="mt-4 space-y-2 text-sm text-content-secondary">
-                        <li><Link :href="route('warranty-lookup.index')" class="inline-flex min-h-8 items-center hover:text-brand-hover">Tra cứu bảo hành</Link></li>
-                        <li><Link :href="route('order-lookup.index')" class="inline-flex min-h-8 items-center hover:text-brand-hover">Tra cứu đơn hàng</Link></li>
-                        <li><Link :href="route('products.index')" class="inline-flex min-h-8 items-center hover:text-brand-hover">Sản phẩm</Link></li>
+                        <li><Link :href="route('warranty-lookup.index')" class="inline-flex min-h-8 items-center hover:text-brand-text">Tra cứu bảo hành</Link></li>
+                        <li><Link :href="route('order-lookup.index')" class="inline-flex min-h-8 items-center hover:text-brand-text">Tra cứu đơn hàng</Link></li>
+                        <li><Link :href="route('products.index')" class="inline-flex min-h-8 items-center hover:text-brand-text">Sản phẩm</Link></li>
                     </ul>
                 </div>
             </div>

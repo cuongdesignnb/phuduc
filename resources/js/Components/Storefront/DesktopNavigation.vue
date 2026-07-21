@@ -61,7 +61,7 @@ onBeforeUnmount(() => {
                     :target="isExternal(item.url) ? '_blank' : undefined"
                     :rel="isExternal(item.url) ? 'noopener noreferrer' : undefined"
                     class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold transition hover:bg-brand-soft hover:text-content-primary"
-                    :class="isActive(item) ? 'text-brand-hover' : 'text-content-secondary'"
+                    :class="isActive(item) ? 'text-brand-text' : 'text-content-secondary'"
                     @click="close"
                 >
                     {{ item.label }}

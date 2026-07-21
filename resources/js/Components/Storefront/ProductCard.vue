@@ -16,11 +16,11 @@ defineProps({
         <div class="flex flex-1 flex-col p-5">
             <p v-if="product.sku" class="text-xs font-semibold uppercase tracking-wide text-content-muted">{{ product.sku }}</p>
             <h3 class="mt-1 font-display text-lg font-bold leading-snug text-content-primary">
-                <Link :href="route('products.show', product.slug)" class="transition hover:text-brand-hover">{{ product.name }}</Link>
+                <Link :href="route('products.show', product.slug)" class="transition hover:text-brand-text">{{ product.name }}</Link>
             </h3>
             <dl v-if="product.card_specifications?.length" class="mt-3 space-y-1 text-sm text-content-secondary">
                 <div v-for="specification in product.card_specifications.slice(0, variant === 'compact' ? 2 : 3)" :key="`${specification.key}-${specification.value}`" class="flex justify-between gap-3">
-                    <dt>{{ specification.key }}</dt>
+                    <dt>{{ specification.label || specification.key }}</dt>
                     <dd class="font-medium text-content-primary">{{ specification.value }}</dd>
                 </div>
             </dl>

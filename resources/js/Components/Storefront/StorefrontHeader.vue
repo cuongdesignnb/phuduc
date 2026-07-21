@@ -51,10 +51,10 @@ watch(() => props.currentUrl, (url) => {
 </script>
 
 <template>
-    <header class="sticky top-0 z-50 border-b border-line bg-surface-card/95 backdrop-blur-sm" style="box-shadow: var(--ds-shadow-sm)">
+    <header class="sticky top-0 z-50 border-b border-line bg-surface-card" style="box-shadow: var(--ds-shadow-sm)">
         <StorefrontContainer>
             <div class="flex min-h-[var(--ds-header-height)] items-center gap-3 py-2 lg:gap-6">
-                <Link :href="route('home')" class="flex min-w-0 shrink-0 items-center gap-3" aria-label="Trang chủ">
+                <Link :href="route('home')" class="flex min-w-0 shrink-0 items-center gap-3">
                     <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name || 'Trang chủ'" width="160" height="48" class="h-11 w-auto max-w-36 object-contain sm:max-w-44">
                     <span class="min-w-0" :class="site.logo_url && 'hidden sm:block'">
                         <strong class="block truncate font-display text-xl font-bold uppercase leading-none text-content-primary sm:text-2xl">{{ site.name }}</strong>
@@ -68,7 +68,7 @@ watch(() => props.currentUrl, (url) => {
 
                 <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
                     <a v-if="contactPhone" :href="`tel:${contactPhone}`" class="hidden min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-content-secondary hover:bg-surface-muted xl:flex">
-                        <svg class="h-5 w-5 text-brand-hover" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 0 0-1.173.417l-.97 1.293" /></svg>
+                        <svg class="h-5 w-5 text-brand-text" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 0 0-1.173.417l-.97 1.293" /></svg>
                         <span><small class="block text-[10px] uppercase text-content-muted">Hotline</small>{{ contactPhone }}</span>
                     </a>
                     <Link :href="accountHref" class="grid min-h-11 min-w-11 place-items-center rounded-lg text-content-secondary hover:bg-surface-muted" :aria-label="`Tài khoản: ${accountLabel}`">

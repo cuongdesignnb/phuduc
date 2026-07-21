@@ -21,6 +21,34 @@ class ThemeTokenServiceTest extends TestCase
                 $this->rgb($theme['css_variables']['--ds-brand-contrast']),
             ),
         );
+
+        foreach (['--ds-brand-primary', '--ds-brand-hover', '--ds-brand-active'] as $background) {
+            $this->assertGreaterThanOrEqual(
+                4.5,
+                $this->contrastRatio(
+                    $this->rgb($theme['css_variables'][$background]),
+                    $this->rgb($theme['css_variables']['--ds-brand-contrast']),
+                ),
+                "$background must retain AA contrast.",
+            );
+        }
+
+        $this->assertNotSame(
+            $theme['css_variables']['--ds-brand-primary'],
+            $theme['css_variables']['--ds-brand-hover'],
+        );
+        $this->assertNotSame(
+            $theme['css_variables']['--ds-brand-primary'],
+            $theme['css_variables']['--ds-brand-active'],
+        );
+
+        $this->assertGreaterThanOrEqual(
+            4.5,
+            $this->contrastRatio(
+                $this->rgb($theme['css_variables']['--ds-brand-text']),
+                [255, 255, 255],
+            ),
+        );
     }
 
     /**

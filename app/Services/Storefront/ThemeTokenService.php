@@ -58,9 +58,6 @@ class ThemeTokenService
         $primary = $this->hexToRgb($primaryColor);
         $white = [255, 255, 255];
         $dark = [17, 24, 39];
-        $isLight = $this->relativeLuminance($primary) > 0.32;
-        $hover = $this->mix($primary, $isLight ? $dark : $white, $isLight ? 0.12 : 0.14);
-        $active = $this->mix($primary, $isLight ? $dark : $white, $isLight ? 0.20 : 0.24);
         $contrast = $this->contrastRatio($primary, $white) >= $this->contrastRatio($primary, $dark)
             ? $white
             : $dark;
@@ -71,6 +68,11 @@ class ThemeTokenService
             $contrast = [0, 0, 0];
         }
 
+        // Prefer a darker interaction state, then fall back to a lighter one
+        // when needed so every state is distinct and retains AA contrast.
+        $hover = $this->interactionColor($primary, $contrast, $dark, $white, 0.08);
+        $active = $this->interactionColor($primary, $contrast, $dark, $white, 0.14);
+
         $variables = [
             '--ds-brand-primary' => $this->rgbValue($primary),
             '--ds-brand-hover' => $this->rgbValue($hover),
@@ -79,6 +81,7 @@ class ThemeTokenService
             '--ds-brand-muted' => $this->rgbValue($this->mix($primary, $white, 0.78)),
             '--ds-brand-border' => $this->rgbValue($this->mix($primary, $white, 0.58)),
             '--ds-brand-contrast' => $this->rgbValue($contrast),
+            '--ds-brand-text' => $this->rgbValue($this->accessibleBrandText($primary, $white, $dark)),
             '--ds-focus-ring' => $this->rgbValue($primary),
             '--ds-surface-page' => '246 247 249',
             '--ds-surface-card' => '255 255 255',
@@ -87,7 +90,7 @@ class ThemeTokenService
             '--ds-surface-inverse' => '17 24 39',
             '--ds-content-primary' => '24 31 42',
             '--ds-content-secondary' => '71 81 95',
-            '--ds-content-muted' => '112 123 138',
+            '--ds-content-muted' => '91 103 119',
             '--ds-content-inverse' => '255 255 255',
             '--ds-border-default' => '218 223 230',
             '--ds-border-strong' => '183 191 202',
@@ -222,6 +225,54 @@ class ThemeTokenService
         $darker = min($this->relativeLuminance($first), $this->relativeLuminance($second));
 
         return ($lighter + 0.05) / ($darker + 0.05);
+    }
+
+    /**
+     * @param  array{int, int, int}  $primary
+     * @param  array{int, int, int}  $surface
+     * @param  array{int, int, int}  $dark
+     * @return array{int, int, int}
+     */
+    private function accessibleBrandText(array $primary, array $surface, array $dark): array
+    {
+        if ($this->contrastRatio($primary, $surface) >= 4.5) {
+            return $primary;
+        }
+
+        for ($step = 1; $step <= 20; $step++) {
+            $candidate = $this->mix($primary, $dark, $step * 0.05);
+
+            if ($this->contrastRatio($candidate, $surface) >= 4.5) {
+                return $candidate;
+            }
+        }
+
+        return $dark;
+    }
+
+    /**
+     * @param  array{int, int, int}  $primary
+     * @param  array{int, int, int}  $contrast
+     * @param  array{int, int, int}  $preferredTarget
+     * @param  array{int, int, int}  $fallbackTarget
+     * @return array{int, int, int}
+     */
+    private function interactionColor(
+        array $primary,
+        array $contrast,
+        array $preferredTarget,
+        array $fallbackTarget,
+        float $weight,
+    ): array {
+        foreach ([$preferredTarget, $fallbackTarget] as $target) {
+            $candidate = $this->mix($primary, $target, $weight);
+
+            if ($candidate !== $primary && $this->contrastRatio($candidate, $contrast) >= 4.5) {
+                return $candidate;
+            }
+        }
+
+        return $primary;
     }
 
     /**

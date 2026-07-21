@@ -29,6 +29,7 @@ const submit = () => {
             class="min-w-0 flex-1 border-0 bg-transparent px-4 text-sm text-content-primary placeholder:text-content-muted focus:ring-0"
             :class="compact ? 'h-11' : 'h-12'"
             placeholder="Tìm sản phẩm theo tên hoặc mã..."
+            @keydown.enter.prevent="submit"
         >
         <button type="submit" class="grid min-w-12 place-items-center bg-brand text-brand-contrast transition hover:bg-brand-hover" aria-label="Tìm kiếm sản phẩm">
             <svg class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">

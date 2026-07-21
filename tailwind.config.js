@@ -16,6 +16,12 @@ export default {
                 sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
                 display: ['var(--font-display)', ...defaultTheme.fontFamily.sans],
             },
+            boxShadow: {
+                'ds-sm': 'var(--ds-shadow-sm)',
+                card: 'var(--ds-shadow-card)',
+                'card-hover': 'var(--ds-shadow-card-hover)',
+                dropdown: 'var(--ds-shadow-dropdown)',
+            },
             colors: {
                 brand: {
                     DEFAULT: 'rgb(var(--ds-brand-primary) / <alpha-value>)',
@@ -26,6 +32,7 @@ export default {
                     muted: 'rgb(var(--ds-brand-muted) / <alpha-value>)',
                     border: 'rgb(var(--ds-brand-border) / <alpha-value>)',
                     contrast: 'rgb(var(--ds-brand-contrast) / <alpha-value>)',
+                    text: 'rgb(var(--ds-brand-text) / <alpha-value>)',
                     light: 'rgb(var(--ds-brand-soft) / <alpha-value>)',
                 },
                 content: {
