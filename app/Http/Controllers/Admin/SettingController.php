@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\Storefront\ThemeTokenService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -18,6 +19,7 @@ class SettingController extends Controller
 
         return Inertia::render('Admin/Setting/Index', [
             'settings' => $settings,
+            'fontOptions' => ThemeTokenService::fontOptions(),
         ]);
     }
 

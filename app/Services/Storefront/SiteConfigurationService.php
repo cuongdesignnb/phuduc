@@ -36,7 +36,10 @@ class SiteConfigurationService
         'font.body',
     ];
 
-    public function __construct(private readonly MediaUrlService $mediaUrl) {}
+    public function __construct(
+        private readonly MediaUrlService $mediaUrl,
+        private readonly ThemeTokenService $themeTokens,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -66,6 +69,12 @@ class SiteConfigurationService
 
         $name = $value('site.name', config('app.name', 'Phú Đức'));
 
+        $theme = $this->themeTokens->resolve(
+            $value('site.primary_color'),
+            $value('font.heading'),
+            $value('font.body'),
+        );
+
         return [
             'name' => $name,
             'tagline' => $value('site.tagline'),
@@ -84,11 +93,10 @@ class SiteConfigurationService
                 'youtube' => $value('site.youtube'),
             ],
             'og_image_url' => $this->mediaUrl->resolve($value('site.og_image')),
-            'primary_color' => $value('site.primary_color', '#ffd400'),
-            'fonts' => [
-                'heading' => $value('font.heading', 'Rajdhani'),
-                'body' => $value('font.body', 'Inter'),
-            ],
+            'theme' => $theme,
+            // Temporary Admin compatibility. New public components use site.theme.
+            'primary_color' => $theme['primary_color'],
+            'fonts' => $theme['fonts'],
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\Storefront\NavigationService;
 use App\Services\Storefront\SiteConfigurationService;
+use App\Services\Storefront\ThemeTokenService;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -16,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->scoped(ThemeTokenService::class);
         $this->app->scoped(SiteConfigurationService::class);
         $this->app->scoped(NavigationService::class);
     }

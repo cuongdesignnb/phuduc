@@ -6,7 +6,7 @@ import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
-const props = defineProps({ settings: Object });
+const props = defineProps({ settings: Object, fontOptions: Array });
 
 const allSettings = ref(Object.entries(props.settings || {}).flatMap(([group, items]) =>
     items.filter(s => !s.key.startsWith('home.')).map(s => ({ ...s, value: s.value || '' }))
@@ -70,32 +70,11 @@ const keyLabels = {
 
 const getLabel = (key) => keyLabels[key] || key.split('.').pop().replace(/_/g, ' ');
 
-// Vietnamese-friendly Google Fonts
-const vietnameseFonts = [
-    { name: 'Inter', category: 'sans-serif', label: 'Inter — Hiện đại, dễ đọc' },
-    { name: 'Be Vietnam Pro', category: 'sans-serif', label: 'Be Vietnam Pro — Thiết kế cho tiếng Việt' },
-    { name: 'Nunito', category: 'sans-serif', label: 'Nunito — Tròn, thân thiện' },
-    { name: 'Nunito Sans', category: 'sans-serif', label: 'Nunito Sans — Sạch, chuyên nghiệp' },
-    { name: 'Montserrat', category: 'sans-serif', label: 'Montserrat — Mạnh mẽ, nổi bật' },
-    { name: 'Open Sans', category: 'sans-serif', label: 'Open Sans — Phổ biến, dễ đọc' },
-    { name: 'Roboto', category: 'sans-serif', label: 'Roboto — Chuẩn Material Design' },
-    { name: 'Source Sans 3', category: 'sans-serif', label: 'Source Sans 3 — Adobe, rõ ràng' },
-    { name: 'Mulish', category: 'sans-serif', label: 'Mulish — Thanh lịch, đa năng' },
-    { name: 'Quicksand', category: 'sans-serif', label: 'Quicksand — Tròn, sáng tạo' },
-    { name: 'Lexend', category: 'sans-serif', label: 'Lexend — Tối ưu đọc nhanh' },
-    { name: 'Rajdhani', category: 'sans-serif', label: 'Rajdhani — Công nghệ, công nghiệp' },
-    { name: 'Barlow', category: 'sans-serif', label: 'Barlow — Kỹ thuật, hiện đại' },
-    { name: 'Barlow Condensed', category: 'sans-serif', label: 'Barlow Condensed — Gọn, tiêu đề' },
-    { name: 'Josefin Sans', category: 'sans-serif', label: 'Josefin Sans — Sang trọng, vintage' },
-    { name: 'Space Grotesk', category: 'sans-serif', label: 'Space Grotesk — Futuristic' },
-    { name: 'Exo 2', category: 'sans-serif', label: 'Exo 2 — Sci-fi, năng động' },
-    { name: 'Sarabun', category: 'sans-serif', label: 'Sarabun — Nhẹ, thanh thoát' },
-    { name: 'Noto Sans', category: 'sans-serif', label: 'Noto Sans — Google, đa ngôn ngữ' },
-    { name: 'Lora', category: 'serif', label: 'Lora — Serif hiện đại, sang trọng' },
-    { name: 'Merriweather', category: 'serif', label: 'Merriweather — Serif, đọc tốt' },
-    { name: 'Playfair Display', category: 'serif', label: 'Playfair Display — Serif, cao cấp' },
-    { name: 'EB Garamond', category: 'serif', label: 'EB Garamond — Cổ điển, tinh tế' },
-];
+// Backend owns the whitelist used by both settings and storefront rendering.
+const vietnameseFonts = computed(() => (props.fontOptions || []).map((font) => ({
+    ...font,
+    label: `${font.name} — ${font.category === 'serif' ? 'Serif' : 'Sans-serif'}`,
+})));
 
 // Preview font by loading it dynamically
 const previewFont = (fontName) => {
