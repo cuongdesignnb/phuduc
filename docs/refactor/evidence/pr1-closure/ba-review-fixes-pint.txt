@@ -1,0 +1,9 @@
+BA REVIEW FIXES - PINT
+
+Command:
+vendor\bin\pint --test app\Http\Requests\Admin\SaveHomeContentRequest.php app\Http\Controllers\Admin\HomeContentController.php app\Console\Commands database\migrations\2026_07_16_000000_standardize_storefront_content_schema.php tests
+
+Result:
+PASS - 21 PHP files
+
+No global repository formatting was performed.

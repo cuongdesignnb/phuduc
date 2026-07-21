@@ -1,0 +1,15 @@
+BA REVIEW FIXES - FRONTEND BUILD
+
+Commands:
+npm ci --legacy-peer-deps
+npm run build
+
+Result:
+PASS
+Vite: 7.3.1
+Modules transformed: 863
+Build duration: 4.50s
+
+Known pre-existing notices:
+- Node 20.15.1 is below Vite's declared engine range.
+- npm reports 13 dependency vulnerabilities; dependency remediation is outside this review-fix scope.

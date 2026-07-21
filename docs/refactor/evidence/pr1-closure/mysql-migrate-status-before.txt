@@ -1,0 +1,46 @@
+SCOPE: LOCAL DOCKER DATABASE (NOT PRODUCTION)
+ACTION: Read-only inspection; rollback uses separate database phuduc_pr1_verification.
+HOST_PORT: 3641
+
+$ docker compose ps
+NAME         IMAGE        COMMAND                  SERVICE   CREATED       STATUS                 PORTS
+phuduc-app   phuduc-app   "docker-entrypoint.sh"   app       3 hours ago   Up 3 hours             0.0.0.0:5179->5179/tcp, [::]:5179->5179/tcp, 0.0.0.0:8741->8741/tcp, [::]:8741->8741/tcp
+phuduc-db    mysql:8.0    "docker-entrypoint.sâ€¦"   db        3 hours ago   Up 3 hours (healthy)   0.0.0.0:3641->3306/tcp, [::]:3641->3306/tcp
+
+$ docker compose exec -T app php artisan tinker --execute="dump(['connection' => config('database.default'), 'host' => config('database.connections.mysql.host'), 'port' => config('database.connections.mysql.port'), 'database' => config('database.connections.mysql.database')]);"
+array:4 [
+  "connection" => "mysql"
+  "host" => "db"
+  "port" => "3306"
+  "database" => "phuduc"
+] // vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1
+
+$ docker compose exec -T app php artisan migrate:status
+
+  Migration name .............................................. Batch / Status
+  0001_01_01_000000_create_users_table ............................... [1] Ran
+  0001_01_01_000001_create_cache_table ............................... [1] Ran
+  0001_01_01_000002_create_jobs_table ................................ [1] Ran
+  2026_03_04_075731_create_products_table ............................ [1] Ran
+  2026_03_04_075732_create_media_libraries_table ..................... [1] Ran
+  2026_03_04_075732_create_orders_table .............................. [1] Ran
+  2026_03_04_075732_create_product_images_table ...................... [1] Ran
+  2026_03_04_075733_create_menus_table ............................... [1] Ran
+  2026_03_04_075733_create_order_items_table ......................... [1] Ran
+  2026_03_04_075733_create_reviews_table ............................. [1] Ran
+  2026_03_04_075733_create_warranties_table .......................... [1] Ran
+  2026_03_04_075734_create_menu_items_table .......................... [1] Ran
+  2026_03_04_075734_create_post_categories_table ..................... [1] Ran
+  2026_03_04_075735_create_posts_table ............................... [1] Ran
+  2026_03_04_075735_create_settings_table ............................ [1] Ran
+  2026_04_09_040000_add_seo_and_video_to_products .................... [1] Ran
+  2026_05_12_100000_create_home_sections_table ....................... [1] Ran
+  2026_05_12_100001_create_home_section_items_table .................. [1] Ran
+  2026_07_16_000000_standardize_storefront_content_schema ............ [2] Ran
+
+
+$ docker compose exec -T app php artisan tinker --execute="dump(['admin_users' => DB::table('users')->where('is_admin', 1)->pluck('email')->all(), 'normal_users' => DB::table('users')->where('is_admin', 0)->count()]);"
+array:2 [
+  "admin_users" => []
+  "normal_users" => 0
+] // vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1

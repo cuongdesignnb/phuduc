@@ -6,14 +6,19 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        @if(filled($rootSite['favicon_url'] ?? null))
+            <link rel="icon" href="{{ $rootSite['favicon_url'] }}">
+            <link rel="shortcut icon" href="{{ $rootSite['favicon_url'] }}">
+        @endif
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         @php
-            $headingFont = \App\Models\Setting::get('font.heading', 'Rajdhani');
-            $bodyFont = \App\Models\Setting::get('font.body', 'Inter');
+            $headingFont = $rootSite['fonts']['heading'] ?? 'Rajdhani';
+            $bodyFont = $rootSite['fonts']['body'] ?? 'Inter';
             $fonts = collect([$headingFont, $bodyFont])->unique()->map(fn($f) => str_replace(' ', '+', $f) . ':wght@300;400;500;600;700;800;900')->implode('&family=');
-            $primaryColor = \App\Models\Setting::get('site.primary_color');
+            $primaryColor = $rootSite['primary_color'] ?? null;
         @endphp
         <link href="https://fonts.googleapis.com/css2?family={{ $fonts }}&display=swap" rel="stylesheet" />
         <style>:root { --font-sans: '{{ $bodyFont }}', sans-serif; --font-display: '{{ $headingFont }}', sans-serif; }</style>

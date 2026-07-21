@@ -1,0 +1,63 @@
+SUMMARY:
+HARDCODED_BRAND_IDENTITIES: 0
+HARDCODED_CONTACT_VALUES: 0
+HARDCODED_THEME_COLORS: PRESENT (accepted for PR 1; design-token refactor deferred to PR 2)
+BRANDING_BINDING: SiteConfigurationService batches database settings; GuestPageLayout and root Blade consume canonical site values.
+
+$ rg -n "PHÃš Äá»¨C BIKE|PHU DUC EV|1800 888 688|info@phuducbike\.vn|1900xxxx" resources
+resources\js\Layouts\AuthenticatedLayout.vue:59:                        <span v-if="sidebarOpen" class="text-base font-display font-bold text-white truncate tracking-wide">PHU DUC EV</span>
+resources\js\Pages\Guest\Product\Show.vue:97:                        <a href="tel:1900xxxx" class="btn-primary inline-flex items-center gap-2">
+
+$ rg -n "#ffd400" resources/js
+resources/js\Layouts\GuestPageLayout.vue:104:                            <button class="grid w-[58px] place-items-center bg-[#ffd400] text-[#111827] transition hover:bg-[#f3c800]">
+resources/js\Layouts\GuestPageLayout.vue:132:                            <span v-if="cartCount > 0" class="absolute -right-4 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[#ffd400] px-1 text-xs font-black">{{ cartCount }}</span>
+resources/js\Layouts\GuestPageLayout.vue:149:                        <Link v-for="item in headerLinks" :key="item.label" :href="item.href" class="relative flex h-full items-center text-sm font-bold text-[#303640] transition hover:text-[#e4a900]" :class="{ 'text-[#f1b900] after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:rounded-full after:bg-[#ffd400]': currentPath === item.href }">
+resources/js\Layouts\GuestPageLayout.vue:161:                        <button class="grid w-12 place-items-center bg-[#ffd400]"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/></svg></button>
+resources/js\Layouts\GuestPageLayout.vue:226:                        <button class="bg-[#ffd400] px-5 text-sm font-black">{{ labels.subscribe }}</button>
+resources/js\app.js:68:        color: '#ffd400',
+resources/js\Pages\Admin\Setting\Index.vue:25:        { key: 'site.primary_color', value: '#ffd400', type: 'color' },
+resources/js\Pages\Admin\Setting\Index.vue:159:    { hex: '#ffd400', label: 'VÃ ng cÃ´ng nghiá»‡p (Máº·c Ä‘á»‹nh)' },
+resources/js\Components\Home\Sections\BenefitStripSection.vue:10:                <span class="grid h-10 w-10 place-items-center rounded-full bg-[#ffd400] font-black text-slate-900">{{ iconSymbols[item.icon] || item.icon || 'âœ“' }}</span>
+resources/js\Components\Home\Sections\EnergyBannerSection.vue:9:                <p v-if="section.heading.eyebrow" class="font-black uppercase tracking-widest text-[#ffd400]">{{ section.heading.eyebrow }}</p>
+resources/js\Components\Home\Sections\EnergyBannerSection.vue:13:                    <div v-for="(stat, index) in section.config.stats" :key="index"><strong class="block text-2xl text-[#ffd400]">{{ stat.value }}</strong><span class="text-sm text-slate-300">{{ stat.label }}</span></div>
+resources/js\Components\Home\Sections\HeroSection.vue:19:                    <Link v-if="section.config?.primary_cta?.label" :href="section.config.primary_cta.url || '#'" class="rounded-lg bg-[#ffd400] px-6 py-3 font-black text-slate-900">{{ section.config.primary_cta.label }}</Link>
+resources/js\Components\Home\Sections\TestimonialsSection.vue:14:                        <span v-else class="grid h-11 w-11 place-items-center rounded-full bg-[#ffd400] font-black">{{ item.metadata?.avatar_text || item.title?.charAt(0) }}</span>
+
+$ rg -n "site\.(name|tagline|logo|favicon|phone|hotline|email|address|working_hours|copyright|facebook|zalo|youtube)" app/Services/Storefront resources/js/Layouts resources/views
+resources/js/Layouts\GuestPageLayout.vue:90:                        <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name" class="h-[48px] w-auto max-w-[160px] object-contain" />
+resources/js/Layouts\GuestPageLayout.vue:92:                            <div class="truncate text-[25px] font-black uppercase leading-none tracking-tight text-[#747b86]">{{ site.name }}</div>
+resources/js/Layouts\GuestPageLayout.vue:93:                            <div v-if="site.tagline" class="mt-1 max-w-[250px] text-[10px] font-extrabold uppercase leading-tight tracking-[.12em] text-[#6f7680]">{{ site.tagline }}</div>
+resources/js/Layouts\GuestPageLayout.vue:183:                        <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name" class="h-12 w-auto max-w-[160px] object-contain" />
+resources/js/Layouts\GuestPageLayout.vue:184:                        <div class="text-[24px] font-black uppercase text-[#747b86]">{{ site.name }}</div>
+resources/js/Layouts\GuestPageLayout.vue:192:                        <p v-if="site.email">Email: {{ site.email }}</p>
+resources/js/Layouts\GuestPageLayout.vue:193:                        <p v-if="site.address">{{ site.address }}</p>
+resources/js/Layouts\GuestPageLayout.vue:194:                        <p v-if="site.working_hours">{{ site.working_hours }}</p>
+resources/js/Layouts\GuestPageLayout.vue:200:                        <p v-if="site.address">{{ site.address }}</p>
+resources/js/Layouts\GuestPageLayout.vue:201:                        <p v-if="site.working_hours">{{ site.working_hours }}</p>
+resources/js/Layouts\GuestPageLayout.vue:202:                        <p v-if="!site.address && !site.working_hours">ThÃ´ng tin showroom Ä‘ang Ä‘Æ°á»£c cáº­p nháº­t.</p>
+app/Services/Storefront\SiteConfigurationService.php:19:        'site.name',
+app/Services/Storefront\SiteConfigurationService.php:20:        'site.tagline',
+app/Services/Storefront\SiteConfigurationService.php:22:        'site.logo',
+app/Services/Storefront\SiteConfigurationService.php:23:        'site.favicon',
+app/Services/Storefront\SiteConfigurationService.php:24:        'site.phone',
+app/Services/Storefront\SiteConfigurationService.php:25:        'site.hotline',
+app/Services/Storefront\SiteConfigurationService.php:26:        'site.email',
+app/Services/Storefront\SiteConfigurationService.php:27:        'site.address',
+app/Services/Storefront\SiteConfigurationService.php:28:        'site.working_hours',
+app/Services/Storefront\SiteConfigurationService.php:29:        'site.facebook',
+app/Services/Storefront\SiteConfigurationService.php:30:        'site.zalo',
+app/Services/Storefront\SiteConfigurationService.php:31:        'site.youtube',
+app/Services/Storefront\SiteConfigurationService.php:33:        'site.copyright',
+app/Services/Storefront\SiteConfigurationService.php:67:        $name = $value('site.name', config('app.name', 'PhÃº Äá»©c'));
+app/Services/Storefront\SiteConfigurationService.php:71:            'tagline' => $value('site.tagline'),
+app/Services/Storefront\SiteConfigurationService.php:73:            'logo_url' => $this->mediaUrl->resolve($value('site.logo')),
+app/Services/Storefront\SiteConfigurationService.php:74:            'favicon_url' => $this->mediaUrl->resolve($value('site.favicon')),
+app/Services/Storefront\SiteConfigurationService.php:75:            'phone' => $value('site.phone'),
+app/Services/Storefront\SiteConfigurationService.php:76:            'hotline' => $value('site.hotline'),
+app/Services/Storefront\SiteConfigurationService.php:77:            'email' => $value('site.email'),
+app/Services/Storefront\SiteConfigurationService.php:78:            'address' => $value('site.address'),
+app/Services/Storefront\SiteConfigurationService.php:79:            'working_hours' => $value('site.working_hours'),
+app/Services/Storefront\SiteConfigurationService.php:80:            'copyright' => $value('site.copyright', 'Â© '.date('Y').' '.$name.'. All rights reserved.'),
+app/Services/Storefront\SiteConfigurationService.php:82:                'facebook' => $value('site.facebook'),
+app/Services/Storefront\SiteConfigurationService.php:83:                'zalo' => $value('site.zalo'),
+app/Services/Storefront\SiteConfigurationService.php:84:                'youtube' => $value('site.youtube'),

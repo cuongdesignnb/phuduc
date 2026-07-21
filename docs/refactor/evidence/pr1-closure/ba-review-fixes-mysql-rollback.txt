@@ -1,0 +1,14 @@
+BA REVIEW FIXES - MYSQL ROLLBACK
+
+Verification database: phuduc_pr1_verification
+
+Command:
+php artisan migrate:rollback --step=1 --force
+
+Result:
+MYSQL_ROLLBACK=PASS
+2026_07_16_000000_standardize_storefront_content_schema ... DONE (180.49ms)
+
+Post-rollback verification:
+- users.is_admin column absent.
+- Production-style users were inserted before remigration without an Admin flag.

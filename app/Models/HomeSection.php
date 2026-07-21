@@ -8,9 +8,11 @@ class HomeSection extends Model
 {
     protected $fillable = [
         'key',
+        'type',
         'title',
         'subtitle',
         'description',
+        'variant',
         'is_enabled',
         'sort_order',
         'settings_json',
@@ -26,7 +28,7 @@ class HomeSection extends Model
 
     public function items()
     {
-        return $this->hasMany(HomeSectionItem::class, 'section_key', 'key')
+        return $this->hasMany(HomeSectionItem::class, 'home_section_id')
             ->orderBy('sort_order');
     }
 

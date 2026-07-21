@@ -4,135 +4,109 @@ namespace Database\Seeders;
 
 use App\Models\HomeSection;
 use App\Models\HomeSectionItem;
-use App\Models\Setting;
+use App\Support\Homepage\HomeSectionRegistry;
 use Illuminate\Database\Seeder;
 
 class HomeContentSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->seedSettings();
-        $this->seedSections();
-    }
-
-    private function seedSettings(): void
-    {
-        $settings = [
-            ['key' => 'home.hero_title', 'value' => "GIẢI PHÁP XE ĐIỆN &\nTHIẾT BỊ ĐIỆN CÔNG NGHIỆP", 'type' => 'textarea'],
-            ['key' => 'home.hero_subtitle', 'value' => 'Hiệu suất mạnh mẽ - Vận hành bền bỉ - Tiết kiệm năng lượng - Thân thiện môi trường', 'type' => 'textarea'],
-            ['key' => 'home.hero_primary_label', 'value' => 'Xem sản phẩm', 'type' => 'text'],
-            ['key' => 'home.hero_primary_url', 'value' => '/san-pham', 'type' => 'text'],
-            ['key' => 'home.hero_secondary_label', 'value' => 'Tư vấn ngay', 'type' => 'text'],
-            ['key' => 'home.featured_products_title', 'value' => 'Sản phẩm nổi bật', 'type' => 'text'],
-            ['key' => 'home.featured_products_limit', 'value' => '4', 'type' => 'text'],
-            ['key' => 'home.latest_posts_title', 'value' => 'Tin tức nổi bật', 'type' => 'text'],
-            ['key' => 'home.latest_posts_limit', 'value' => '3', 'type' => 'text'],
-            ['key' => 'home.energy_eyebrow', 'value' => 'Năng lượng xanh', 'type' => 'text'],
-            ['key' => 'home.energy_title', 'value' => 'Cho tương lai bền vững', 'type' => 'text'],
-            ['key' => 'home.energy_description', 'value' => 'Sản phẩm xe điện & thiết bị điện công nghiệp của PHÚ ĐỨC BIKE giúp doanh nghiệp tối ưu chi phí vận hành, giảm phát thải và nâng cao hiệu suất sản xuất.', 'type' => 'textarea'],
-            ['key' => 'home.energy_stat_1_label', 'value' => 'Tiết kiệm năng lượng', 'type' => 'text'],
-            ['key' => 'home.energy_stat_1_value', 'value' => '30-50%', 'type' => 'text'],
-            ['key' => 'home.energy_stat_2_label', 'value' => 'Giảm phát thải CO₂', 'type' => 'text'],
-            ['key' => 'home.energy_stat_2_value', 'value' => '> 60%', 'type' => 'text'],
-        ];
-
-        foreach ($settings as $setting) {
-            Setting::updateOrCreate(
-                ['key' => $setting['key']],
-                ['value' => $setting['value'], 'type' => $setting['type']],
-            );
-        }
-    }
-
-    private function seedSections(): void
-    {
-        $sections = [
-            'category_cards' => [
-                'title' => 'Danh mục nổi bật',
+        $defaults = [
+            'hero' => [
+                'title' => 'GIẢI PHÁP XE ĐIỆN & THIẾT BỊ ĐIỆN CÔNG NGHIỆP',
+                'subtitle' => 'Hiệu suất mạnh mẽ - Vận hành bền bỉ - Tiết kiệm năng lượng',
                 'sort_order' => 10,
-                'items' => [
-                    ['title' => 'Xe điện', 'subtitle' => 'Xem ngay', 'icon' => 'cart', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'cart']],
-                    ['title' => 'Cầu điện', 'subtitle' => 'Xem ngay', 'icon' => 'crane', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'crane']],
-                    ['title' => 'Xe nâng điện', 'subtitle' => 'Xem ngay', 'icon' => 'forklift', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'forklift']],
+                'settings_json' => [
+                    'image' => null,
+                    'primary_cta' => ['label' => 'Xem sản phẩm', 'url' => '/san-pham'],
+                    'secondary_cta' => ['label' => 'Tư vấn ngay', 'action' => 'phone'],
                 ],
             ],
-            'benefits' => [
-                'title' => 'Cam kết dịch vụ',
-                'sort_order' => 20,
-                'items' => [
-                    ['title' => 'Chính hãng 100%', 'icon' => 'shield'],
-                    ['title' => 'Bảo hành dài hạn', 'icon' => 'award'],
-                    ['title' => 'Giao hàng toàn quốc', 'icon' => 'truck'],
-                    ['title' => 'Hỗ trợ kỹ thuật 24/7', 'icon' => 'headset'],
-                    ['title' => 'Trả góp linh hoạt', 'icon' => 'box'],
-                ],
-            ],
-            'industry_solutions' => [
-                'title' => 'Giải pháp theo ngành',
-                'sort_order' => 30,
-                'items' => [
-                    ['title' => 'Kho vận - Logistics', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'warehouse']],
-                    ['title' => 'Nhà máy - Sản xuất', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'factory']],
-                    ['title' => 'Công trường xây dựng', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'site']],
-                    ['title' => 'Nông nghiệp - Trang trại', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'farm']],
-                    ['title' => 'Nội bộ - Khu công nghiệp', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'campus']],
-                ],
-            ],
-            'testimonials' => [
-                'title' => 'Khách hàng nói về chúng tôi',
+            'category_cards' => ['title' => 'Danh mục nổi bật', 'sort_order' => 20],
+            'benefit_strip' => ['title' => 'Cam kết dịch vụ', 'sort_order' => 30],
+            'featured_products' => [
+                'title' => 'Sản phẩm nổi bật',
                 'sort_order' => 40,
-                'items' => [
-                    [
-                        'title' => 'Anh Nguyễn Văn Hùng',
-                        'subtitle' => 'Quản lý vận hành - Công ty TNHH Megatech',
-                        'description' => 'Sản phẩm chất lượng, vận hành ổn định, tiết kiệm điện. Dịch vụ hậu mãi và hỗ trợ kỹ thuật rất nhanh chóng và chuyên nghiệp.',
-                        'metadata_json' => ['avatar_text' => 'A'],
-                    ],
-                ],
+                'settings_json' => ['source' => 'manual', 'limit' => 4, 'product_ids' => []],
             ],
-            'partners' => [
-                'title' => 'Đối tác tiêu biểu',
+            'energy_banner' => [
+                'title' => 'Cho tương lai bền vững',
+                'description' => 'Giải pháp xe điện giúp tối ưu chi phí vận hành và giảm phát thải.',
                 'sort_order' => 50,
-                'items' => [
-                    ['title' => 'VIETBUILD'],
-                    ['title' => 'MEGATECH'],
-                    ['title' => 'THÀNH PHÁT GROUP'],
-                    ['title' => 'NAM LONG INDUSTRIAL PARK'],
-                    ['title' => 'GREENFEED'],
-                    ['title' => 'AN PHÁT HOLDINGS'],
-                ],
+                'settings_json' => ['eyebrow' => 'Năng lượng xanh', 'image' => null, 'stats' => []],
             ],
-            'consultation_steps' => [
-                'title' => 'Tư vấn giải pháp đúng nhu cầu',
-                'sort_order' => 60,
-                'items' => [
-                    ['title' => '01', 'description' => 'Khảo sát tải trọng, tuyến vận hành và tần suất sử dụng.', 'metadata_json' => ['tone' => 'yellow']],
-                    ['title' => '02', 'description' => 'Đề xuất xe, pin, phụ kiện và phương án bảo trì.', 'metadata_json' => ['tone' => 'blue']],
-                    ['title' => '03', 'description' => 'Bàn giao, đào tạo vận hành và hỗ trợ kỹ thuật 24/7.', 'metadata_json' => ['tone' => 'green']],
-                ],
+            'industry_solutions' => ['title' => 'Giải pháp theo ngành', 'sort_order' => 60],
+            'testimonials' => ['title' => 'Khách hàng nói về chúng tôi', 'sort_order' => 70],
+            'partners' => ['title' => 'Đối tác tiêu biểu', 'sort_order' => 80],
+            'latest_posts' => [
+                'title' => 'Tin tức mới nhất',
+                'sort_order' => 90,
+                'settings_json' => ['source' => 'latest', 'limit' => 3, 'post_ids' => []],
             ],
+            'consultation_steps' => ['title' => 'Tư vấn giải pháp đúng nhu cầu', 'sort_order' => 100],
         ];
 
-        foreach ($sections as $key => $sectionData) {
-            HomeSection::updateOrCreate(
+        $newSectionKeys = [];
+
+        foreach ($defaults as $key => $values) {
+            $definition = HomeSectionRegistry::get($key);
+            $section = HomeSection::firstOrCreate(
                 ['key' => $key],
                 [
-                    'title' => $sectionData['title'],
-                    'subtitle' => $sectionData['subtitle'] ?? null,
-                    'description' => $sectionData['description'] ?? null,
+                    'type' => $definition['type'],
+                    'title' => $values['title'],
+                    'subtitle' => $values['subtitle'] ?? null,
+                    'description' => $values['description'] ?? null,
+                    'variant' => $definition['allowed_variants'][0],
                     'is_enabled' => true,
-                    'sort_order' => $sectionData['sort_order'],
-                    'settings_json' => $sectionData['settings_json'] ?? null,
+                    'sort_order' => $values['sort_order'],
+                    'settings_json' => $values['settings_json'] ?? $definition['defaults'],
                 ],
             );
 
-            foreach ($sectionData['items'] as $index => $item) {
-                HomeSectionItem::updateOrCreate(
+            if ($section->wasRecentlyCreated) {
+                $newSectionKeys[] = $key;
+            }
+        }
+
+        $this->seedInitialItems($newSectionKeys);
+    }
+
+    /**
+     * @param  list<string>  $newSectionKeys
+     */
+    private function seedInitialItems(array $newSectionKeys): void
+    {
+        $items = [
+            'category_cards' => [
+                ['title' => 'Xe điện', 'subtitle' => 'Xem ngay', 'icon' => 'cart', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'cart']],
+                ['title' => 'Cầu điện', 'subtitle' => 'Xem ngay', 'icon' => 'crane', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'crane']],
+                ['title' => 'Xe nâng điện', 'subtitle' => 'Xem ngay', 'icon' => 'forklift', 'url' => '/san-pham', 'metadata_json' => ['tone' => 'forklift']],
+            ],
+            'benefit_strip' => [
+                ['title' => 'Chính hãng 100%', 'icon' => 'shield'],
+                ['title' => 'Bảo hành dài hạn', 'icon' => 'award'],
+                ['title' => 'Giao hàng toàn quốc', 'icon' => 'truck'],
+                ['title' => 'Hỗ trợ kỹ thuật 24/7', 'icon' => 'headset'],
+            ],
+            'consultation_steps' => [
+                ['title' => '01', 'subtitle' => 'Khảo sát nhu cầu', 'description' => 'Khảo sát tải trọng, tuyến vận hành và tần suất sử dụng.', 'metadata_json' => ['tone' => 'yellow']],
+                ['title' => '02', 'subtitle' => 'Đề xuất giải pháp', 'description' => 'Đề xuất xe, pin, phụ kiện và phương án bảo trì.', 'metadata_json' => ['tone' => 'blue']],
+                ['title' => '03', 'subtitle' => 'Bàn giao', 'description' => 'Đào tạo vận hành và hỗ trợ kỹ thuật.', 'metadata_json' => ['tone' => 'green']],
+            ],
+        ];
+
+        foreach ($items as $sectionKey => $sectionItems) {
+            if (! in_array($sectionKey, $newSectionKeys, true)) {
+                continue;
+            }
+
+            $section = HomeSection::query()->where('key', $sectionKey)->firstOrFail();
+            foreach ($sectionItems as $index => $item) {
+                HomeSectionItem::firstOrCreate(
+                    ['home_section_id' => $section->id, 'title' => $item['title']],
                     [
-                        'section_key' => $key,
-                        'title' => $item['title'],
-                    ],
-                    [
+                        'section_key' => $sectionKey,
                         'subtitle' => $item['subtitle'] ?? null,
                         'description' => $item['description'] ?? null,
                         'image' => $item['image'] ?? null,

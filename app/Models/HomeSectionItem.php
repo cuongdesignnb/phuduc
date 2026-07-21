@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class HomeSectionItem extends Model
 {
     protected $fillable = [
+        'home_section_id',
         'section_key',
         'title',
         'subtitle',
@@ -29,6 +30,6 @@ class HomeSectionItem extends Model
 
     public function section()
     {
-        return $this->belongsTo(HomeSection::class, 'section_key', 'key');
+        return $this->belongsTo(HomeSection::class, 'home_section_id');
     }
 }

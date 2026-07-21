@@ -1,0 +1,16 @@
+BA REVIEW FIXES - STRICT SECTION ITEM SCHEMA
+
+Defense in depth:
+- Frontend prunes unsupported business and metadata fields before POST.
+- SaveHomeContentRequest rejects unknown and section-incompatible keys with HTTP 422.
+- HomeContentController persists only registry-whitelisted business and metadata fields.
+
+Regression results:
+- benefit_strip rejects description: PASS (422)
+- benefit_strip rejects image: PASS (422)
+- partners rejects avatar_text: PASS (422)
+- testimonials accepts avatar_text: PASS
+- industry_solutions accepts tone: PASS
+- unknown item key is rejected: PASS (422)
+- controller does not persist disallowed fields: PASS
+- database remains unchanged after rejected payload: PASS

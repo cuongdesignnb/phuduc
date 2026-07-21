@@ -8,23 +8,8 @@ import { useToast } from '@/Composables/useToast';
 
 const props = defineProps({ settings: Object });
 
-const fixText = (value) => {
-    if (typeof value !== 'string') return value;
-    const codes = Array.from(value).map((char) => char.charCodeAt(0));
-    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
-        || codes.some((code) => code >= 0x80 && code <= 0x9f)
-        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
-    if (!isBroken) return value;
-    try {
-        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
-        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-    } catch {
-        return value;
-    }
-};
-
 const allSettings = ref(Object.entries(props.settings || {}).flatMap(([group, items]) =>
-    items.map(s => ({ ...s, value: s.value ? fixText(s.value) : '' }))
+    items.filter(s => !s.key.startsWith('home.')).map(s => ({ ...s, value: s.value || '' }))
 ));
 
 // Default settings structure if empty
@@ -40,39 +25,12 @@ if (!allSettings.value.length) {
         { key: 'site.primary_color', value: '#ffd400', type: 'color' },
         { key: 'font.heading', value: 'Rajdhani', type: 'font' },
         { key: 'font.body', value: 'Inter', type: 'font' },
-        { key: 'home.hero_title', value: '', type: 'text' },
-        { key: 'home.hero_subtitle', value: '', type: 'text' },
-        { key: 'home.hero_image', value: '', type: 'image' },
-        { key: 'home.about_text', value: '', type: 'textarea' },
         { key: 'about.title', value: '', type: 'text' },
         { key: 'about.content', value: '', type: 'textarea' },
         { key: 'about.mission', value: '', type: 'textarea' },
         { key: 'about.vision', value: '', type: 'textarea' },
     ];
 }
-
-const requiredSettings = [
-    { key: 'home.hero_primary_label', value: 'Xem s\u1ea3n ph\u1ea9m', type: 'text' },
-    { key: 'home.hero_primary_url', value: '/san-pham', type: 'text' },
-    { key: 'home.hero_secondary_label', value: 'T\u01b0 v\u1ea5n ngay', type: 'text' },
-    { key: 'home.featured_products_title', value: 'S\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt', type: 'text' },
-    { key: 'home.featured_products_limit', value: '4', type: 'text' },
-    { key: 'home.latest_posts_title', value: 'Tin t\u1ee9c n\u1ed5i b\u1eadt', type: 'text' },
-    { key: 'home.latest_posts_limit', value: '3', type: 'text' },
-    { key: 'home.energy_eyebrow', value: 'N\u0103ng l\u01b0\u1ee3ng xanh', type: 'text' },
-    { key: 'home.energy_title', value: 'Cho t\u01b0\u01a1ng lai b\u1ec1n v\u1eefng', type: 'text' },
-    { key: 'home.energy_description', value: 'S\u1ea3n ph\u1ea9m xe \u0111i\u1ec7n & thi\u1ebft b\u1ecb \u0111i\u1ec7n c\u00f4ng nghi\u1ec7p gi\u00fap doanh nghi\u1ec7p t\u1ed1i \u01b0u chi ph\u00ed v\u1eadn h\u00e0nh.', type: 'textarea' },
-    { key: 'home.energy_stat_1_label', value: 'Ti\u1ebft ki\u1ec7m n\u0103ng l\u01b0\u1ee3ng', type: 'text' },
-    { key: 'home.energy_stat_1_value', value: '30-50%', type: 'text' },
-    { key: 'home.energy_stat_2_label', value: 'Gi\u1ea3m ph\u00e1t th\u1ea3i CO\u2082', type: 'text' },
-    { key: 'home.energy_stat_2_value', value: '> 60%', type: 'text' },
-];
-
-requiredSettings.forEach((setting) => {
-    if (!allSettings.value.some((item) => item.key === setting.key)) {
-        allSettings.value.push(setting);
-    }
-});
 
 // Ensure font settings exist
 const hasFontHeading = allSettings.value.some(s => s.key === 'font.heading');
@@ -82,20 +40,6 @@ if (!hasFontBody) allSettings.value.push({ key: 'font.body', value: 'Inter', typ
 
 // Key → Vietnamese label mapping
 const keyLabels = {
-    'home.hero_primary_label': 'N\u00fat ch\u00ednh Hero',
-    'home.hero_primary_url': 'Li\u00ean k\u1ebft n\u00fat ch\u00ednh',
-    'home.hero_secondary_label': 'N\u00fat t\u01b0 v\u1ea5n Hero',
-    'home.featured_products_title': 'Ti\u00eau \u0111\u1ec1 s\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt',
-    'home.featured_products_limit': 'S\u1ed1 s\u1ea3n ph\u1ea9m hi\u1ec3n th\u1ecb',
-    'home.latest_posts_title': 'Ti\u00eau \u0111\u1ec1 tin t\u1ee9c n\u1ed5i b\u1eadt',
-    'home.latest_posts_limit': 'S\u1ed1 tin t\u1ee9c hi\u1ec3n th\u1ecb',
-    'home.energy_eyebrow': 'Nhãn banner n\u0103ng l\u01b0\u1ee3ng',
-    'home.energy_title': 'Ti\u00eau \u0111\u1ec1 banner n\u0103ng l\u01b0\u1ee3ng',
-    'home.energy_description': 'M\u00f4 t\u1ea3 banner n\u0103ng l\u01b0\u1ee3ng',
-    'home.energy_stat_1_label': 'Nhãn th\u1ed1ng k\u00ea 1',
-    'home.energy_stat_1_value': 'Gi\u00e1 tr\u1ecb th\u1ed1ng k\u00ea 1',
-    'home.energy_stat_2_label': 'Nhãn th\u1ed1ng k\u00ea 2',
-    'home.energy_stat_2_value': 'Gi\u00e1 tr\u1ecb th\u1ed1ng k\u00ea 2',
     'site.name': 'Tên website',
     'site.tagline': 'Slogan',
     'site.description': 'Mô tả website',
@@ -114,11 +58,6 @@ const keyLabels = {
     'site.primary_color': 'Màu chủ đạo',
     'font.heading': 'Font tiêu đề (Heading)',
     'font.body': 'Font nội dung (Body)',
-    'home.hero_title': 'Tiêu đề Hero',
-    'home.hero_subtitle': 'Phụ đề Hero',
-    'home.hero_image': 'Ảnh Hero',
-    'home.about_text': 'Giới thiệu ngắn',
-    'home.about_image': 'Ảnh giới thiệu',
     'about.title': 'Tiêu đề trang',
     'about.content': 'Nội dung',
     'about.image': 'Ảnh giới thiệu',
@@ -263,7 +202,7 @@ const onMediaSelected = (media) => {
                 <!-- Top Tabs -->
                 <div class="flex items-center gap-1 mb-6 rounded-xl bg-carbon-900/60 border border-white/5 p-1">
                     <button
-                        v-for="tab in tabs"
+                        v-for="tab in tabs.filter(item => item.id !== 'home')"
                         :key="tab.id"
                         @click="activeTab = tab.id"
                         class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"

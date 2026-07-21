@@ -1,0 +1,56 @@
+VERIFICATION_DATABASE: phuduc_pr1_verification
+EXPECTED: foreign key present, unique key index present, JSON columns native, 0 orphans, 0 duplicates, legacy value preserved, Admin content preserved, admin access preserved, normal user not promoted.
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan tinker --execute="dump(['foreign_key'=>DB::table('information_schema.table_constraints')->where('constraint_schema','phuduc_pr1_verification')->where('table_name','home_section_items')->where('constraint_type','FOREIGN KEY')->get()->pluck('CONSTRAINT_NAME')->all(),'home_section_indexes'=>DB::table('information_schema.statistics')->where('table_schema','phuduc_pr1_verification')->where('table_name','home_sections')->select('index_name','non_unique')->distinct()->orderBy('index_name')->get()->toArray(),'json_columns'=>DB::table('information_schema.columns')->where('table_schema','phuduc_pr1_verification')->whereIn('table_name',['home_sections','home_section_items'])->whereIn('column_name',['settings_json','metadata_json'])->select('table_name','column_name','data_type')->get()->toArray(),'orphan_items'=>DB::table('home_section_items as i')->leftJoin('home_sections as s','s.id','=','i.home_section_id')->whereNull('s.id')->count(),'duplicate_section_keys'=>DB::table('home_sections')->select('key')->groupBy('key')->havingRaw('COUNT(*) > 1')->pluck('key')->all(),'section_count'=>DB::table('home_sections')->count(),'legacy_setting_after'=>DB::table('settings')->where('key','home.hero_title')->value('value'),'hero_after'=>DB::table('home_sections')->where('key','hero')->value('title'),'hero_config_after'=>DB::table('home_sections')->where('key','hero')->value('settings_json'),'legacy_item_backfilled'=>DB::table('home_section_items')->where('title','Legacy backfill item')->whereNotNull('home_section_id')->exists(),'benefit_strip_normalized'=>DB::table('home_sections')->where('key','benefit_strip')->exists(),'admin_users_after'=>DB::table('users')->where('is_admin',1)->pluck('email')->all(),'normal_users_promoted_unexpectedly'=>DB::table('users')->where('email','normal@local.test')->where('is_admin',1)->count(),'normal_users_after'=>DB::table('users')->where('is_admin',0)->pluck('email')->all(),'total_users_after_seed_rerun'=>DB::table('users')->count(),'default_is_admin'=>DB::table('information_schema.columns')->where('table_schema','phuduc_pr1_verification')->where('table_name','users')->where('column_name','is_admin')->value('column_default')]);"
+array:16 [
+  "foreign_key" => array:1 [
+    0 => "home_section_items_home_section_id_foreign"
+  ]
+  "home_section_indexes" => array:4 [
+    0 => {#6973
+      +"INDEX_NAME": "home_sections_is_enabled_index"
+      +"NON_UNIQUE": 1
+    }
+    1 => {#6976
+      +"INDEX_NAME": "home_sections_key_unique"
+      +"NON_UNIQUE": 0
+    }
+    2 => {#6970
+      +"INDEX_NAME": "home_sections_sort_order_index"
+      +"NON_UNIQUE": 1
+    }
+    3 => {#6972
+      +"INDEX_NAME": "PRIMARY"
+      +"NON_UNIQUE": 0
+    }
+  ]
+  "json_columns" => array:2 [
+    0 => {#6971
+      +"TABLE_NAME": "home_section_items"
+      +"COLUMN_NAME": "metadata_json"
+      +"DATA_TYPE": "json"
+    }
+    1 => {#6968
+      +"TABLE_NAME": "home_sections"
+      +"COLUMN_NAME": "settings_json"
+      +"DATA_TYPE": "json"
+    }
+  ]
+  "orphan_items" => 0
+  "duplicate_section_keys" => []
+  "section_count" => 10
+  "legacy_setting_after" => "Legacy Hero Value"
+  "hero_after" => "Admin preserved hero"
+  "hero_config_after" => "{"primary_cta": {"url": "/admin-choice", "label": "Admin CTA"}}"
+  "legacy_item_backfilled" => true
+  "benefit_strip_normalized" => true
+  "admin_users_after" => array:1 [
+    0 => "admin@phuducev.vn"
+  ]
+  "normal_users_promoted_unexpectedly" => 0
+  "normal_users_after" => array:1 [
+    0 => "normal@local.test"
+  ]
+  "total_users_after_seed_rerun" => 2
+  "default_is_admin" => "0"
+] // vendor/psy/psysh/src/ExecutionClosure.php(41) : eval()'d code:1

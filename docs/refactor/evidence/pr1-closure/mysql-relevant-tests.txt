@@ -1,0 +1,29 @@
+VERIFICATION_DATABASE: phuduc_pr1_verification
+PHASE: After rollback and remigrate
+
+$ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification -e SESSION_DRIVER=array -e CACHE_STORE=array app php artisan test tests/Feature/Storefront tests/Feature/Admin tests/Feature/Seeders
+
+   PASS  Tests\Feature\Storefront\HomepageContractTest
+  âœ“ homepage returns canonical ordered contract and excludes disabled câ€¦ 6.10s
+  âœ“ manual products preserve ids and real presentation data              0.38s
+  âœ“ latest products are active newest first and honor limit              0.49s
+  âœ“ manual product source stays empty without auto fill                  0.45s
+  âœ“ homepage batches site settings into one query                        0.18s
+
+   PASS  Tests\Feature\Admin\AdminAuthorizationTest
+  âœ“ guest is redirected to login                                         0.26s
+  âœ“ normal user is forbidden                                             0.29s
+  âœ“ admin can open home content                                          0.34s
+
+   PASS  Tests\Feature\Admin\HomeContentSaveTest
+  âœ“ admin can save type specific config and item order                   0.39s
+  âœ“ cross section item update is rejected and transaction rolls back     0.27s
+  âœ“ invalid registry type product id and limit are rejected              0.37s
+  âœ“ legacy home settings cannot be saved through settings                0.43s
+
+   PASS  Tests\Feature\Seeders\ProductionDefaultsSeederTest
+  âœ“ production defaults do not create admin accounts                     0.41s
+  âœ“ production defaults are idempotent and do not overwrite admin conteâ€¦ 0.40s
+
+  Tests:    14 passed (114 assertions)
+  Duration: 10.90s
