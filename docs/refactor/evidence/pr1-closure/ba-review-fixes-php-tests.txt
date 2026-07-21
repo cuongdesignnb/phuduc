@@ -1,0 +1,19 @@
+BA REVIEW FIXES - FULL PHP SUITE
+
+Command:
+php artisan test
+
+Result:
+PASS
+Tests: 55 passed
+Assertions: 242
+Duration: 2.42s
+
+Focused regression run before the full suite:
+Tests: 18 passed
+Assertions: 79
+
+Coverage added:
+- Explicit Admin grant command behavior and authorization.
+- Migration hardcoded-email and immutable-snapshot checks.
+- Strict per-section item-field rejection and persistence whitelisting.

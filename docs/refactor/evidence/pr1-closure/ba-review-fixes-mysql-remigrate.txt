@@ -1,0 +1,25 @@
+BA REVIEW FIXES - MYSQL REMIGRATION AND INTEGRITY
+
+Verification database: phuduc_pr1_verification
+
+Command:
+php artisan migrate --force
+
+Result:
+MYSQL_REMIGRATE=PASS
+2026_07_16_000000_standardize_storefront_content_schema ... DONE (399.48ms)
+
+Integrity:
+- foreign key: home_section_items_home_section_id_foreign
+- home_sections.key unique index: NON_UNIQUE=0
+- settings_json: native JSON
+- metadata_json: native JSON
+- orphans: 0
+- duplicate section keys: 0
+- canonical sections: 10
+- production-safe seed user count: 0
+- users.is_admin default: 0
+- legacy home.hero_title value preserved during the rollback/remigrate simulation
+
+Relevant MySQL regression suite:
+PASS - 29 tests, 177 assertions

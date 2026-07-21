@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\Homepage\HomeSectionRegistry;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -8,13 +7,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Frozen snapshot used by this historical migration. Keep this independent
+     * from the mutable application registry so future UI changes cannot alter
+     * the result of a fresh deployment.
+     */
+    private const SECTION_DEFINITIONS = [
+        'hero' => ['type' => 'hero', 'variant' => 'industrial_marketplace', 'label' => 'Hero'],
+        'category_cards' => ['type' => 'item_collection', 'variant' => 'cards', 'label' => 'Danh mục'],
+        'benefit_strip' => ['type' => 'item_collection', 'variant' => 'icon_strip', 'label' => 'Cam kết dịch vụ'],
+        'featured_products' => ['type' => 'product_collection', 'variant' => 'marketplace_grid', 'label' => 'Sản phẩm nổi bật'],
+        'energy_banner' => ['type' => 'content_banner', 'variant' => 'green_energy', 'label' => 'Banner năng lượng'],
+        'industry_solutions' => ['type' => 'item_collection', 'variant' => 'industry_grid', 'label' => 'Giải pháp theo ngành'],
+        'testimonials' => ['type' => 'item_collection', 'variant' => 'quote_cards', 'label' => 'Khách hàng nói gì'],
+        'partners' => ['type' => 'item_collection', 'variant' => 'logo_grid', 'label' => 'Đối tác'],
+        'latest_posts' => ['type' => 'post_collection', 'variant' => 'editorial_grid', 'label' => 'Tin tức mới nhất'],
+        'consultation_steps' => ['type' => 'item_collection', 'variant' => 'numbered_steps', 'label' => 'Các bước tư vấn'],
+    ];
+
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('is_admin')->default(false)->index()->after('password');
         });
-
-        DB::table('users')->where('email', 'admin@phuducev.vn')->update(['is_admin' => true]);
 
         Schema::table('home_sections', function (Blueprint $table) {
             $table->string('type')->nullable()->after('key');
@@ -78,12 +93,12 @@ return new class extends Migration
 
     private function backfillSectionSchema(): void
     {
-        foreach (HomeSectionRegistry::definitions() as $key => $definition) {
+        foreach (self::SECTION_DEFINITIONS as $key => $definition) {
             DB::table('home_sections')
                 ->where('key', $key)
                 ->update([
                     'type' => $definition['type'],
-                    'variant' => DB::raw("COALESCE(variant, '".str_replace("'", "''", $definition['allowed_variants'][0])."')"),
+                    'variant' => DB::raw("COALESCE(variant, '".str_replace("'", "''", $definition['variant'])."')"),
                 ]);
         }
     }
@@ -144,7 +159,7 @@ return new class extends Migration
         $nextOrder = ((int) DB::table('home_sections')->max('sort_order')) + 10;
 
         foreach ($sections as $key => $legacy) {
-            $definition = HomeSectionRegistry::get($key);
+            $definition = self::SECTION_DEFINITIONS[$key];
             $section = DB::table('home_sections')->where('key', $key)->first();
 
             if (! $section) {
@@ -154,7 +169,7 @@ return new class extends Migration
                     'title' => $legacy['title'] ?: $definition['label'],
                     'subtitle' => $legacy['subtitle'] ?? null,
                     'description' => $legacy['description'] ?? null,
-                    'variant' => $definition['allowed_variants'][0],
+                    'variant' => $definition['variant'],
                     'is_enabled' => true,
                     'sort_order' => $nextOrder,
                     'settings_json' => json_encode($legacy['config'], JSON_UNESCAPED_UNICODE),

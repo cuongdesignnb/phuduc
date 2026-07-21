@@ -10,12 +10,17 @@ use App\Models\Post;
 use App\Models\Product;
 use App\Services\Storefront\MediaUrlService;
 use App\Support\Homepage\HomeSectionRegistry;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class HomeContentController extends Controller
 {
+    private const BUSINESS_ITEM_FIELDS = ['title', 'subtitle', 'description', 'image', 'icon', 'url'];
+
+    private const METADATA_ITEM_FIELDS = ['tone', 'avatar_text'];
+
     public function index(MediaUrlService $mediaUrl)
     {
         $stored = HomeSection::query()->with('items')->orderBy('sort_order')->orderBy('id')->get()->keyBy('key');
@@ -102,7 +107,7 @@ class HomeContentController extends Controller
                 ])->save();
 
                 if ($definition['supports_items']) {
-                    $this->syncItems($section, $sectionData['items']);
+                    $this->syncItems($section, $sectionData['items'], $definition['item_fields']);
                 }
             }
         });
@@ -110,7 +115,7 @@ class HomeContentController extends Controller
         return back()->with('success', 'Nội dung trang chủ đã được lưu.');
     }
 
-    private function syncItems(HomeSection $section, array $items): void
+    private function syncItems(HomeSection $section, array $items, array $allowedFields): void
     {
         $submittedIds = collect($items)->pluck('id')->filter()->map(fn ($id) => (int) $id)->values();
 
@@ -125,6 +130,8 @@ class HomeContentController extends Controller
             }
         }
 
+        $allowedBusinessFields = array_values(array_intersect($allowedFields, self::BUSINESS_ITEM_FIELDS));
+        $allowedMetadataFields = array_values(array_intersect($allowedFields, self::METADATA_ITEM_FIELDS));
         $keptIds = [];
         foreach ($items as $itemData) {
             $item = filled($itemData['id'] ?? null)
@@ -134,13 +141,8 @@ class HomeContentController extends Controller
             $item->fill([
                 'home_section_id' => $section->id,
                 'section_key' => $section->key,
-                'title' => $itemData['title'] ?? null,
-                'subtitle' => $itemData['subtitle'] ?? null,
-                'description' => $itemData['description'] ?? null,
-                'image' => $itemData['image'] ?? null,
-                'icon' => $itemData['icon'] ?? null,
-                'url' => $itemData['url'] ?? null,
-                'metadata_json' => $itemData['metadata'] ?? [],
+                ...Arr::only($itemData, $allowedBusinessFields),
+                'metadata_json' => Arr::only($itemData['metadata'] ?? [], $allowedMetadataFields),
                 'is_active' => $itemData['enabled'],
                 'sort_order' => $itemData['sort_order'],
             ])->save();

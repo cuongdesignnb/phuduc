@@ -1,0 +1,13 @@
+BA REVIEW FIXES - MYSQL FRESH MIGRATION
+
+Verification database: phuduc_pr1_verification
+Engine: MySQL 8.0 Docker
+
+Command:
+docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=mysql -e DB_HOST=db -e DB_PORT=3306 -e DB_DATABASE=phuduc_pr1_verification app php artisan migrate:fresh --force
+
+Result:
+MYSQL_MIGRATE=PASS
+2026_07_16_000000_standardize_storefront_content_schema ... DONE (393.24ms)
+
+ProductionDefaultsSeeder after fresh migrate: PASS

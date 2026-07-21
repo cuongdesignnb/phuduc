@@ -90,6 +90,32 @@ const setItemValue = (item, field, value) => {
     }
 };
 
+const metadataItemFields = new Set(['tone', 'avatar_text']);
+const businessItemFields = new Set(['title', 'subtitle', 'description', 'image', 'icon', 'url']);
+const itemPayload = (item, definition) => {
+    const payload = {
+        id: item.id ?? null,
+        enabled: Boolean(item.enabled),
+        sort_order: item.sort_order,
+        metadata: {},
+    };
+
+    (definition.item_fields || []).forEach((field) => {
+        if (metadataItemFields.has(field)) {
+            if (Object.prototype.hasOwnProperty.call(item.metadata || {}, field)) {
+                payload.metadata[field] = item.metadata[field];
+            }
+            return;
+        }
+
+        if (businessItemFields.has(field)) {
+            payload[field] = item[field] ?? null;
+        }
+    });
+
+    return payload;
+};
+
 const filteredProducts = computed(() => {
     const search = productSearch.value.trim().toLocaleLowerCase('vi');
     const selected = new Set(activeSection.value?.config?.product_ids || []);
@@ -137,7 +163,7 @@ const save = () => {
     });
     const payload = sections.value.map((section) => ({
         ...section,
-        items: section.items.map(({ _key, ...item }) => item),
+        items: section.items.map((item) => itemPayload(item, props.registry[section.key] || {})),
     }));
     saving.value = true;
     router.post(route('admin.home-content.save'), { sections: payload }, {

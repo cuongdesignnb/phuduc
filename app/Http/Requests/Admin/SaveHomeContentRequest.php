@@ -9,6 +9,12 @@ use Illuminate\Validation\Validator;
 
 class SaveHomeContentRequest extends FormRequest
 {
+    private const COMMON_ITEM_FIELDS = ['id', 'enabled', 'sort_order', 'metadata'];
+
+    private const BUSINESS_ITEM_FIELDS = ['title', 'subtitle', 'description', 'image', 'icon', 'url'];
+
+    private const METADATA_ITEM_FIELDS = ['tone', 'avatar_text'];
+
     public function authorize(): bool
     {
         return (bool) $this->user()?->is_admin;
@@ -112,8 +118,17 @@ class SaveHomeContentRequest extends FormRequest
                     $validator->errors()->add("sections.$sectionIndex.items", 'Section này không hỗ trợ item thủ công.');
                 }
 
-                $allowedMetadata = array_intersect($definition['item_fields'], ['tone', 'avatar_text']);
+                $allowedBusinessFields = array_intersect($definition['item_fields'], self::BUSINESS_ITEM_FIELDS);
+                $allowedItemKeys = array_merge(self::COMMON_ITEM_FIELDS, $allowedBusinessFields);
+                $allowedMetadata = array_intersect($definition['item_fields'], self::METADATA_ITEM_FIELDS);
                 foreach ($section['items'] ?? [] as $itemIndex => $item) {
+                    if (array_diff(array_keys($item), $allowedItemKeys) !== []) {
+                        $validator->errors()->add(
+                            "sections.$sectionIndex.items.$itemIndex",
+                            'Item contains a field that is not allowed for this section.'
+                        );
+                    }
+
                     if (array_diff(array_keys($item['metadata'] ?? []), $allowedMetadata) !== []) {
                         $validator->errors()->add("sections.$sectionIndex.items.$itemIndex.metadata", 'Metadata chứa field không được section này cho phép.');
                     }

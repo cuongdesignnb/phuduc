@@ -14,6 +14,13 @@ Chuẩn hóa data contract storefront và hợp nhất quản trị homepage th�
 - Explicit Admin authorization.
 - MySQL-compatible migration/backfill with legacy `home.*` preservation.
 
+## BA review fixes
+
+- Admin migration no longer promotes a hardcoded email.
+- Explicit `user:grant-admin` deployment command added.
+- Migration no longer imports the mutable application registry.
+- Item payload schema is enforced by frontend, request, and persistence layers.
+
 ## Data behavior
 
 ### Manual products
@@ -40,14 +47,14 @@ Chuẩn hóa data contract storefront và hợp nhất quản trị homepage th�
 - Backfills canonical sections from legacy data without deleting legacy settings.
 - Adds safe `is_admin` default, homepage indexes, native JSON columns, and item foreign key.
 - Isolated MySQL 8 verification: fresh migrate PASS, rollback PASS, remigrate PASS, integrity PASS.
-- Existing Admin content and access are preserved; normal users are not promoted; production seed reruns create no users.
+- Existing Admin content is preserved. Production access is explicitly re-granted with `user:grant-admin`; normal users are not promoted and production seed reruns create no users.
 
 ## Testing
 
-- PHP: 40 tests, 179 assertions - PASS.
+- PHP: 55 tests, 242 assertions - PASS.
 - Frontend build: 863 modules - PASS.
-- Pint changed-file gate: 32 files - PASS.
-- MySQL relevant suite after rollback/remigrate: 14 tests, 114 assertions - PASS.
+- Pint BA-review scope: 21 PHP files - PASS.
+- MySQL relevant suite after rollback/remigrate: 29 tests, 177 assertions - PASS.
 - Manual QA: storefront desktop/mobile, Admin sections/editor/manual picker/reorder, logo, favicon, restart persistence - PASS.
 - npm lint: not configured.
 

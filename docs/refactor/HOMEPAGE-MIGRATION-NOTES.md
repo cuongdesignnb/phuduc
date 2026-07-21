@@ -29,3 +29,32 @@ Rollback drops the new FK/index/columns, restores `benefit_strip` to `benefits` 
 Deploy with a database backup and normal maintenance window. Do not run any UTF-8 data repair as part of this migration. `section_key` can be removed only in a later migration after all deployed code uses `home_section_id`.
 
 `ProductionDefaultsSeeder` uses `firstOrCreate`; rerunning it does not overwrite Admin data. `DemoContentSeeder` is called only outside production.
+
+## Admin bootstrap
+
+The migration only adds `users.is_admin` with a `false` default and an index. It does not promote any account and does not contain a deployment-specific email, user ID, or username.
+
+Production deployment must grant access explicitly to a confirmed existing account:
+
+```bash
+php artisan user:grant-admin admin@example.com --no-interaction
+```
+
+The command normalizes the lookup email, fails for an unknown account, never creates a user or changes a password, and is idempotent. Do not run `DatabaseSeeder` to grant production Admin access.
+
+Production authorization preflight:
+
+1. Back up the database.
+2. Confirm the exact existing account email that must retain Admin access.
+3. Run the migration.
+4. Run `user:grant-admin` for the confirmed email.
+5. Verify login and `/admin` access; verify a normal user still receives HTTP 403.
+6. Complete deployment only after the authorization check passes.
+
+## Migration immutability
+
+The migration contains a frozen snapshot of the ten canonical section keys, types, default variants, and required fallback labels. It does not import `HomeSectionRegistry`, Eloquent models, application services, or frontend registry code. Future registry changes therefore cannot alter the result of this historical migration.
+
+## Strict section item schema
+
+Before submission, the Admin client retains only common technical item fields and fields declared by the section registry. The request rejects unknown, unsupported business, and unsupported metadata fields with HTTP 422. The controller independently persists only registry-whitelisted business and metadata fields.

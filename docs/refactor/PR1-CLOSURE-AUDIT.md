@@ -13,7 +13,7 @@ CONTROLLERS_CHANGED: Admin/HomeContentController, Admin/SettingController, Guest
 ROUTES_CHANGED: routes/web.php (admin middleware enforcement and homepage admin routes)
 ADMIN_COMPONENTS_CHANGED: HomeContent/Index.vue, Setting/Index.vue, SaveHomeContentRequest, EnsureUserIsAdmin
 STOREFRONT_COMPONENTS_CHANGED: GuestPageLayout.vue, Guest/Home.vue, HomeSectionRenderer.vue, 10 registry section components
-TESTS_ADDED: 5 files; final suite 40 tests / 179 assertions
+TESTS_ADDED: 7 files; final suite 55 tests / 242 assertions
 ```
 
 ## Scope audit
@@ -110,7 +110,7 @@ A	tests/Unit/Storefront/MediaUrlServiceTest.php
 - MySQL 8 verification used isolated database `phuduc_pr1_verification`; the primary local database was never rolled back.
 - Fresh migrate, production-safe seed, rollback latest, remigrate, and relevant MySQL tests all pass.
 - Native JSON columns, foreign key, unique/index constraints, legacy item backfill, zero orphans, zero duplicate section keys, and legacy settings preservation are verified.
-- `is_admin` defaults to `0`; the seeded existing admin remained admin, the normal user remained non-admin, and production seed reruns created no account.
+- `is_admin` defaults to `0`; the migration promotes no account. The explicit `user:grant-admin` deployment action was verified with a non-hardcoded production-style email, while the normal user remained non-admin and production seed reruns created no account.
 
 ## Legacy `home.*` classification
 
@@ -165,18 +165,27 @@ FAVICON_SURVIVED_CONTAINER_RESTART: YES
 
 - All 51 `/admin` routes are protected by `auth` and `EnsureUserIsAdmin`.
 - Guest redirect, normal-user 403, and admin success are automated.
-- Runtime authorization does not grant admin by hardcoded email.
+- Neither migration nor runtime authorization grants Admin access by hardcoded identity.
+- Production access is bootstrapped explicitly with the idempotent `user:grant-admin {email}` command; unknown users fail without being created.
+
+## BA review fixes
+
+- P0-01: removed hardcoded Admin promotion from the migration and added an explicit, logged, idempotent deployment command.
+- P0-02: replaced the mutable application-registry dependency with a frozen ten-section migration snapshot.
+- P1-01: added frontend payload pruning, request-level strict rejection, and controller-level persistence whitelisting.
+- Malicious item payloads return HTTP 422 and leave the database unchanged.
+- Docker was used only for isolated MySQL QA and was stopped after verification.
 
 ## Verification summary
 
 ```text
-PHP_TESTS: PASS - 40 tests, 179 assertions
+PHP_TESTS: PASS - 55 tests, 242 assertions
 BUILD: PASS - 863 modules
-PINT_CHANGED_FILES: PASS - 32 PHP files
+PINT_BA_REVIEW_SCOPE: PASS - 21 PHP files
 MYSQL_MIGRATE: PASS
 MYSQL_ROLLBACK: PASS
 MYSQL_REMIGRATE: PASS
-MYSQL_RELEVANT_TESTS: PASS - 14 tests, 114 assertions
+MYSQL_RELEVANT_TESTS: PASS - 29 tests, 177 assertions
 DATA_INTEGRITY: PASS
 MANUAL_BROWSER_QA: PASS
 NPM_LINT: NOT CONFIGURED

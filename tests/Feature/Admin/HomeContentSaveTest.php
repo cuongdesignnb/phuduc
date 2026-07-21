@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Http\Controllers\Admin\HomeContentController;
 use App\Models\HomeSection;
 use App\Models\HomeSectionItem;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use ReflectionMethod;
 use Tests\TestCase;
 
 class HomeContentSaveTest extends TestCase
@@ -80,6 +82,104 @@ class HomeContentSaveTest extends TestCase
             ]);
     }
 
+    public function test_benefit_strip_rejects_description(): void
+    {
+        $this->assertBenefitFieldIsRejected('description', 'Unexpected description');
+    }
+
+    public function test_benefit_strip_rejects_image(): void
+    {
+        $this->assertBenefitFieldIsRejected('image', 'unexpected.webp');
+    }
+
+    public function test_partner_rejects_avatar_text(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $payload = $this->sectionPayload('partners', 'item_collection', 'logo_grid', 10, [], [
+            $this->strictItemPayload(
+                ['title' => 'Partner', 'image' => 'partner.webp', 'url' => '/partner'],
+                ['avatar_text' => 'PX']
+            ),
+        ]);
+
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('sections.0.items.0.metadata');
+
+        $this->assertDatabaseCount('home_sections', 0);
+        $this->assertDatabaseCount('home_section_items', 0);
+    }
+
+    public function test_testimonial_accepts_avatar_text(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $payload = $this->sectionPayload('testimonials', 'item_collection', 'quote_cards', 10, [], [
+            $this->strictItemPayload(
+                ['title' => 'Customer', 'subtitle' => 'Director', 'description' => 'Trusted', 'image' => null],
+                ['avatar_text' => 'CD']
+            ),
+        ]);
+
+        $this->actingAs($admin)->post(route('admin.home-content.save'), ['sections' => [$payload]])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertSame('CD', HomeSectionItem::query()->firstOrFail()->metadata_json['avatar_text']);
+    }
+
+    public function test_industry_solution_accepts_tone(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $payload = $this->sectionPayload('industry_solutions', 'item_collection', 'industry_grid', 10, [], [
+            $this->strictItemPayload(
+                ['title' => 'Logistics', 'image' => null, 'url' => '/solutions/logistics'],
+                ['tone' => 'emerald']
+            ),
+        ]);
+
+        $this->actingAs($admin)->post(route('admin.home-content.save'), ['sections' => [$payload]])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertSame('emerald', HomeSectionItem::query()->firstOrFail()->metadata_json['tone']);
+    }
+
+    public function test_unknown_item_key_is_rejected(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $payload = $this->sectionPayload('benefit_strip', 'item_collection', 'icon_strip', 10, [], [
+            [...$this->itemPayload('Benefit', 0), 'unexpected' => 'malicious'],
+        ]);
+
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('sections.0.items.0');
+
+        $this->assertDatabaseCount('home_sections', 0);
+        $this->assertDatabaseCount('home_section_items', 0);
+    }
+
+    public function test_controller_does_not_persist_disallowed_item_fields(): void
+    {
+        $section = $this->storedSection('benefit_strip', 'icon_strip', 'Benefits');
+        $method = new ReflectionMethod(HomeContentController::class, 'syncItems');
+        $method->invoke(app(HomeContentController::class), $section, [[
+            ...$this->itemPayload('Warranty', 0),
+            'description' => 'Must not be persisted',
+            'image' => 'unexpected.webp',
+            'url' => 'https://unexpected.example',
+            'metadata' => ['avatar_text' => 'XX'],
+        ]], ['title', 'icon']);
+
+        $item = HomeSectionItem::query()->firstOrFail();
+        $this->assertSame('Warranty', $item->title);
+        $this->assertSame('shield', $item->icon);
+        $this->assertNull($item->description);
+        $this->assertNull($item->image);
+        $this->assertNull($item->url);
+        $this->assertSame([], $item->metadata_json);
+    }
+
     public function test_legacy_home_settings_cannot_be_saved_through_settings(): void
     {
         $admin = User::factory()->admin()->create();
@@ -120,10 +220,43 @@ class HomeContentSaveTest extends TestCase
 
     private function itemPayload(string $title, int $order): array
     {
+        return $this->strictItemPayload(['title' => $title, 'icon' => 'shield'], [], $order);
+    }
+
+    private function strictItemPayload(array $fields, array $metadata = [], int $order = 0): array
+    {
         return [
-            'id' => null, 'title' => $title, 'subtitle' => null, 'description' => null,
-            'image' => null, 'icon' => 'shield', 'url' => null, 'metadata' => [],
-            'enabled' => true, 'sort_order' => $order,
+            'id' => null,
+            ...$fields,
+            'metadata' => $metadata,
+            'enabled' => true,
+            'sort_order' => $order,
         ];
+    }
+
+    private function assertBenefitFieldIsRejected(string $field, string $value): void
+    {
+        $admin = User::factory()->admin()->create();
+        $section = $this->storedSection('benefit_strip', 'icon_strip', 'Original section');
+        $item = HomeSectionItem::create([
+            'home_section_id' => $section->id,
+            'section_key' => $section->key,
+            'title' => 'Original item',
+            'icon' => 'shield',
+            'is_active' => true,
+            'sort_order' => 0,
+        ]);
+        $payload = $this->sectionPayload('benefit_strip', 'item_collection', 'icon_strip', 10, [], [[
+            ...$this->itemPayload('Changed item', 0),
+            'id' => $item->id,
+            $field => $value,
+        ]], 'Changed section');
+
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('sections.0.items.0');
+
+        $this->assertDatabaseHas('home_sections', ['id' => $section->id, 'title' => 'Original section']);
+        $this->assertDatabaseHas('home_section_items', ['id' => $item->id, 'title' => 'Original item']);
     }
 }

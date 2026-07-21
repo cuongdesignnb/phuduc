@@ -1,0 +1,34 @@
+BA REVIEW FIXES - ADMIN BOOTSTRAP SIMULATION
+
+Verification database: phuduc_pr1_verification
+Production-style target: production.owner@example.com
+Normal user: normal.review@example.com
+
+Before remigrate:
+is_admin column: absent
+
+After remigrate, before grant:
+production_owner_admin=false
+normal_admin=false
+default_is_admin=0
+
+First command:
+php artisan user:grant-admin production.owner@example.com --no-interaction
+Exit: 0
+Output: Admin access granted to production.owner@example.com.
+
+Second command:
+php artisan user:grant-admin production.owner@example.com --no-interaction
+Exit: 0
+Output: User production.owner@example.com already has Admin access.
+
+After grant:
+production_owner_admin=true
+normal_admin=false
+total_users=2
+
+Automated MySQL authorization verification:
+- Granted Admin can access /admin: PASS
+- Normal user receives HTTP 403: PASS
+- Unknown user returns non-zero and is not created: PASS
+- Password and other users remain unchanged: PASS
