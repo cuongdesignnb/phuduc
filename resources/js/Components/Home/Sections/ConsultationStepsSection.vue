@@ -1,17 +1,26 @@
 <script setup>
-defineProps({ section: Object });
-const toneClass = (item) => ({
-    yellow: 'border-amber-400',
-    blue: 'border-sky-400',
-    green: 'border-emerald-400',
-}[item.metadata?.tone] || 'border-slate-200');
+import SectionHeader from '@/Components/Storefront/SectionHeader.vue';
+import StorefrontContainer from '@/Components/Storefront/StorefrontContainer.vue';
+
+defineProps({ section: { type: Object, required: true } });
+const toneClass = (tone) => ({
+    yellow: 'border-brand bg-brand-soft',
+    blue: 'border-info bg-info-soft',
+    green: 'border-success bg-success-soft',
+}[tone] || 'border-line-strong bg-surface-muted');
 </script>
 
 <template>
-    <section v-if="section.items.length" class="mx-auto max-w-[1780px] px-5 py-10 lg:px-8">
-        <h2 class="mb-5 text-2xl font-black text-slate-800">{{ section.heading.title }}</h2>
-        <div class="grid gap-4 md:grid-cols-3">
-            <div v-for="item in section.items" :key="item.id" class="rounded-xl border-t-4 bg-white p-6 shadow-sm" :class="toneClass(item)"><strong class="text-3xl text-amber-500">{{ item.title }}</strong><h3 v-if="item.subtitle" class="mt-3 font-black text-slate-800">{{ item.subtitle }}</h3><p class="mt-2 text-sm leading-6 text-slate-500">{{ item.description }}</p></div>
-        </div>
+    <section v-if="section.items.length" class="storefront-section bg-surface-page">
+        <StorefrontContainer size="content">
+            <SectionHeader :title="section.heading.title" align="center" />
+            <ol class="grid gap-5 md:grid-cols-3">
+                <li v-for="(item, index) in section.items" :key="item.id" class="storefront-card relative overflow-hidden border-t-4 p-6" :class="toneClass(item.metadata?.tone)">
+                    <span class="font-display text-4xl font-bold text-content-primary">{{ item.title || String(index + 1).padStart(2, '0') }}</span>
+                    <h3 v-if="item.subtitle" class="mt-4 font-display text-xl font-bold text-content-primary">{{ item.subtitle }}</h3>
+                    <p v-if="item.description" class="mt-2 text-sm leading-6 text-content-secondary">{{ item.description }}</p>
+                </li>
+            </ol>
+        </StorefrontContainer>
     </section>
 </template>

@@ -10,8 +10,9 @@ const props = defineProps({
     disabled: { type: Boolean, default: false },
 });
 
-const isExternal = computed(() => /^(https?:)?\/\//.test(props.href));
-const component = computed(() => (props.href ? (isExternal.value ? 'a' : Link) : 'button'));
+const isAnchor = computed(() => /^(https?:)?\/\//.test(props.href) || /^(tel|mailto):/.test(props.href));
+const opensNewWindow = computed(() => /^(https?:)?\/\//.test(props.href));
+const component = computed(() => (props.href ? (isAnchor.value ? 'a' : Link) : 'button'));
 const classes = computed(() => [
     `btn-${props.variant}`,
     props.size === 'sm' && 'min-h-10 px-4 py-2 text-xs',
@@ -27,8 +28,8 @@ const classes = computed(() => [
         :type="!href ? type : undefined"
         :disabled="!href && disabled"
         :aria-disabled="href && disabled ? 'true' : undefined"
-        :target="isExternal ? '_blank' : undefined"
-        :rel="isExternal ? 'noopener noreferrer' : undefined"
+        :target="opensNewWindow ? '_blank' : undefined"
+        :rel="opensNewWindow ? 'noopener noreferrer' : undefined"
         :class="classes"
     >
         <slot />
