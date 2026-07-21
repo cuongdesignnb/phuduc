@@ -46,7 +46,7 @@ class NavigationService
         return [
             'id' => $item->id,
             'label' => $item->title,
-            'url' => $item->url ?: '#',
+            'url' => filled($item->url) ? $item->url : null,
             'children' => $item->allChildren->map(fn (MenuItem $child) => $this->present($child))->values()->all(),
         ];
     }
