@@ -45,7 +45,7 @@ class HomepageContractTest extends TestCase
                 ->has('navigation.header')
                 ->has('navigation.footer')
                 ->where('page.type', 'home')
-                ->has('page.seo')
+                ->where('page.seo.description', fn ($description) => is_string($description) && $description !== '')
                 ->has('page.sections', 2)
                 ->where('page.sections.0.key', 'benefit_strip')
                 ->where('page.sections.1.key', 'partners')

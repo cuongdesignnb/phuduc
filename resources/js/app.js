@@ -5,8 +5,7 @@ import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
-import { useFontLoader } from './Composables/useFontLoader';
-import { useColorLoader } from './Composables/useColorLoader';
+import { useThemeRuntime } from './Composables/useThemeRuntime';
 import { useToast } from './Composables/useToast';
 import ToastNotification from './Components/ToastNotification.vue';
 
@@ -21,6 +20,9 @@ createInertiaApp({
         ),
     setup({ el, App, props, plugin }) {
         const app = createApp({
+            setup() {
+                useThemeRuntime();
+            },
             render() {
                 return h('div', [h(App, props), h(ToastNotification)]);
             },
@@ -44,14 +46,6 @@ createInertiaApp({
             }
         };
 
-        // Global mixin for font and color loading on every page
-        app.mixin({
-            setup() {
-                useFontLoader();
-                useColorLoader();
-            },
-        });
-
         const vueApp = app.mount(el);
 
         // Listen to Inertia navigate events to show flash toasts
@@ -65,6 +59,6 @@ createInertiaApp({
         return vueApp;
     },
     progress: {
-        color: '#ffd400',
+        color: '#475569',
     },
 });

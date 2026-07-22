@@ -1,0 +1,35 @@
+PR 2A storefront theme audit baseline
+Base SHA: ead76be1deec5c46b19c971403aeb6ff21604429
+Captured: 2026-07-21
+
+Scope:
+- resources/js/Layouts/GuestPageLayout.vue
+- resources/js/Components/Home
+- resources/js/Pages/Guest
+
+Forbidden pattern counts:
+#ffd400        10
+#ffc400         0
+#e5be00         0
+#f3c800         1
+#d49d00         4
+#e4a900         1
+#f1b900         1
+bg-volt-        0
+text-volt-      0
+border-volt-    0
+glass-card     20
+neon-line       6
+glow-border     0
+
+Related legacy/layout signals:
+text-gradient        3
+max-w-[1780px]      11
+max-w-[2040px]       1
+IntersectionObserver 4
+
+Browser confirmation after changing site.primary_color from #ffd400 to #2563eb:
+- --volt-500 changed to: 19 79 210
+- Header search background remained: rgb(255, 212, 0)
+
+Conclusion: the legacy runtime updates only the Volt palette while hardcoded Header/Homepage colors remain unchanged.

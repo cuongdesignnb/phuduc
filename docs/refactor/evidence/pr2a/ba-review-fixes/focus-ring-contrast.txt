@@ -1,0 +1,31 @@
+PR2A BA Review Fix — Focus Ring Contrast Evidence
+Date: 2026-07-22
+
+All focus ring tokens are derived to guarantee >= 3:1 contrast
+against both --ds-surface-page (246 247 249) and --ds-surface-card (255 255 255).
+
+Method: accessibleFocusRing() iteratively darkens primary toward
+[17, 24, 39] in 5% steps until both surface contrasts meet 3:1.
+
+CSS: outline uses rgb(var(--ds-focus-ring)) without opacity.
+Previously used 0.45 alpha which could undermine contrast.
+
+Test matrix results (all PASS):
+  #ffffff   — darkened derivative, >= 3:1 vs both surfaces
+  #fefefe   — darkened derivative, >= 3:1 vs both surfaces
+  #fffbea   — darkened derivative, >= 3:1 vs both surfaces
+  #ffd400   — darkened derivative, >= 3:1 vs both surfaces
+  #2563eb   — primary used directly, >= 3:1 vs both surfaces
+  #111827   — primary used directly, >= 3:1 vs both surfaces
+  #000000   — primary used directly, >= 3:1 vs both surfaces
+
+Control border (--ds-brand-control-border):
+  #ffffff   — darkened derivative, >= 3:1 vs surface-card
+  Applied to .btn-primary as border: 1px solid rgb(var(--ds-brand-control-border)).
+
+Brand soft/muted/border for very-light primaries:
+  When primary luminance >= 0.9, mix targets switch to neutral tones
+  instead of white to prevent invisible derivatives.
+  - brand-soft: mix toward [241, 244, 247] at 0.90
+  - brand-muted: mix toward [218, 223, 230] at 0.78
+  - brand-border: accessibleBrandBorder() ensures >= 3:1 vs surface-card

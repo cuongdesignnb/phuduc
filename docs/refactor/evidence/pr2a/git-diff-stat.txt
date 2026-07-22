@@ -1,0 +1,12 @@
+PR 2A diff stat is generated from:
+  base: ead76be1deec5c46b19c971403aeb6ff21604429
+  head: dece5da8503ef13a77872b935f3c306f1f37d213
+
+119 files changed, 20909 insertions(+), 918 deletions(-)
+
+The apparent insertion count is dominated by two retained Lighthouse JSON
+reports and binary screenshot assets. Dependency lockfiles and package
+versions are unchanged.
+
+Note: this diff stat includes the evidence and metadata files themselves.
+The count is expected to increase by a small margin on each evidence update.

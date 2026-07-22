@@ -1,16 +1,25 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
-defineProps({ section: Object });
+import { computed } from 'vue';
+import NewsCard from '@/Components/Storefront/NewsCard.vue';
+import SectionHeader from '@/Components/Storefront/SectionHeader.vue';
+import StorefrontContainer from '@/Components/Storefront/StorefrontContainer.vue';
+
+const props = defineProps({ section: { type: Object, required: true } });
+const allowedVariants = ['editorial_grid', 'compact_grid'];
+const variant = computed(() => {
+    if (allowedVariants.includes(props.section.variant)) return props.section.variant;
+    console.warn(`[storefront] Unsupported latest_posts variant: ${props.section.variant}`);
+    return allowedVariants[0];
+});
 </script>
 
 <template>
-    <section v-if="section.items.length" class="mx-auto max-w-[1780px] px-5 py-10 lg:px-8">
-        <div class="mb-5 flex items-center justify-between"><h2 class="text-2xl font-black text-slate-800">{{ section.heading.title }}</h2><Link :href="route('news.index')" class="text-sm font-bold text-amber-600">Xem tất cả →</Link></div>
-        <div class="grid gap-5 md:grid-cols-3">
-            <article v-for="post in section.items" :key="post.id" class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                <img v-if="post.image_url" :src="post.image_url" :alt="post.title" class="h-48 w-full object-cover" />
-                <div class="p-5"><small class="font-bold text-amber-600">{{ post.category }}</small><h3 class="mt-2 font-black text-slate-800"><Link :href="route('news.show', post.slug)">{{ post.title }}</Link></h3><p v-if="post.summary" class="mt-2 line-clamp-3 text-sm text-slate-500">{{ post.summary }}</p></div>
-            </article>
-        </div>
+    <section v-if="section.items.length" class="storefront-section bg-surface-page">
+        <StorefrontContainer>
+            <SectionHeader :title="section.heading.title" action-label="Xem tất cả tin tức" :action-href="route('news.index')" />
+            <div class="grid gap-5" :class="variant === 'compact_grid' ? 'md:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3'">
+                <NewsCard v-for="post in section.items" :key="post.id" :post="post" :variant="variant === 'compact_grid' ? 'compact' : 'editorial'" />
+            </div>
+        </StorefrontContainer>
     </section>
 </template>

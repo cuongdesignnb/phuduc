@@ -1,0 +1,45 @@
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-surface-page font-sans text-content-primary antialiased;
+    }
+
+    ::selection {
+        @apply bg-brand/25 text-content-primary;
+    }
+
+    :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+        outline: 3px solid rgb(var(--ds-focus-ring));
+        outline-offset: 3px;
+    }
+
+    ::-webkit-scrollbar {
+        @apply w-2;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-surface-page;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply rounded-full bg-line-strong hover:bg-brand;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 1ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: 1ms !important;
+        }
+    }
+}

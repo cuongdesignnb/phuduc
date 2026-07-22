@@ -10,7 +10,7 @@ const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', c
     <Head title="Đặt hàng thành công" />
     <GuestPageLayout>
         <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16 text-center">
-            <div class="glass-card p-8">
+            <div class="storefront-card p-8">
                 <div class="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-5">
                     <svg class="w-8 h-8 text-brand-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>

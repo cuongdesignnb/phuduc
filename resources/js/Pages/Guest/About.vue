@@ -32,24 +32,24 @@ onMounted(() => {
             </div>
         </section>
 
-        <div class="neon-line"></div>
+        <div class="storefront-divider"></div>
 
         <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-16 space-y-16">
             <!-- About Content -->
-            <section v-if="settings?.['about.content']" class="glass-card p-8 reveal">
+            <section v-if="settings?.['about.content']" class="storefront-card p-8 reveal">
                 <div class="prose prose-p:text-ink-secondary prose-headings:font-display prose-a:text-brand-hover max-w-none" v-html="settings['about.content']"></div>
             </section>
 
             <!-- Mission & Vision -->
             <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div v-if="settings?.['about.mission']" class="glass-card-hover p-8 reveal">
+                <div v-if="settings?.['about.mission']" class="storefront-card-interactive p-8 reveal">
                     <div class="w-12 h-12 rounded-xl bg-brand-primary/10 flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-brand-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     </div>
                     <h3 class="text-lg font-display font-bold text-ink-primary mb-3">Sứ mệnh</h3>
                     <p class="text-ink-secondary leading-relaxed text-sm">{{ settings['about.mission'] }}</p>
                 </div>
-                <div v-if="settings?.['about.vision']" class="glass-card-hover p-8 reveal" style="transition-delay:100ms">
+                <div v-if="settings?.['about.vision']" class="storefront-card-interactive p-8 reveal" style="transition-delay:100ms">
                     <div class="w-12 h-12 rounded-xl bg-brand-primary/10 flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-brand-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </div>
@@ -59,7 +59,7 @@ onMounted(() => {
             </section>
 
             <!-- Contact -->
-            <section class="glass-card p-8 text-center reveal relative overflow-hidden">
+            <section class="storefront-card p-8 text-center reveal relative overflow-hidden">
                 <div class="absolute inset-0 bg-grid opacity-10 pointer-events-none"></div>
                 <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary/[0.04] rounded-full blur-[80px] pointer-events-none"></div>
                 <div class="relative">

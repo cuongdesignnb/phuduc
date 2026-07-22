@@ -1,0 +1,98 @@
+@layer components {
+    .storefront-shell,
+    .storefront-content {
+        width: min(100%, var(--ds-shell-max));
+        margin-inline: auto;
+        padding-inline: var(--ds-page-gutter);
+    }
+
+    .storefront-content {
+        width: min(100%, var(--ds-content-max));
+    }
+
+    .storefront-section {
+        padding-block: clamp(2.5rem, 5vw, 5rem);
+    }
+
+    .storefront-section-compact {
+        padding-block: clamp(1.5rem, 3vw, 2.75rem);
+    }
+
+    .storefront-card {
+        @apply rounded-xl border border-line bg-surface-card;
+        box-shadow: var(--ds-shadow-card);
+    }
+
+    .storefront-card-interactive {
+        @apply storefront-card transition duration-200 hover:-translate-y-0.5 hover:border-brand-border;
+    }
+
+    .storefront-divider {
+        @apply h-px bg-line-subtle;
+    }
+
+    .storefront-focus {
+        @apply focus-visible:outline-none;
+    }
+
+    .btn-primary {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-brand-control-border bg-brand px-6 py-3 font-display text-sm font-bold uppercase tracking-wide text-brand-contrast transition hover:bg-brand-hover active:bg-brand-active;
+    }
+
+    .btn-outline {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-line-strong bg-surface-card px-6 py-3 font-display text-sm font-bold uppercase tracking-wide text-content-primary transition hover:border-brand-border hover:bg-brand-soft;
+    }
+
+    .btn-ghost {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-content-secondary transition hover:bg-surface-muted hover:text-content-primary;
+    }
+
+    .section-title {
+        @apply font-display text-3xl font-bold tracking-tight text-content-primary md:text-4xl;
+    }
+
+    .section-subtitle {
+        @apply mt-3 max-w-2xl text-lg text-content-secondary;
+    }
+
+    .section-tag {
+        @apply mb-3 inline-flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.18em] text-brand-text;
+    }
+
+    .product-card {
+        @apply storefront-card-interactive relative overflow-hidden;
+    }
+
+    .product-card .product-img-wrap {
+        @apply relative aspect-[4/3] overflow-hidden bg-surface-muted;
+    }
+
+    .product-card .product-img-wrap img {
+        @apply h-full w-full object-cover transition duration-300 group-hover:scale-[1.03];
+    }
+
+    /* Compatibility for deferred PR 2B/2C pages; content is never hidden. */
+    .reveal,
+    .reveal-left,
+    .reveal-right,
+    .reveal-scale {
+        opacity: 1;
+        transform: none;
+    }
+
+    .counter-up {
+        @apply font-display font-bold tabular-nums;
+    }
+
+    .stat-card {
+        @apply relative rounded-xl border border-line bg-surface-card p-8 text-center;
+    }
+
+    .stat-number {
+        @apply font-display text-5xl font-bold text-brand-text md:text-6xl;
+    }
+
+    .stat-label {
+        @apply mt-2 text-sm uppercase tracking-wider text-content-secondary;
+    }
+}

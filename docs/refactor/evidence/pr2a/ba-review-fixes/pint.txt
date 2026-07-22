@@ -1,0 +1,8 @@
+PR2A BA Review Fix — Pint (Final)
+Date: 2026-07-22
+Command: vendor\bin\pint --test <changed PHP files>
+Scope:
+  app/Services/Storefront/ThemeTokenService.php
+  tests/Unit/Storefront/ThemeTokenServiceTest.php
+  tests/Unit/Storefront/ThemeRuntimeContractTest.php
+Result: PASS (3 files)

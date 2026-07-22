@@ -37,12 +37,12 @@ onMounted(() => {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     Danh mục sản phẩm
                 </p>
-                <h1 class="section-title">Xe điện <span class="text-gradient">công nghiệp</span></h1>
+                <h1 class="section-title">Xe điện <span class="text-brand-hover">công nghiệp</span></h1>
                 <p class="section-subtitle">Khám phá dòng sản phẩm xe điện đa dạng cho mọi nhu cầu vận chuyển</p>
             </div>
         </section>
 
-        <div class="neon-line"></div>
+        <div class="storefront-divider"></div>
 
         <!-- Products Grid -->
         <section class="py-12">

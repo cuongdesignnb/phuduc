@@ -1,28 +1,58 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import ResponsiveImage from '@/Components/Storefront/ResponsiveImage.vue';
+import StorefrontContainer from '@/Components/Storefront/StorefrontContainer.vue';
+import UiButton from '@/Components/Storefront/UiButton.vue';
 
-const props = defineProps({ section: Object, site: Object });
-const secondaryUrl = () => props.section.config?.secondary_cta?.action === 'phone'
-    ? `tel:${props.site.hotline || props.site.phone || ''}`
-    : (props.section.config?.secondary_cta?.url || '#');
+const props = defineProps({ section: { type: Object, required: true }, site: { type: Object, default: () => ({}) } });
+const allowedVariants = ['industrial_marketplace', 'split'];
+const variant = computed(() => {
+    if (allowedVariants.includes(props.section.variant)) return props.section.variant;
+    console.warn(`[storefront] Unsupported hero variant: ${props.section.variant}`);
+    return allowedVariants[0];
+});
+const primaryCta = computed(() => {
+    const cta = props.section.config?.primary_cta;
+    return cta?.label && cta?.url ? cta : null;
+});
+const secondaryCta = computed(() => {
+    const cta = props.section.config?.secondary_cta;
+    if (!cta?.label) return null;
+    if (cta.action === 'phone') {
+        const phone = props.site.hotline || props.site.phone;
+        return phone ? { ...cta, url: `tel:${phone}` } : null;
+    }
+    return cta.url ? cta : null;
+});
 </script>
 
 <template>
-    <section class="border-b border-slate-200 bg-slate-50">
-        <div class="mx-auto grid max-w-[1780px] items-center gap-10 px-5 py-12 lg:grid-cols-2 lg:px-8 lg:py-20">
-            <div>
-                <p v-if="section.heading.eyebrow" class="mb-3 text-sm font-black uppercase tracking-[.18em] text-amber-500">{{ section.heading.eyebrow }}</p>
-                <h1 class="whitespace-pre-line text-4xl font-black uppercase leading-none text-slate-800 sm:text-6xl">{{ section.heading.title }}</h1>
-                <p v-if="section.heading.subtitle" class="mt-5 max-w-2xl text-lg font-medium text-slate-600">{{ section.heading.subtitle }}</p>
-                <p v-if="section.heading.description" class="mt-3 max-w-2xl text-slate-500">{{ section.heading.description }}</p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <Link v-if="section.config?.primary_cta?.label" :href="section.config.primary_cta.url || '#'" class="rounded-lg bg-[#ffd400] px-6 py-3 font-black text-slate-900">{{ section.config.primary_cta.label }}</Link>
-                    <a v-if="section.config?.secondary_cta?.label" :href="secondaryUrl()" class="rounded-lg border border-slate-300 bg-white px-6 py-3 font-bold text-slate-700">{{ section.config.secondary_cta.label }}</a>
+    <section class="relative overflow-hidden border-b border-line-subtle" :class="variant === 'industrial_marketplace' ? 'bg-surface-muted' : 'bg-surface-page'">
+        <div v-if="variant === 'industrial_marketplace'" class="pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" style="background-image: linear-gradient(rgb(var(--ds-border-default) / .55) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--ds-border-default) / .55) 1px, transparent 1px); background-size: 48px 48px" />
+        <StorefrontContainer>
+            <div
+                class="relative grid items-center gap-8 py-12 sm:py-16 lg:py-20"
+                :class="variant === 'industrial_marketplace' ? 'lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,.75fr)]' : 'lg:grid-cols-2 lg:gap-14'"
+            >
+                <div :class="variant === 'split' && 'lg:py-8'">
+                    <p v-if="section.heading.eyebrow" class="section-tag">{{ section.heading.eyebrow }}</p>
+                    <h1 class="whitespace-pre-line font-display font-bold uppercase leading-[.95] tracking-tight text-content-primary" :class="variant === 'industrial_marketplace' ? 'text-4xl sm:text-6xl xl:text-7xl' : 'text-4xl sm:text-5xl xl:text-6xl'">
+                        {{ section.heading.title }}
+                    </h1>
+                    <p v-if="section.heading.subtitle" class="mt-6 max-w-3xl text-lg font-semibold leading-7 text-content-secondary sm:text-xl">{{ section.heading.subtitle }}</p>
+                    <p v-if="section.heading.description" class="mt-3 max-w-2xl leading-7 text-content-muted">{{ section.heading.description }}</p>
+                    <div v-if="primaryCta || secondaryCta" class="mt-8 flex flex-wrap gap-3">
+                        <UiButton v-if="primaryCta" :href="primaryCta.url" size="lg">{{ primaryCta.label }}</UiButton>
+                        <UiButton v-if="secondaryCta" :href="secondaryCta.url" variant="outline" size="lg">{{ secondaryCta.label }}</UiButton>
+                    </div>
+                </div>
+                <div v-if="section.config?.image_url" :class="variant === 'split' ? 'storefront-card overflow-hidden p-3 sm:p-5' : 'overflow-hidden rounded-xl border border-line bg-surface-card shadow-card'">
+                    <ResponsiveImage :src="section.config.image_url" :alt="section.heading.title" :aspect="variant === 'split' ? '5/4' : '4/3'" object-fit="contain" loading="eager" />
+                </div>
+                <div v-else class="hidden min-h-80 rounded-xl border border-dashed border-line-strong bg-surface-card/65 lg:flex lg:items-center lg:justify-center">
+                    <span class="font-display text-sm font-bold uppercase tracking-widest text-content-muted">Giải pháp công nghiệp</span>
                 </div>
             </div>
-            <div v-if="section.config?.image_url" class="min-h-80 overflow-hidden rounded-2xl bg-white shadow-sm">
-                <img :src="section.config.image_url" :alt="section.heading.title" class="h-full w-full object-contain" />
-            </div>
-        </div>
+        </StorefrontContainer>
     </section>
 </template>

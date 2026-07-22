@@ -116,9 +116,9 @@ onMounted(() => {
             </div>
 
             <!-- Description -->
-            <div v-if="product.description" class="mt-14 glass-card p-8 reveal">
+            <div v-if="product.description" class="mt-14 storefront-card p-8 reveal">
                 <h2 class="text-xl font-display font-bold text-ink-primary mb-4">Mô tả sản phẩm</h2>
-                <div class="neon-line mb-6"></div>
+                <div class="storefront-divider mb-6"></div>
                 <div class="prose prose-p:text-ink-secondary prose-headings:font-display prose-a:text-brand-hover max-w-none" v-html="product.description"></div>
             </div>
 
@@ -131,7 +131,7 @@ onMounted(() => {
 
                 <Transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 -translate-y-4" enter-to-class="opacity-100 translate-y-0"
                     leave-active-class="transition-all duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                    <div v-if="showReviewForm" class="glass-card p-6 mb-6">
+                    <div v-if="showReviewForm" class="storefront-card p-6 mb-6">
                         <form @submit.prevent="submitReview" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <input v-model="reviewForm.customer_name" type="text" placeholder="Họ tên *" required class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition" />
@@ -149,7 +149,7 @@ onMounted(() => {
                 </Transition>
 
                 <div class="space-y-3">
-                    <div v-for="review in product.approved_reviews" :key="review.id" class="glass-card p-4">
+                    <div v-for="review in product.approved_reviews" :key="review.id" class="storefront-card p-4">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-hover text-xs font-display font-bold">{{ review.customer_name?.charAt(0) }}</div>
                             <span class="font-medium text-sm text-ink-primary">{{ review.customer_name }}</span>
@@ -171,7 +171,7 @@ onMounted(() => {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     Gợi ý cho bạn
                 </p>
-                <h2 class="section-title text-2xl">Sản phẩm <span class="text-gradient">liên quan</span></h2>
+                <h2 class="section-title text-2xl">Sản phẩm <span class="text-brand-hover">liên quan</span></h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mt-6">
                     <Link v-for="rp in relatedProducts" :key="rp.id" :href="route('products.show', rp.slug)" class="group product-card">
                         <div class="product-img-wrap aspect-square bg-surface-muted border-b border-surface-border">

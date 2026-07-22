@@ -24,9 +24,9 @@ const submit = () => form.post(route('checkout.store'));
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <h1 class="text-2xl font-display font-bold text-ink-primary mb-8">Thanh toán</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <form @submit.prevent="submit" class="lg:col-span-2 glass-card p-6 space-y-4">
+                <form @submit.prevent="submit" class="lg:col-span-2 storefront-card p-6 space-y-4">
                     <h3 class="text-lg font-display font-bold text-ink-primary">Thông tin giao hàng</h3>
-                    <div class="neon-line"></div>
+                    <div class="storefront-divider"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm text-ink-secondary mb-1">Họ tên *</label>
@@ -56,7 +56,7 @@ const submit = () => form.post(route('checkout.store'));
                 </form>
 
                 <!-- Order Summary -->
-                <div class="glass-card p-6 h-fit">
+                <div class="storefront-card p-6 h-fit">
                     <h3 class="text-lg font-display font-bold text-ink-primary mb-4">Đơn hàng của bạn</h3>
                     <div class="space-y-3">
                         <div v-for="item in cart" :key="item.product_id" class="flex justify-between text-sm">
