@@ -1,0 +1,4 @@
+PR2A BA Review Fix — Pint
+Date: 2026-07-22
+Scope: app/Services/Storefront/ThemeTokenService.php, tests/Unit/Storefront/ThemeTokenServiceTest.php
+Result: PASS (2 files)

@@ -12,7 +12,7 @@
     }
 
     :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-        outline: 3px solid rgb(var(--ds-focus-ring) / 0.45);
+        outline: 3px solid rgb(var(--ds-focus-ring));
         outline-offset: 3px;
     }
 

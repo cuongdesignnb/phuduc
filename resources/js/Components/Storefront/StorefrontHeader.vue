@@ -1,6 +1,6 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import DesktopNavigation from './DesktopNavigation.vue';
 import MobileNavigation from './MobileNavigation.vue';
 import StorefrontContainer from './StorefrontContainer.vue';
@@ -32,6 +32,7 @@ const initialSearch = (url) => {
 };
 const searchKeyword = ref(initialSearch(props.currentUrl));
 const mobileOpen = ref(false);
+const mobileMenuTrigger = ref(null);
 const contactPhone = computed(() => props.site.hotline || props.site.phone || '');
 const accountHref = computed(() => {
     if (!props.authUser) return route('login');
@@ -44,6 +45,12 @@ const submitSearch = (keyword) => {
     mobileOpen.value = false;
     router.get(route('products.index'), { search });
 };
+watch(mobileOpen, async (open, wasOpen) => {
+    if (!open && wasOpen && mobileMenuTrigger.value) {
+        await nextTick();
+        mobileMenuTrigger.value.focus();
+    }
+});
 watch(() => props.currentUrl, (url) => {
     if ((url || '').startsWith('/san-pham')) searchKeyword.value = initialSearch(url);
     mobileOpen.value = false;
@@ -78,7 +85,7 @@ watch(() => props.currentUrl, (url) => {
                         <svg class="h-6 w-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437L6.75 14.25h10.5l3-8.978H5.106M8.25 20.25h.008v.008H8.25v-.008Zm9 0h.008v.008h-.008v-.008Z" /></svg>
                         <span v-if="cartCount" class="absolute right-0 top-0 grid min-h-5 min-w-5 translate-x-1/4 -translate-y-1/4 place-items-center rounded-full bg-brand px-1 text-[10px] font-black text-brand-contrast">{{ cartCount }}</span>
                     </Link>
-                    <button type="button" class="grid min-h-11 min-w-11 place-items-center rounded-lg bg-surface-muted lg:hidden" aria-label="Mở menu" :aria-expanded="mobileOpen" @click="mobileOpen = true">
+                    <button ref="mobileMenuTrigger" type="button" class="grid min-h-11 min-w-11 place-items-center rounded-lg bg-surface-muted lg:hidden" aria-label="Mở menu" :aria-expanded="mobileOpen" aria-controls="mobile-navigation-dialog" @click="mobileOpen = true">
                         <svg class="h-6 w-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" /></svg>
                     </button>
                 </div>

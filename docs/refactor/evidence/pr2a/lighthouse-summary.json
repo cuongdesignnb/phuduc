@@ -1,0 +1,29 @@
+{
+    "environment": {
+        "server": "local PHP development server",
+        "compression": false,
+        "build": "Vite production manifest"
+    },
+    "mobile": {
+        "runs": [62, 70, 68],
+        "median": 68,
+        "selected_report": "lighthouse-home-mobile.json",
+        "accessibility": 100,
+        "best_practices": 100,
+        "seo": 100,
+        "cls": 0.0001
+    },
+    "desktop": {
+        "runs": [93, 94, 96],
+        "median": 94,
+        "selected_report": "lighthouse-home-desktop.json",
+        "accessibility": 100,
+        "best_practices": 100,
+        "seo": 100,
+        "cls": 0.0007
+    },
+    "release_gate": {
+        "production_compressed_mobile_retest_required": true,
+        "target": 85
+    }
+}

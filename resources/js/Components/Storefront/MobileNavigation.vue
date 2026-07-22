@@ -1,7 +1,16 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import StorefrontSearch from './StorefrontSearch.vue';
+
+const FOCUSABLE_SELECTOR = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+].join(', ');
 
 const props = defineProps({
     open: { type: Boolean, default: false },
@@ -21,9 +30,41 @@ const toggle = (item) => {
     next.has(itemKey(item)) ? next.delete(itemKey(item)) : next.add(itemKey(item));
     expanded.value = next;
 };
-const onKeydown = (event) => {
-    if (props.open && event.key === 'Escape') emit('close');
+
+const getFocusableElements = () => {
+    if (!drawer.value) return [];
+    return [...drawer.value.querySelectorAll(FOCUSABLE_SELECTOR)].filter((el) => {
+        if (el.offsetParent === null) return false;
+        const style = window.getComputedStyle(el);
+        return style.visibility !== 'hidden' && style.display !== 'none';
+    });
 };
+
+const onKeydown = (event) => {
+    if (!props.open) return;
+
+    if (event.key === 'Escape') {
+        emit('close');
+        return;
+    }
+
+    if (event.key === 'Tab') {
+        const focusable = getFocusableElements();
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+};
+
 watch(() => props.open, async (open) => {
     if (open) {
         previousOverflow = document.body.style.overflow;
@@ -34,7 +75,10 @@ watch(() => props.open, async (open) => {
         document.body.style.overflow = previousOverflow;
     }
 }, { immediate: true });
-document.addEventListener('keydown', onKeydown);
+
+onMounted(() => {
+    document.addEventListener('keydown', onKeydown);
+});
 onBeforeUnmount(() => {
     document.removeEventListener('keydown', onKeydown);
     document.body.style.overflow = previousOverflow;
@@ -44,7 +88,7 @@ onBeforeUnmount(() => {
 <template>
     <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0" leave-active-class="transition duration-150" leave-to-class="opacity-0">
         <div v-if="open" class="fixed inset-0 z-[70] bg-surface-inverse/45 lg:hidden" @click.self="$emit('close')">
-            <aside ref="drawer" class="ml-auto flex h-dvh w-full max-w-md flex-col bg-surface-card" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-title">
+            <aside ref="drawer" id="mobile-navigation-dialog" class="ml-auto flex h-dvh w-full max-w-md flex-col bg-surface-card" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-title">
                 <div class="flex items-center justify-between border-b border-line px-4 py-3">
                     <h2 id="mobile-navigation-title" class="font-display text-xl font-bold">Menu</h2>
                     <button ref="closeButton" type="button" class="grid min-h-11 min-w-11 place-items-center rounded-lg bg-surface-muted" aria-label="Đóng menu" @click="$emit('close')">
@@ -93,11 +137,18 @@ onBeforeUnmount(() => {
                                             @click="$emit('close')"
                                         >{{ child.label }}</component>
                                         <span v-else class="flex min-h-11 flex-1 items-center px-3 text-sm font-semibold">{{ child.label }}</span>
-                                        <button v-if="child.children?.length" type="button" class="grid min-h-11 min-w-11 place-items-center" :aria-label="`Mở menu ${child.label}`" :aria-expanded="expanded.has(itemKey(child))" @click="toggle(child)">+</button>
+                                        <button v-if="child.children?.length" type="button" class="grid min-h-11 min-w-11 place-items-center" :aria-label="`Mở menu ${child.label}`" :aria-expanded="expanded.has(itemKey(child))" :aria-controls="`mobile-submenu-${itemKey(child)}`" @click="toggle(child)">+</button>
                                     </div>
-                                    <ul v-if="child.children?.length && expanded.has(itemKey(child))" class="ml-3 border-l border-line-subtle pl-3">
+                                    <ul v-if="child.children?.length && expanded.has(itemKey(child))" :id="`mobile-submenu-${itemKey(child)}`" class="ml-3 border-l border-line-subtle pl-3">
                                         <li v-for="grandchild in child.children.filter((entry) => entry.url)" :key="itemKey(grandchild)">
-                                            <component :is="linkComponent(grandchild.url)" :href="grandchild.url" class="block rounded-lg px-3 py-2.5 text-sm text-content-secondary hover:bg-surface-muted" @click="$emit('close')">{{ grandchild.label }}</component>
+                                            <component
+                                                :is="linkComponent(grandchild.url)"
+                                                :href="grandchild.url"
+                                                :target="isExternal(grandchild.url) ? '_blank' : undefined"
+                                                :rel="isExternal(grandchild.url) ? 'noopener noreferrer' : undefined"
+                                                class="block rounded-lg px-3 py-2.5 text-sm text-content-secondary hover:bg-surface-muted"
+                                                @click="$emit('close')"
+                                            >{{ grandchild.label }}</component>
                                         </li>
                                     </ul>
                                 </li>

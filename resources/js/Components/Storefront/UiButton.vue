@@ -12,7 +12,11 @@ const props = defineProps({
 
 const isAnchor = computed(() => /^(https?:)?\/\//.test(props.href) || /^(tel|mailto):/.test(props.href));
 const opensNewWindow = computed(() => /^(https?:)?\/\//.test(props.href));
-const component = computed(() => (props.href ? (isAnchor.value ? 'a' : Link) : 'button'));
+const component = computed(() => {
+    if (props.disabled && props.href) return 'span';
+    if (props.href) return isAnchor.value ? 'a' : Link;
+    return 'button';
+});
 const classes = computed(() => [
     `btn-${props.variant}`,
     props.size === 'sm' && 'min-h-10 px-4 py-2 text-xs',
@@ -24,13 +28,18 @@ const classes = computed(() => [
 <template>
     <component
         :is="component"
-        :href="href || undefined"
+        :href="!disabled && href ? href : undefined"
         :type="!href ? type : undefined"
         :disabled="!href && disabled"
-        :aria-disabled="href && disabled ? 'true' : undefined"
-        :target="opensNewWindow ? '_blank' : undefined"
-        :rel="opensNewWindow ? 'noopener noreferrer' : undefined"
+        :role="disabled && href ? 'link' : undefined"
+        :aria-disabled="disabled && href ? 'true' : undefined"
+        :tabindex="disabled && href ? -1 : undefined"
+        :target="!disabled && opensNewWindow ? '_blank' : undefined"
+        :rel="!disabled && opensNewWindow ? 'noopener noreferrer' : undefined"
         :class="classes"
+        @click.capture="disabled ? $event.preventDefault() : undefined"
+        @keydown.enter.capture="disabled ? $event.preventDefault() : undefined"
+        @keydown.space.capture="disabled ? $event.preventDefault() : undefined"
     >
         <slot />
     </component>

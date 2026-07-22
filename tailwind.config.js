@@ -33,6 +33,7 @@ export default {
                     border: 'rgb(var(--ds-brand-border) / <alpha-value>)',
                     contrast: 'rgb(var(--ds-brand-contrast) / <alpha-value>)',
                     text: 'rgb(var(--ds-brand-text) / <alpha-value>)',
+                    'control-border': 'rgb(var(--ds-brand-control-border) / <alpha-value>)',
                     light: 'rgb(var(--ds-brand-soft) / <alpha-value>)',
                 },
                 content: {

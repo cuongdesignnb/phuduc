@@ -95,6 +95,135 @@ class ThemeTokenServiceTest extends TestCase
         $this->assertStringStartsWith('https://fonts.googleapis.com/css2?', $theme['font_stylesheet_url']);
     }
 
+    #[DataProvider('focusRingColors')]
+    public function test_focus_ring_contrasts_with_page_and_card_surfaces(string $color): void
+    {
+        $theme = (new ThemeTokenService)->resolve($color, 'Rajdhani', 'Inter');
+        $focusRing = $this->rgb($theme['css_variables']['--ds-focus-ring']);
+        $surfacePage = [246, 247, 249];
+        $surfaceCard = [255, 255, 255];
+
+        $this->assertGreaterThanOrEqual(
+            3.0,
+            $this->contrastRatio($focusRing, $surfacePage),
+            "Focus ring must have ≥ 3:1 contrast against surface-page for $color.",
+        );
+        $this->assertGreaterThanOrEqual(
+            3.0,
+            $this->contrastRatio($focusRing, $surfaceCard),
+            "Focus ring must have ≥ 3:1 contrast against surface-card for $color.",
+        );
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function focusRingColors(): array
+    {
+        return [
+            'white' => ['#ffffff'],
+            'near-white' => ['#fefefe'],
+            'pastel yellow' => ['#fffbea'],
+            'default yellow' => ['#ffd400'],
+            'blue' => ['#2563eb'],
+            'dark slate' => ['#111827'],
+            'black' => ['#000000'],
+        ];
+    }
+
+    public function test_white_primary_has_visible_focus_ring(): void
+    {
+        $theme = (new ThemeTokenService)->resolve('#ffffff', 'Rajdhani', 'Inter');
+        $focusRing = $this->rgb($theme['css_variables']['--ds-focus-ring']);
+
+        // Focus ring must NOT be white/near-white on white surfaces.
+        $this->assertNotSame('255 255 255', $theme['css_variables']['--ds-focus-ring']);
+        $this->assertGreaterThanOrEqual(
+            3.0,
+            $this->contrastRatio($focusRing, [255, 255, 255]),
+        );
+    }
+
+    public function test_near_white_primary_has_visible_focus_ring(): void
+    {
+        $theme = (new ThemeTokenService)->resolve('#fefefe', 'Rajdhani', 'Inter');
+
+        $this->assertNotSame('254 254 254', $theme['css_variables']['--ds-focus-ring']);
+        $this->assertGreaterThanOrEqual(
+            3.0,
+            $this->contrastRatio(
+                $this->rgb($theme['css_variables']['--ds-focus-ring']),
+                [255, 255, 255],
+            ),
+        );
+    }
+
+    public function test_yellow_primary_has_visible_focus_ring(): void
+    {
+        $theme = (new ThemeTokenService)->resolve('#ffd400', 'Rajdhani', 'Inter');
+
+        $this->assertGreaterThanOrEqual(
+            3.0,
+            $this->contrastRatio(
+                $this->rgb($theme['css_variables']['--ds-focus-ring']),
+                [246, 247, 249],
+            ),
+        );
+    }
+
+    public function test_white_primary_has_visible_control_border(): void
+    {
+        $theme = (new ThemeTokenService)->resolve('#ffffff', 'Rajdhani', 'Inter');
+        $controlBorder = $this->rgb($theme['css_variables']['--ds-brand-control-border']);
+
+        $this->assertArrayHasKey('--ds-brand-control-border', $theme['css_variables']);
+        $this->assertGreaterThanOrEqual(
+            3.0,
+            $this->contrastRatio($controlBorder, [255, 255, 255]),
+            'Control border must be visible against surface-card for white primary.',
+        );
+    }
+
+    #[DataProvider('focusRingColors')]
+    public function test_hover_and_active_are_distinct(string $color): void
+    {
+        $theme = (new ThemeTokenService)->resolve($color, 'Rajdhani', 'Inter');
+
+        $this->assertNotSame(
+            $theme['css_variables']['--ds-brand-primary'],
+            $theme['css_variables']['--ds-brand-hover'],
+            "Hover must differ from primary for $color.",
+        );
+        $this->assertNotSame(
+            $theme['css_variables']['--ds-brand-primary'],
+            $theme['css_variables']['--ds-brand-active'],
+            "Active must differ from primary for $color.",
+        );
+        $this->assertNotSame(
+            $theme['css_variables']['--ds-brand-hover'],
+            $theme['css_variables']['--ds-brand-active'],
+            "Hover and active must differ from each other for $color.",
+        );
+    }
+
+    #[DataProvider('focusRingColors')]
+    public function test_brand_soft_and_muted_are_distinct_from_surface(string $color): void
+    {
+        $theme = (new ThemeTokenService)->resolve($color, 'Rajdhani', 'Inter');
+        $surfaceCard = [255, 255, 255];
+
+        $soft = $this->rgb($theme['css_variables']['--ds-brand-soft']);
+        $muted = $this->rgb($theme['css_variables']['--ds-brand-muted']);
+
+        // Soft and muted must not be identical to the card surface.
+        $this->assertNotSame('255 255 255', $theme['css_variables']['--ds-brand-soft'],
+            "Brand-soft must not be pure white for $color.",
+        );
+        $this->assertNotSame('255 255 255', $theme['css_variables']['--ds-brand-muted'],
+            "Brand-muted must not be pure white for $color.",
+        );
+    }
+
     /**
      * @return array{float, float, float}
      */

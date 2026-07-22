@@ -58,6 +58,8 @@ class ThemeTokenService
         $primary = $this->hexToRgb($primaryColor);
         $white = [255, 255, 255];
         $dark = [17, 24, 39];
+        $surfacePage = [246, 247, 249];
+        $surfaceCard = [255, 255, 255];
         $contrast = $this->contrastRatio($primary, $white) >= $this->contrastRatio($primary, $dark)
             ? $white
             : $dark;
@@ -73,16 +75,23 @@ class ThemeTokenService
         $hover = $this->interactionColor($primary, $contrast, $dark, $white, 0.08);
         $active = $this->interactionColor($primary, $contrast, $dark, $white, 0.14);
 
+        // For very-light primaries (luminance ≥ 0.9), mixing with white
+        // produces invisible derivatives. Use neutral tones instead.
+        $isVeryLight = $this->relativeLuminance($primary) >= 0.9;
+        $softTarget = $isVeryLight ? [241, 244, 247] : $white;
+        $mutedTarget = $isVeryLight ? [218, 223, 230] : $white;
+
         $variables = [
             '--ds-brand-primary' => $this->rgbValue($primary),
             '--ds-brand-hover' => $this->rgbValue($hover),
             '--ds-brand-active' => $this->rgbValue($active),
-            '--ds-brand-soft' => $this->rgbValue($this->mix($primary, $white, 0.90)),
-            '--ds-brand-muted' => $this->rgbValue($this->mix($primary, $white, 0.78)),
-            '--ds-brand-border' => $this->rgbValue($this->mix($primary, $white, 0.58)),
+            '--ds-brand-soft' => $this->rgbValue($this->mix($primary, $softTarget, 0.90)),
+            '--ds-brand-muted' => $this->rgbValue($this->mix($primary, $mutedTarget, 0.78)),
+            '--ds-brand-border' => $this->rgbValue($this->accessibleBrandBorder($primary, $surfaceCard, $dark, $white)),
             '--ds-brand-contrast' => $this->rgbValue($contrast),
             '--ds-brand-text' => $this->rgbValue($this->accessibleBrandText($primary, $white, $dark)),
-            '--ds-focus-ring' => $this->rgbValue($primary),
+            '--ds-brand-control-border' => $this->rgbValue($this->accessibleControlBorder($primary, $surfaceCard, $dark)),
+            '--ds-focus-ring' => $this->rgbValue($this->accessibleFocusRing($primary, $surfacePage, $surfaceCard, $dark)),
             '--ds-surface-page' => '246 247 249',
             '--ds-surface-card' => '255 255 255',
             '--ds-surface-muted' => '241 244 247',
@@ -273,6 +282,95 @@ class ThemeTokenService
         }
 
         return $primary;
+    }
+
+    /**
+     * Derive a focus ring color that meets ≥ 3:1 non-text contrast against
+     * both the page surface and the card surface (WCAG 2.1 SC 1.4.11).
+     *
+     * @param  array{int, int, int}  $primary
+     * @param  array{int, int, int}  $surfacePage
+     * @param  array{int, int, int}  $surfaceCard
+     * @param  array{int, int, int}  $dark
+     * @return array{int, int, int}
+     */
+    private function accessibleFocusRing(
+        array $primary,
+        array $surfacePage,
+        array $surfaceCard,
+        array $dark,
+    ): array {
+        if ($this->contrastRatio($primary, $surfacePage) >= 3.0
+            && $this->contrastRatio($primary, $surfaceCard) >= 3.0) {
+            return $primary;
+        }
+
+        for ($step = 1; $step <= 20; $step++) {
+            $candidate = $this->mix($primary, $dark, $step * 0.05);
+
+            if ($this->contrastRatio($candidate, $surfacePage) >= 3.0
+                && $this->contrastRatio($candidate, $surfaceCard) >= 3.0) {
+                return $candidate;
+            }
+        }
+
+        return $dark;
+    }
+
+    /**
+     * Derive a control border color for primary buttons that meets ≥ 3:1
+     * non-text contrast against the surrounding surface (typically card).
+     *
+     * @param  array{int, int, int}  $primary
+     * @param  array{int, int, int}  $surface
+     * @param  array{int, int, int}  $dark
+     * @return array{int, int, int}
+     */
+    private function accessibleControlBorder(array $primary, array $surface, array $dark): array
+    {
+        if ($this->contrastRatio($primary, $surface) >= 3.0) {
+            return $primary;
+        }
+
+        for ($step = 1; $step <= 20; $step++) {
+            $candidate = $this->mix($primary, $dark, $step * 0.05);
+
+            if ($this->contrastRatio($candidate, $surface) >= 3.0) {
+                return $candidate;
+            }
+        }
+
+        return $dark;
+    }
+
+    /**
+     * Derive a brand border color that is visually distinct from surface-card.
+     * Falls back to the default mix for non-light primaries.
+     *
+     * @param  array{int, int, int}  $primary
+     * @param  array{int, int, int}  $surfaceCard
+     * @param  array{int, int, int}  $dark
+     * @param  array{int, int, int}  $white
+     * @return array{int, int, int}
+     */
+    private function accessibleBrandBorder(array $primary, array $surfaceCard, array $dark, array $white): array
+    {
+        $candidate = $this->mix($primary, $white, 0.58);
+
+        if ($this->contrastRatio($candidate, $surfaceCard) >= 3.0) {
+            return $candidate;
+        }
+
+        // Darken from primary until the border is distinct from the surface.
+        for ($step = 1; $step <= 20; $step++) {
+            $candidate = $this->mix($primary, $dark, $step * 0.05);
+
+            if ($this->contrastRatio($candidate, $surfaceCard) >= 3.0) {
+                return $candidate;
+            }
+        }
+
+        return $dark;
     }
 
     /**
