@@ -8,6 +8,7 @@ const allowedVariables = new Set([
     '--ds-brand-soft',
     '--ds-brand-muted',
     '--ds-brand-border',
+    '--ds-brand-control-border',
     '--ds-brand-contrast',
     '--ds-brand-text',
     '--ds-focus-ring',
