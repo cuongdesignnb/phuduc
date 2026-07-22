@@ -1,11 +1,19 @@
-PR 2A changed files from base ead76be1deec5c46b19c971403aeb6ff21604429:
-
-app/Http/Controllers/Admin/SettingController.php
+﻿app/Http/Controllers/Admin/SettingController.php
 app/Providers/AppServiceProvider.php
 app/Services/Storefront/NavigationService.php
 app/Services/Storefront/SiteConfigurationService.php
 app/Services/Storefront/StorefrontPageService.php
 app/Services/Storefront/ThemeTokenService.php
+docs/refactor/evidence/pr2a/ba-review-fixes/focus-ring-contrast.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/git-diff-stat-after-cleanup.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/mobile-focus-trap.md
+docs/refactor/evidence/pr2a/ba-review-fixes/npm-build.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/php-tests.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/pint.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/runtime-token-parity.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/storefront-theme-audit.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/theme-tests.txt
+docs/refactor/evidence/pr2a/ba-review-fixes/ui-button-disabled-manual-qa.md
 docs/refactor/evidence/pr2a/baseline/footer-desktop.png
 docs/refactor/evidence/pr2a/baseline/header-desktop.png
 docs/refactor/evidence/pr2a/baseline/header-mobile-menu-open.png
@@ -21,14 +29,9 @@ docs/refactor/evidence/pr2a/changed-files.txt
 docs/refactor/evidence/pr2a/git-diff-stat.txt
 docs/refactor/evidence/pr2a/hardcoded-color-after.txt
 docs/refactor/evidence/pr2a/hardcoded-color-before.txt
-docs/refactor/evidence/pr2a/lighthouse-home-desktop-run1.json
-docs/refactor/evidence/pr2a/lighthouse-home-desktop-run2.json
-docs/refactor/evidence/pr2a/lighthouse-home-desktop-run3.json
 docs/refactor/evidence/pr2a/lighthouse-home-desktop.json
-docs/refactor/evidence/pr2a/lighthouse-home-mobile-run4.json
-docs/refactor/evidence/pr2a/lighthouse-home-mobile-run5.json
-docs/refactor/evidence/pr2a/lighthouse-home-mobile-run6.json
 docs/refactor/evidence/pr2a/lighthouse-home-mobile.json
+docs/refactor/evidence/pr2a/lighthouse-summary.json
 docs/refactor/evidence/pr2a/manual-qa.md
 docs/refactor/evidence/pr2a/npm-build.txt
 docs/refactor/evidence/pr2a/php-tests.txt
@@ -112,4 +115,5 @@ tailwind.config.js
 tests/Feature/Storefront/HomepageContractTest.php
 tests/Feature/Storefront/SiteThemeContractTest.php
 tests/Feature/Storefront/ThemeBootstrapTest.php
+tests/Unit/Storefront/ThemeRuntimeContractTest.php
 tests/Unit/Storefront/ThemeTokenServiceTest.php

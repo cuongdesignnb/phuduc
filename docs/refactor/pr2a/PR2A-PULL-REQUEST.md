@@ -23,13 +23,22 @@ Establish one dynamic design system for the public storefront and migrate the gl
 - Guest/Admin/non-Admin account destinations are explicit.
 - Product and news cards consume canonical data contracts.
 
+## BA review fixes
+
+- Added accessible focus and control-boundary tokens for light primary colors.
+- Added mobile drawer focus trap and focus restoration.
+- Disabled link-style buttons no longer navigate by mouse or keyboard.
+- Removed intermediate Lighthouse raw reports.
+- Added backend/runtime theme-token parity enforcement.
+
 ## Testing
 
-- PHP: 68 tests, 394 assertions.
-- Theme token/bootstrap/contract: 13 tests, 151 assertions.
+- PHP: 95 tests, 520 assertions.
+- Theme token/bootstrap/contract: 34 tests, 175 assertions.
+- Runtime parity: 2 tests, 52 assertions.
 - Vite production build: pass (874 modules).
 - Static storefront theme audit: pass (43 files, 13 forbidden patterns).
-- Changed-scope Pint: pass (11 files).
+- Changed-scope Pint: pass (3 files).
 - Responsive browser QA: 360, 390, 768, 1024, 1280, 1440 and 1920 px.
 - Lighthouse median mobile: Performance 68, Accessibility 100, Best Practices 100, SEO 100, CLS 0.0001.
 - Lighthouse median desktop: Performance 94, Accessibility 100, Best Practices 100, SEO 100, CLS 0.0007.
@@ -42,6 +51,7 @@ Establish one dynamic design system for the public storefront and migrate the gl
 - Dependency advisories remain deferred.
 - Existing full-repository Pint baseline remains deferred.
 - GitHub Actions is not configured.
+- ESLint is not configured; static theme audit is used instead.
 - The host Node.js version is 20.15.1 while Vite recommends 20.19+ or 22.12+; the production build still passes.
 - The host PHP installation emits optional OCI/Firebird extension warnings; the test suite still passes.
 

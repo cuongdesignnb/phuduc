@@ -1,16 +1,21 @@
-PR2A BA Review Fix — Theme Token Tests
+PR2A BA Review Fix — Theme Token Tests (Final)
 Date: 2026-07-22
 Command: php artisan test tests/Unit/Storefront/ThemeTokenServiceTest.php
 Result: 34 passed (175 assertions)
 Duration: 0.52s
 
-New tests added:
-- test_focus_ring_contrasts_with_page_and_card_surfaces (x7 data sets)
-- test_white_primary_has_visible_focus_ring
-- test_near_white_primary_has_visible_focus_ring
-- test_yellow_primary_has_visible_focus_ring
-- test_white_primary_has_visible_control_border
-- test_hover_and_active_are_distinct (x7 data sets)
-- test_brand_soft_and_muted_are_distinct_from_surface (x7 data sets)
+Command: php artisan test tests/Unit/Storefront/ThemeRuntimeContractTest.php
+Result: 2 passed (52 assertions)
+Duration: 0.19s
+
+Command: php artisan test tests/Feature/Storefront/ThemeBootstrapTest.php
+Result: PASS
+
+Command: php artisan test tests/Feature/Storefront/SiteThemeContractTest.php
+Result: PASS
+
+Runtime parity test added:
+- test_runtime_allowlist_contains_every_backend_theme_token (49 token assertions)
+- test_runtime_allowlist_does_not_contain_user_controlled_tokens
 
 All tests PASS.

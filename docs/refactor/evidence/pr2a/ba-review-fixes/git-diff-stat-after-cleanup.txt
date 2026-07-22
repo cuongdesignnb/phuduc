@@ -1,9 +1,10 @@
-PR2A BA Review Fix — Git Diff Stat After Lighthouse Cleanup
+PR2A BA Review Fix — Git Diff Stat (Final)
 Date: 2026-07-22
-Base: origin/main
+Base: ead76be1deec5c46b19c971403aeb6ff21604429
+Head: dece5da8503ef13a77872b935f3c306f1f37d213
 
-Before cleanup: 113 files changed, 72961 insertions(+), 918 deletions(-)
-After cleanup:  107 files changed, 20622 insertions(+), 918 deletions(-)
+Before Lighthouse cleanup: 113 files changed, 72961 insertions(+), 918 deletions(-)
+After final commit:        119 files changed, 20909 insertions(+), 918 deletions(-)
 
 Removed:
   docs/refactor/evidence/pr2a/lighthouse-home-desktop-run1.json
@@ -19,3 +20,8 @@ Retained:
 
 Added:
   docs/refactor/evidence/pr2a/lighthouse-summary.json (compact median summary)
+  docs/refactor/evidence/pr2a/ba-review-fixes/ (10 evidence files)
+  tests/Unit/Storefront/ThemeRuntimeContractTest.php
+
+Note: the diff stat includes evidence files themselves. The count is expected
+to increase by a small margin with each evidence update.
