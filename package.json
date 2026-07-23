@@ -4,6 +4,8 @@
     "type": "module",
     "scripts": {
         "audit:storefront-theme": "node scripts/audit-storefront-theme.mjs",
+        "audit:pr2b-pages": "node scripts/audit-pr2b-pages.mjs",
+        "audit:pr2b-evidence": "node scripts/audit-pr2b-evidence.mjs",
         "build": "vite build",
         "dev": "vite"
     },

@@ -1,0 +1,13 @@
+ .../Storefront/ProductCatalogFilterResolver.php    | 62 +++++++++++++++--
+ docs/refactor/evidence/pr2b/changed-files.txt      |  8 +--
+ docs/refactor/evidence/pr2b/contract-tests.txt     |  7 +-
+ docs/refactor/evidence/pr2b/git-diff-stat.txt      | 24 +++----
+ docs/refactor/evidence/pr2b/manual-qa.md           | 14 ++--
+ docs/refactor/evidence/pr2b/php-tests.txt          |  9 ++-
+ docs/refactor/evidence/pr2b/pint.txt               |  4 +-
+ docs/refactor/evidence/pr2b/pr2b-page-audit.txt    |  7 +-
+ docs/refactor/evidence/pr2b/utf8-audit.txt         | 25 ++++---
+ docs/refactor/pr2b/PR2B-PULL-REQUEST.md            | 51 +++++++-------
+ package.json                                       |  1 +
+ .../Storefront/ProductCatalogContractTest.php      | 79 ++++++++++++++++++++--
+ 12 files changed, 211 insertions(+), 80 deletions(-)

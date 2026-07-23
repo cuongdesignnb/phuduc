@@ -2,6 +2,13 @@
 import { Link } from '@inertiajs/vue3';
 
 defineProps({ links: { type: Array, default: () => [] } });
+
+const labelFor = (label) => {
+    const text = String(label);
+    if (text.includes('Previous') || text.includes('laquo')) return 'Trước';
+    if (text.includes('Next') || text.includes('raquo')) return 'Sau';
+    return text.replace(/&[^;]+;/g, '').trim();
+};
 </script>
 
 <template>
@@ -13,7 +20,10 @@ defineProps({ links: { type: Array, default: () => [] } });
             :href="link.url || undefined"
             class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm"
             :class="link.active ? 'border-brand bg-brand text-brand-contrast' : link.url ? 'border-line bg-surface-card hover:border-brand-border' : 'border-line-subtle text-content-muted opacity-60'"
-            v-html="link.label"
-        />
+            :aria-current="link.active ? 'page' : undefined"
+            :aria-disabled="!link.url ? 'true' : undefined"
+        >
+            {{ labelFor(link.label) }}
+        </component>
     </nav>
 </template>

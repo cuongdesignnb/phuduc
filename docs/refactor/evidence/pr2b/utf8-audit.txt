@@ -1,0 +1,22 @@
+COMMAND=node scripts/audit-pr2b-pages.mjs && node scripts/audit-pr2b-evidence.mjs
+RESULT=PASS
+MOJIBAKE_REPLACEMENT_HITS=0
+UNACCENTED_VIETNAMESE_LABEL_HITS=0
+EVIDENCE_MOJIBAKE_HITS=0
+EVIDENCE_MANDATORY_LABELS=PASS
+LEGACY_FORMATTER_HITS=0
+DIRECT_STORAGE_PATH_HITS=0
+LEGACY_THEME_HITS=0
+SOURCE_FILES_SCANNED=49
+EVIDENCE_FILES_SCANNED=22
+
+Checked mandatory labels:
+- Chọn hình
+- Phân trang
+- Trước
+- Đánh giá đã duyệt
+- Xóa bộ lọc
+- Sứ mệnh
+- Tầm nhìn
+- Gọi điện
+- Điều hướng phân cấp

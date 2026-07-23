@@ -1,0 +1,9 @@
+COMMAND=docker compose exec -T app npm run build
+RESULT=PASS
+VITE_MODULES_TRANSFORMED=887
+APP_JS=public/build/assets/app-B2LLXGdE.js
+APP_JS_SIZE=324.68 kB
+APP_JS_GZIP=117.53 kB
+APP_CSS=public/build/assets/app-niMEnUdI.css
+APP_CSS_SIZE=91.54 kB
+APP_CSS_GZIP=14.56 kB

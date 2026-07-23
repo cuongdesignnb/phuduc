@@ -1,0 +1,4 @@
+COMMAND=docker compose exec -T app npm run audit:storefront-theme
+RESULT=PASS
+FILES_SCANNED=49
+FORBIDDEN_PATTERNS=13

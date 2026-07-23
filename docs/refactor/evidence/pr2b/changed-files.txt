@@ -1,0 +1,12 @@
+app/Services/Storefront/ProductCatalogFilterResolver.php
+docs/refactor/evidence/pr2b/changed-files.txt
+docs/refactor/evidence/pr2b/contract-tests.txt
+docs/refactor/evidence/pr2b/git-diff-stat.txt
+docs/refactor/evidence/pr2b/manual-qa.md
+docs/refactor/evidence/pr2b/php-tests.txt
+docs/refactor/evidence/pr2b/pint.txt
+docs/refactor/evidence/pr2b/pr2b-page-audit.txt
+docs/refactor/evidence/pr2b/utf8-audit.txt
+docs/refactor/pr2b/PR2B-PULL-REQUEST.md
+package.json
+tests/Feature/Storefront/ProductCatalogContractTest.php

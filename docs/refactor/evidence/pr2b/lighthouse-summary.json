@@ -1,0 +1,170 @@
+{
+  "generated_at": "2026-07-23T04:25:06.713Z",
+  "method": {
+    "lighthouse_version": "12.8.2",
+    "mobile_runs_per_route": 3,
+    "desktop_runs_per_route": 1,
+    "mobile_throttling": "Lighthouse simulated default",
+    "throttling_method_provided": false,
+    "raw_reports_committed": false,
+    "production_compressed_retest_required": true
+  },
+  "routes": {
+    "product-index": {
+      "url": "http://localhost:8741/san-pham",
+      "mobile": {
+        "runs": [
+          62,
+          62,
+          61
+        ],
+        "median_performance": 62,
+        "accessibility": 95,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "5.0 s",
+        "lcp": "9.5 s",
+        "speed_index": "5.0 s",
+        "tbt": "30 ms",
+        "cls": 0
+      },
+      "desktop": {
+        "performance": 99,
+        "accessibility": 95,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "0.7 s",
+        "lcp": "0.9 s",
+        "speed_index": "0.7 s",
+        "tbt": "0 ms",
+        "cls": 0.002
+      }
+    },
+    "product-detail": {
+      "url": "http://localhost:8741/san-pham/qa-pr2b-forklift-a",
+      "mobile": {
+        "runs": [
+          62,
+          62,
+          62
+        ],
+        "median_performance": 62,
+        "accessibility": 96,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "5.1 s",
+        "lcp": "9.5 s",
+        "speed_index": "5.1 s",
+        "tbt": "30 ms",
+        "cls": 0
+      },
+      "desktop": {
+        "performance": 99,
+        "accessibility": 96,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "0.7 s",
+        "lcp": "0.9 s",
+        "speed_index": "0.7 s",
+        "tbt": "0 ms",
+        "cls": 0.001
+      }
+    },
+    "news-index": {
+      "url": "http://localhost:8741/tin-tuc",
+      "mobile": {
+        "runs": [
+          62,
+          62,
+          63
+        ],
+        "median_performance": 62,
+        "accessibility": 95,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "5.1 s",
+        "lcp": "9.3 s",
+        "speed_index": "5.1 s",
+        "tbt": "30 ms",
+        "cls": 0
+      },
+      "desktop": {
+        "performance": 99,
+        "accessibility": 95,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "0.7 s",
+        "lcp": "0.9 s",
+        "speed_index": "0.7 s",
+        "tbt": "0 ms",
+        "cls": 0.002
+      }
+    },
+    "news-detail": {
+      "url": "http://localhost:8741/tin-tuc/qa-pr2b-article-1",
+      "mobile": {
+        "runs": [
+          62,
+          62,
+          62
+        ],
+        "median_performance": 62,
+        "accessibility": 96,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "5.0 s",
+        "lcp": "9.3 s",
+        "speed_index": "5.0 s",
+        "tbt": "20 ms",
+        "cls": 0
+      },
+      "desktop": {
+        "performance": 99,
+        "accessibility": 96,
+        "best_practices": 96,
+        "seo": 100,
+        "fcp": "0.8 s",
+        "lcp": "0.9 s",
+        "speed_index": "0.8 s",
+        "tbt": "0 ms",
+        "cls": 0.001
+      }
+    },
+    "about": {
+      "url": "http://localhost:8741/gioi-thieu",
+      "mobile": {
+        "runs": [
+          62,
+          62,
+          62
+        ],
+        "median_performance": 62,
+        "accessibility": 96,
+        "best_practices": 100,
+        "seo": 100,
+        "fcp": "5.0 s",
+        "lcp": "9.5 s",
+        "speed_index": "5.0 s",
+        "tbt": "20 ms",
+        "cls": 0
+      },
+      "desktop": {
+        "performance": 99,
+        "accessibility": 96,
+        "best_practices": 100,
+        "seo": 100,
+        "fcp": "0.7 s",
+        "lcp": "0.9 s",
+        "speed_index": "0.7 s",
+        "tbt": "0 ms",
+        "cls": 0.001
+      }
+    }
+  },
+  "minimums": {
+    "accessibility": 95,
+    "bestPractices": 96,
+    "seo": 100,
+    "maximum_cls": 0.002
+  }
+}
