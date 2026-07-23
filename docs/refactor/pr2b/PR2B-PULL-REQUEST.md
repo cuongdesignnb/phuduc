@@ -1,6 +1,6 @@
 ## Summary
 
-Unify the product catalog, product detail, news and About pages on the canonical storefront data and design systems, with final BA review fixes for Vietnamese content, accessibility, query isolation, SEO schema, rich-content URL security and the final product filter validation flow.
+Unify the product catalog, product detail, news and About pages on the canonical storefront data and design systems, with final BA closure fixes for UTF-8 evidence and Vietnamese Product Catalog validation messages.
 
 ## Major Changes
 
@@ -10,31 +10,28 @@ Unify the product catalog, product detail, news and About pages on the canonical
 - Shared product/news cards, pagination, filters and rich-content rendering.
 - URL-synchronized filters with visible validation errors for invalid price ranges.
 - Single-source Product Catalog filter resolver separating display filters from safe query filters.
+- Product Catalog validation messages are Vietnamese without relying on APP_LOCALE.
 - Deterministic related products and posts.
 - Centralized media, price and date presentation.
 - Correct review aggregates.
 - SEO and structured-data normalization.
-- Product 360 viewer and Product Gallery accessibility improvements.
-- UTF-8, unaccented-label, hardcoded-path and filter-architecture static audits.
+- UTF-8, unaccented-label, evidence-encoding, hardcoded-path and filter-architecture static audits.
 
-## Final BA Fixes
+## Final Closure Fixes
 
-- Removed duplicate filter rules from ProductController and deleted the unused ProductCatalogRequest.
-- Added ProductCatalogFilterResolver as the only validation/normalization source.
-- Split raw display filters from safe query filters so invalid values never reach the query builder.
-- Preserved raw invalid values so users can correct them.
-- Focus now moves to the first invalid field in DOM order: search, min price, max price, sort.
-- Error summary now uses role=alert and aria-live=polite.
-- Restored fully accented Vietnamese labels in public storefront components.
-- Added screen-reader labels for Product Gallery, Pagination and Breadcrumbs.
-- Ensured Product Detail and other storefront pages keep exactly one H1.
-- Added About meta description fallback and conditional Organization contact/address schema.
-- Hardened RichHtmlSanitizer URL allowlists against obfuscated JavaScript, data, file and custom schemes.
+- Repaired PR2B evidence mojibake in manual QA and UTF-8 audit evidence.
+- Added `audit:pr2b-evidence` to scan PR2B evidence and PR markdown files.
+- Added mandatory accented-label checks for PR2B evidence.
+- Added resolver-level Vietnamese validation messages and attributes.
+- Verified English filter validation hits are 0.
+- Preserved invalid raw values while excluding invalid values from query filters.
+- Retested focus behavior at 360px and 1024px.
 
 ## Validation
 
-- PHP suite: 158 passed, 1018 assertions.
-- Product filter contract slice: 9 passed, 132 assertions.
+- PHP suite: 161 passed, 1215 assertions.
+- Product filter contract slice: 12 passed, 329 assertions.
+- Evidence UTF-8 tests: PASS.
 - Product query counts: 3 / 3.
 - Product detail query counts: 5 / 5.
 - News index query counts: 4 / 4.
@@ -42,11 +39,13 @@ Unify the product catalog, product detail, news and About pages on the canonical
 - About query count: 1.
 - Vite production build: PASS.
 - Storefront theme audit: PASS.
-- PR2B page audit: PASS, 49 files scanned.
-- ProductController Validator::make hits: 0.
-- Duplicate product filter rulesets: 0.
-- Unused ProductCatalogRequest: 0.
-- Pint: PASS, 28 files.
+- PR2B page audit: PASS, 49 source files scanned.
+- PR2B evidence audit: PASS, 22 evidence files scanned.
+- Evidence mojibake hits: 0.
+- Evidence mandatory labels: PASS.
+- Product filter validation language: Vietnamese.
+- English filter validation hits: 0.
+- Pint: PASS, 2 files.
 - git diff check: PASS.
 
 ## Filter QA
@@ -60,10 +59,11 @@ Unify the product catalog, product detail, news and About pages on the canonical
 - Raw invalid values preserved: PASS.
 - Correct error field focused at 360px and 1024px: PASS.
 - aria-invalid and aria-describedby per invalid field: PASS.
+- Error messages are Vietnamese in browser QA: PASS.
 
 ## Lighthouse
 
-Existing Lighthouse evidence is retained because this round only changes validation architecture and focus behavior.
+Existing Lighthouse evidence is retained because this round only changes validation text and evidence encoding.
 
 - Product Index mobile median: 62, desktop: 99.
 - Product Detail mobile median: 62, desktop: 99.
@@ -81,6 +81,7 @@ Existing Lighthouse evidence is retained because this round only changes validat
 - `docs/refactor/evidence/pr2b/php-tests.txt`
 - `docs/refactor/evidence/pr2b/contract-tests.txt`
 - `docs/refactor/evidence/pr2b/manual-qa.md`
+- `docs/refactor/evidence/pr2b/utf8-audit.txt`
 - `docs/refactor/evidence/pr2b/pr2b-page-audit.txt`
 - `docs/refactor/evidence/pr2b/pint.txt`
 - `docs/refactor/evidence/pr2b/lighthouse-summary.json`

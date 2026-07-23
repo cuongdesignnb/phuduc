@@ -65,7 +65,7 @@ class ProductCatalogContractTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('page.catalog.items', 1)
                 ->where('page.catalog.filters.search', $search)
-                ->has('errors.search.0')
+                ->where('errors.search.0', 'Từ khóa tìm kiếm không được vượt quá 100 ký tự.')
             );
     }
 
@@ -78,7 +78,7 @@ class ProductCatalogContractTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('page.catalog.items', 1)
                 ->where('page.catalog.filters.min_price', '-1')
-                ->has('errors.min_price.0')
+                ->where('errors.min_price.0', 'Giá từ phải lớn hơn hoặc bằng 0.')
             );
     }
 
@@ -91,7 +91,7 @@ class ProductCatalogContractTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('page.catalog.items', 1)
                 ->where('page.catalog.filters.max_price', '-1')
-                ->has('errors.max_price.0')
+                ->where('errors.max_price.0', 'Giá đến phải lớn hơn hoặc bằng 0.')
             );
     }
 
@@ -104,7 +104,7 @@ class ProductCatalogContractTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('page.catalog.items', 1)
                 ->where('page.catalog.filters.max_price', '1000000000001')
-                ->has('errors.max_price.0')
+                ->where('errors.max_price.0', 'Giá đến không được vượt quá 1.000.000.000.000.')
             );
     }
 
@@ -118,7 +118,7 @@ class ProductCatalogContractTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('page.catalog.items.0.slug', 'newer')
                 ->where('page.catalog.filters.sort', 'invalid')
-                ->has('errors.sort.0')
+                ->where('errors.sort.0', 'Tùy chọn sắp xếp không hợp lệ.')
             );
     }
 
@@ -135,6 +135,75 @@ class ProductCatalogContractTest extends TestCase
                 ->where('page.catalog.filters.max_price', '100')
                 ->where('errors.min_price.0', 'Giá tối thiểu phải nhỏ hơn hoặc bằng giá tối đa.')
             );
+    }
+
+    public function test_product_filter_validation_messages_are_vietnamese_without_english_fallbacks(): void
+    {
+        $response = $this->get('/san-pham?search='.str_repeat('x', 101).'&min_price=-1&max_price=1000000000001&sort=invalid&page=0')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('errors.search.0', 'Từ khóa tìm kiếm không được vượt quá 100 ký tự.')
+                ->where('errors.min_price.0', 'Giá từ phải lớn hơn hoặc bằng 0.')
+                ->where('errors.max_price.0', 'Giá đến không được vượt quá 1.000.000.000.000.')
+                ->where('errors.sort.0', 'Tùy chọn sắp xếp không hợp lệ.')
+                ->where('errors.page.0', 'Số trang phải lớn hơn hoặc bằng 1.')
+            );
+
+        $content = $response->getContent();
+
+        foreach ([
+            'The search field',
+            'The min price field',
+            'The max price field',
+            'The selected sort',
+            'The page field',
+        ] as $message) {
+            $this->assertStringNotContainsString($message, $content);
+        }
+    }
+
+    public function test_product_filter_validation_covers_all_required_vietnamese_messages(): void
+    {
+        $scenarios = [
+            ['/san-pham?search[]=x', 'errors.search.0', 'Từ khóa tìm kiếm phải là chuỗi.'],
+            ['/san-pham?search='.str_repeat('x', 101), 'errors.search.0', 'Từ khóa tìm kiếm không được vượt quá 100 ký tự.'],
+            ['/san-pham?min_price=abc', 'errors.min_price.0', 'Giá từ phải là số.'],
+            ['/san-pham?min_price=-1', 'errors.min_price.0', 'Giá từ phải lớn hơn hoặc bằng 0.'],
+            ['/san-pham?min_price=1000000000001', 'errors.min_price.0', 'Giá từ không được vượt quá 1.000.000.000.000.'],
+            ['/san-pham?max_price=abc', 'errors.max_price.0', 'Giá đến phải là số.'],
+            ['/san-pham?max_price=-1', 'errors.max_price.0', 'Giá đến phải lớn hơn hoặc bằng 0.'],
+            ['/san-pham?max_price=1000000000001', 'errors.max_price.0', 'Giá đến không được vượt quá 1.000.000.000.000.'],
+            ['/san-pham?sort=invalid', 'errors.sort.0', 'Tùy chọn sắp xếp không hợp lệ.'],
+            ['/san-pham?page=abc', 'errors.page.0', 'Số trang phải là số nguyên.'],
+            ['/san-pham?page=0', 'errors.page.0', 'Số trang phải lớn hơn hoặc bằng 1.'],
+            ['/san-pham?min_price=1000&max_price=100', 'errors.min_price.0', 'Giá tối thiểu phải nhỏ hơn hoặc bằng giá tối đa.'],
+        ];
+
+        foreach ($scenarios as [$url, $path, $message]) {
+            $this->get($url)
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page->where($path, $message));
+        }
+    }
+
+    public function test_pr2b_evidence_files_keep_utf8_vietnamese_labels(): void
+    {
+        $files = [
+            base_path('docs/refactor/evidence/pr2b/manual-qa.md'),
+            base_path('docs/refactor/evidence/pr2b/utf8-audit.txt'),
+        ];
+
+        foreach ($files as $file) {
+            $content = file_get_contents($file);
+
+            foreach (['Xóa bộ lọc', 'Chọn hình', 'Phân trang', 'Trước', 'Đánh giá đã duyệt', 'Sứ mệnh', 'Tầm nhìn', 'Gọi điện', 'Điều hướng phân cấp'] as $label) {
+                $this->assertStringContainsString($label, $content);
+            }
+
+            foreach (['X?a b? l?c', 'Ch?n h?nh', 'Ph?n trang', 'Tr??c', '??nh gi? ?? duy?t', 'S? m?nh', 'T?m nh?n', 'G?i ?i?n', '?i?u h??ng ph?n c?p'] as $label) {
+                $this->assertStringNotContainsString($label, $content);
+            }
+        }
     }
 
     public function test_product_filter_validation_has_single_architectural_source(): void

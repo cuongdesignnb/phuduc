@@ -1,13 +1,13 @@
- app/Http/Controllers/Guest/ProductController.php   |  60 ++----------
- .../Requests/Storefront/ProductCatalogRequest.php  |  57 -----------
- app/Services/Storefront/ProductCatalogService.php  |   2 +-
- docs/refactor/evidence/pr2b/contract-tests.txt     |  23 +++--
- docs/refactor/evidence/pr2b/manual-qa.md           |  74 ++++++++------
- docs/refactor/evidence/pr2b/php-tests.txt          |   6 +-
- docs/refactor/evidence/pr2b/pint.txt               |   5 +-
- docs/refactor/evidence/pr2b/pr2b-page-audit.txt    |   5 +-
- docs/refactor/pr2b/PR2B-PULL-REQUEST.md            |  51 ++++++----
- .../Storefront/ProductCatalogFilters.vue           |  21 ++--
- scripts/audit-pr2b-pages.mjs                       |  21 ++++
- .../Storefront/ProductCatalogContractTest.php      | 107 ++++++++++++++++++---
- 12 files changed, 235 insertions(+), 197 deletions(-)
+ .../Storefront/ProductCatalogFilterResolver.php    | 62 +++++++++++++++--
+ docs/refactor/evidence/pr2b/changed-files.txt      |  8 +--
+ docs/refactor/evidence/pr2b/contract-tests.txt     |  7 +-
+ docs/refactor/evidence/pr2b/git-diff-stat.txt      | 24 +++----
+ docs/refactor/evidence/pr2b/manual-qa.md           | 14 ++--
+ docs/refactor/evidence/pr2b/php-tests.txt          |  9 ++-
+ docs/refactor/evidence/pr2b/pint.txt               |  4 +-
+ docs/refactor/evidence/pr2b/pr2b-page-audit.txt    |  7 +-
+ docs/refactor/evidence/pr2b/utf8-audit.txt         | 25 ++++---
+ docs/refactor/pr2b/PR2B-PULL-REQUEST.md            | 51 +++++++-------
+ package.json                                       |  1 +
+ .../Storefront/ProductCatalogContractTest.php      | 79 ++++++++++++++++++++--
+ 12 files changed, 211 insertions(+), 80 deletions(-)
