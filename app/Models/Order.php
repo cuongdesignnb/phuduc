@@ -8,7 +8,7 @@ class Order extends Model
 {
     protected $fillable = [
         'order_number', 'customer_name', 'customer_phone', 'customer_email',
-        'shipping_address', 'total_amount', 'status', 'notes',
+        'checkout_intent', 'public_token', 'shipping_address', 'total_amount', 'status', 'notes',
     ];
 
     protected function casts(): array
@@ -30,6 +30,6 @@ class Order extends Model
 
     public static function generateOrderNumber(): string
     {
-        return 'ORD-' . strtoupper(uniqid());
+        return 'ORD-'.strtoupper(uniqid());
     }
 }

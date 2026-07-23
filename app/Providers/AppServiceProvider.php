@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Storefront\CartSessionService;
 use App\Services\Storefront\NavigationService;
 use App\Services\Storefront\SiteConfigurationService;
 use App\Services\Storefront\ThemeTokenService;
@@ -34,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Inertia::share([
-            'cart' => fn () => session()->get('cart', []),
+            'cart_count' => fn () => app(CartSessionService::class)->count(),
             'flash' => fn () => [
                 'success' => session('success'),
                 'error' => session('error'),

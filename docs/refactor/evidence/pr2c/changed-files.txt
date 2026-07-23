@@ -1,0 +1,3 @@
+RESULT=STAGED
+FILES=80
+SCOPE=cart session and mutations, checkout idempotency and stock locking, order and warranty lookup privacy, DTO contracts, tests, audits, documentation, and browser evidence screenshots

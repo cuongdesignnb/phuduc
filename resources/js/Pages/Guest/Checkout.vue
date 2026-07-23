@@ -1,74 +1,53 @@
 <script setup>
 import GuestPageLayout from '@/Layouts/GuestPageLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
 
-const props = defineProps({ cart: Array });
-const total = computed(() => (props.cart || []).reduce((sum, item) => sum + item.price * item.quantity, 0));
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
-
-const form = useForm({
-    customer_name: '',
-    customer_phone: '',
-    customer_email: '',
-    shipping_address: '',
-    notes: '',
+const props = defineProps({
+    items: { type: Array, default: () => [] },
+    summary: { type: Object, default: () => ({}) },
+    warnings: { type: Array, default: () => [] },
+    checkout_intent: { type: String, required: true },
+    seo: { type: Object, default: () => ({}) },
 });
 
-const submit = () => form.post(route('checkout.store'));
+const form = useForm({ checkout_intent: props.checkout_intent, customer_name: '', customer_phone: '', customer_email: '', shipping_address: '', notes: '' });
+const submit = () => form.post(route('checkout.store'), { preserveScroll: true });
 </script>
 
 <template>
-    <Head title="Thanh toán" />
+    <Head v-bind="seo" />
     <GuestPageLayout>
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-            <h1 class="text-2xl font-display font-bold text-ink-primary mb-8">Thanh toán</h1>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <form @submit.prevent="submit" class="lg:col-span-2 storefront-card p-6 space-y-4">
-                    <h3 class="text-lg font-display font-bold text-ink-primary">Thông tin giao hàng</h3>
-                    <div class="storefront-divider"></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm text-ink-secondary mb-1">Họ tên *</label>
-                            <input v-model="form.customer_name" type="text" required class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition" />
-                            <p v-if="form.errors.customer_name" class="mt-1 text-sm text-red-500">{{ form.errors.customer_name }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-ink-secondary mb-1">Số điện thoại *</label>
-                            <input v-model="form.customer_phone" type="text" required class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition" />
-                            <p v-if="form.errors.customer_phone" class="mt-1 text-sm text-red-500">{{ form.errors.customer_phone }}</p>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm text-ink-secondary mb-1">Email</label>
-                            <input v-model="form.customer_email" type="email" class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition" />
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm text-ink-secondary mb-1">Địa chỉ giao hàng *</label>
-                            <textarea v-model="form.shipping_address" rows="2" required class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition"></textarea>
-                            <p v-if="form.errors.shipping_address" class="mt-1 text-sm text-red-500">{{ form.errors.shipping_address }}</p>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm text-ink-secondary mb-1">Ghi chú</label>
-                            <textarea v-model="form.notes" rows="2" class="w-full px-4 py-2.5 bg-white border border-surface-border rounded-xl text-sm text-ink-primary placeholder-ink-light focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 transition"></textarea>
-                        </div>
+        <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <h1 class="mb-8 text-2xl font-display font-bold text-content-primary">Thanh toán</h1>
+            <div v-if="warnings.length" class="mb-6 space-y-2" role="status">
+                <p v-for="warning in warnings" :key="warning" class="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">{{ warning }}</p>
+            </div>
+            <p v-if="form.errors.cart" class="mb-6 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">{{ form.errors.cart }}</p>
+
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <form class="space-y-4 rounded-lg border border-line bg-surface-card p-6 lg:col-span-2" @submit.prevent="submit">
+                    <h2 class="text-lg font-display font-bold text-content-primary">Thông tin giao hàng</h2>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <label class="text-sm font-semibold text-content-secondary">Họ tên *<input v-model="form.customer_name" type="text" maxlength="255" required class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" :aria-invalid="!!form.errors.customer_name" /> <span v-if="form.errors.customer_name" class="mt-1 block text-danger">{{ form.errors.customer_name }}</span></label>
+                        <label class="text-sm font-semibold text-content-secondary">Số điện thoại *<input v-model="form.customer_phone" type="tel" maxlength="20" required class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" :aria-invalid="!!form.errors.customer_phone" /> <span v-if="form.errors.customer_phone" class="mt-1 block text-danger">{{ form.errors.customer_phone }}</span></label>
+                        <label class="text-sm font-semibold text-content-secondary md:col-span-2">Email<input v-model="form.customer_email" type="email" maxlength="255" class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" /> <span v-if="form.errors.customer_email" class="mt-1 block text-danger">{{ form.errors.customer_email }}</span></label>
+                        <label class="text-sm font-semibold text-content-secondary md:col-span-2">Địa chỉ giao hàng *<textarea v-model="form.shipping_address" rows="3" maxlength="1000" required class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" :aria-invalid="!!form.errors.shipping_address" /> <span v-if="form.errors.shipping_address" class="mt-1 block text-danger">{{ form.errors.shipping_address }}</span></label>
+                        <label class="text-sm font-semibold text-content-secondary md:col-span-2">Ghi chú<textarea v-model="form.notes" rows="3" maxlength="1000" class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" /></label>
                     </div>
-                    <button type="submit" :disabled="form.processing" class="btn-primary w-full disabled:opacity-50">Đặt hàng</button>
+                    <p v-if="form.errors.checkout_intent" class="text-sm text-danger" role="alert">{{ form.errors.checkout_intent }}</p>
+                    <button type="submit" :disabled="form.processing" class="btn-primary min-h-11 w-full disabled:opacity-50">{{ form.processing ? 'Đang xử lý...' : 'Đặt hàng' }}</button>
                 </form>
 
-                <!-- Order Summary -->
-                <div class="storefront-card p-6 h-fit">
-                    <h3 class="text-lg font-display font-bold text-ink-primary mb-4">Đơn hàng của bạn</h3>
+                <section class="h-fit rounded-lg border border-line bg-surface-card p-6" aria-labelledby="checkout-summary-title">
+                    <h2 id="checkout-summary-title" class="mb-4 text-lg font-display font-bold text-content-primary">Đơn hàng của bạn</h2>
                     <div class="space-y-3">
-                        <div v-for="item in cart" :key="item.product_id" class="flex justify-between text-sm">
-                            <span class="text-ink-secondary">{{ item.name }} × {{ item.quantity }}</span>
-                            <span class="text-ink-primary font-medium">{{ formatPrice(item.price * item.quantity) }}</span>
+                        <div v-for="item in items" :key="item.product_id" class="flex justify-between gap-4 text-sm">
+                            <span class="text-content-secondary">{{ item.name }} × {{ item.quantity }}</span>
+                            <span class="font-semibold text-content-primary">{{ item.line_total_display }}</span>
                         </div>
                     </div>
-                    <div class="border-t border-surface-border mt-4 pt-4 flex justify-between">
-                        <span class="font-medium text-ink-secondary">Tổng cộng</span>
-                        <span class="text-xl font-display font-bold text-brand-hover">{{ formatPrice(total) }}</span>
-                    </div>
-                </div>
+                    <div class="mt-4 flex justify-between border-t border-line pt-4"><span class="font-semibold text-content-secondary">Tổng cộng</span><span class="text-xl font-display font-bold text-brand-text">{{ summary.total_display }}</span></div>
+                </section>
             </div>
         </div>
     </GuestPageLayout>

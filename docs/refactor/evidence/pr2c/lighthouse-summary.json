@@ -1,0 +1,6 @@
+{
+  "status": "NOT_RUN",
+  "reason": "Lighthouse CLI is not present in the existing dependency set; no dependency was installed.",
+  "production_compressed_retest": "NOT_RUN",
+  "scores": null
+}

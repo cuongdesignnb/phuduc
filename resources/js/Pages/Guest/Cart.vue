@@ -1,65 +1,62 @@
 <script setup>
 import GuestPageLayout from '@/Layouts/GuestPageLayout.vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 
-const page = usePage();
-const cart = computed(() => Object.values(page.props.cart || {}));
-const total = computed(() => cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0));
+defineProps({
+    items: { type: Array, default: () => [] },
+    summary: { type: Object, default: () => ({}) },
+    warnings: { type: Array, default: () => [] },
+    seo: { type: Object, default: () => ({}) },
+});
 
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
-
-const updateQty = (productId, qty) => {
-    router.patch(route('cart.update'), { product_id: productId, quantity: qty }, { preserveScroll: true });
-};
-
-const removeItem = (productId) => {
-    router.delete(route('cart.remove'), { data: { product_id: productId }, preserveScroll: true });
-};
+const updateQty = (productId, quantity) => router.patch(route('cart.update'), { product_id: productId, quantity }, { preserveScroll: true });
+const removeItem = (productId) => router.delete(route('cart.remove'), { data: { product_id: productId }, preserveScroll: true });
+const clearCart = () => router.post(route('cart.clear'), {}, { preserveScroll: true });
 </script>
 
 <template>
-    <Head title="Giỏ hàng" />
+    <Head v-bind="seo" />
     <GuestPageLayout>
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-            <h1 class="text-2xl font-display font-bold text-ink-primary mb-8">Giỏ hàng</h1>
+        <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <h1 class="mb-8 text-2xl font-display font-bold text-content-primary">Giỏ hàng</h1>
+            <div v-if="warnings.length" class="mb-6 space-y-2" role="status">
+                <p v-for="warning in warnings" :key="warning" class="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">{{ warning }}</p>
+            </div>
 
-            <div v-if="cart.length" class="space-y-6">
-                <div class="storefront-card overflow-hidden">
-                    <div v-for="item in cart" :key="item.product_id" class="flex items-center gap-4 p-4 border-b border-surface-border last:border-0">
-                        <img v-if="item.image" :src="'/storage/' + item.image" class="w-16 h-16 object-cover rounded-lg border border-surface-border" />
-                        <div v-else class="w-16 h-16 bg-surface-muted rounded-lg border border-surface-border"></div>
-                        <div class="flex-1">
-                            <Link :href="route('products.show', item.slug)" class="text-sm font-medium text-ink-primary hover:text-brand-hover transition-colors">{{ item.name }}</Link>
-                            <p class="text-sm text-brand-hover font-display font-bold mt-1">{{ formatPrice(item.price) }}</p>
+            <div v-if="items.length" class="space-y-6">
+                <div class="overflow-hidden rounded-lg border border-line bg-surface-card">
+                    <div v-for="item in items" :key="item.product_id" class="flex flex-wrap items-center gap-4 border-b border-line p-4 last:border-0 sm:flex-nowrap">
+                        <img v-if="item.image_url" :src="item.image_url" :alt="item.name" class="h-16 w-16 rounded-lg border border-line object-cover" />
+                        <div v-else class="h-16 w-16 rounded-lg border border-line bg-surface-muted" aria-hidden="true"></div>
+                        <div class="min-w-0 flex-1">
+                            <Link :href="route('products.show', item.slug)" class="text-sm font-semibold text-content-primary hover:text-brand-text">{{ item.name }}</Link>
+                            <p class="mt-1 text-sm font-semibold text-brand-text">{{ item.unit_price_display }}</p>
                         </div>
-                        <div class="flex items-center border border-surface-border rounded-xl bg-surface-muted overflow-hidden">
-                            <button @click="updateQty(item.product_id, item.quantity - 1)" class="px-3 py-1.5 text-ink-secondary hover:text-brand-hover hover:bg-black/[0.02] transition-colors">−</button>
-                            <span class="px-3 py-1.5 text-sm text-ink-primary font-display">{{ item.quantity }}</span>
-                            <button @click="updateQty(item.product_id, item.quantity + 1)" class="px-3 py-1.5 text-ink-secondary hover:text-brand-hover hover:bg-black/[0.02] transition-colors">+</button>
+                        <div class="flex items-center rounded-lg border border-line bg-surface-muted">
+                            <button type="button" class="grid min-h-11 min-w-11 place-items-center" :disabled="item.quantity <= 1" :aria-label="`Giảm số lượng ${item.name}`" @click="updateQty(item.product_id, item.quantity - 1)">−</button>
+                            <output class="min-w-10 text-center text-sm font-semibold" :aria-label="`Số lượng ${item.name}: ${item.quantity}`">{{ item.quantity }}</output>
+                            <button type="button" class="grid min-h-11 min-w-11 place-items-center" :disabled="item.quantity >= Math.min(item.stock, 99)" :aria-label="`Tăng số lượng ${item.name}`" @click="updateQty(item.product_id, item.quantity + 1)">+</button>
                         </div>
-                        <div class="text-sm font-display font-bold text-ink-primary w-28 text-right">{{ formatPrice(item.price * item.quantity) }}</div>
-                        <button @click="removeItem(item.product_id)" class="text-ink-light hover:text-red-500 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
+                        <div class="w-32 text-right text-sm font-bold text-content-primary">{{ item.line_total_display }}</div>
+                        <button type="button" class="grid min-h-11 min-w-11 place-items-center text-content-muted hover:text-danger" :aria-label="`Xóa ${item.name}`" @click="removeItem(item.product_id)">×</button>
                     </div>
                 </div>
 
-                <div class="storefront-card p-6 flex justify-between items-center">
-                    <span class="text-lg font-medium text-ink-secondary">Tổng cộng:</span>
-                    <span class="text-2xl font-display font-bold text-brand-hover">{{ formatPrice(total) }}</span>
+                <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-line bg-surface-card p-6">
+                    <span class="text-lg font-semibold text-content-secondary">Tổng cộng</span>
+                    <span class="text-2xl font-display font-bold text-brand-text">{{ summary.total_display }}</span>
                 </div>
 
-                <div class="flex justify-end gap-4">
+                <div class="flex flex-wrap justify-end gap-4">
+                    <button type="button" class="btn-outline" @click="clearCart">Xóa giỏ hàng</button>
                     <Link :href="route('products.index')" class="btn-outline">Tiếp tục mua</Link>
                     <Link :href="route('checkout.index')" class="btn-primary">Tiến hành thanh toán</Link>
                 </div>
             </div>
 
-            <div v-else class="text-center py-24">
-                <svg class="w-16 h-16 mx-auto text-ink-light mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                <p class="text-ink-secondary mb-4">Giỏ hàng trống.</p>
-                <Link :href="route('products.index')" class="text-brand-hover hover:text-brand-primary font-medium transition-colors">Xem sản phẩm →</Link>
+            <div v-else class="py-24 text-center">
+                <p class="mb-4 text-content-secondary">Giỏ hàng đang trống.</p>
+                <Link :href="route('products.index')" class="text-brand-text hover:text-brand-hover">Xem sản phẩm</Link>
             </div>
         </div>
     </GuestPageLayout>

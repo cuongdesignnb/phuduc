@@ -1,0 +1,4 @@
+COMMAND=php vendor/bin/pint on the explicit PR2C PHP file set
+RESULT=PASS
+FILES=30
+DIFF_CHECK=PASS

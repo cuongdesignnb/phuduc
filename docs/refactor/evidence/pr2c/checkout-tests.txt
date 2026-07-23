@@ -1,0 +1,5 @@
+COMMAND=php artisan test --filter='(CheckoutIdempotencyTest|CheckoutStockIntegrityTest)'
+RESULT=PASS
+TESTS=4
+ASSERTIONS=35
+CONTRACTS=opaque success token, current database price/name, locked stock checks, order item snapshots

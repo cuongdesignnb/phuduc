@@ -1,0 +1,4 @@
+COMMAND=npm run audit:storefront-theme
+RESULT=PASS
+FILES=49
+FORBIDDEN_PATTERNS=13

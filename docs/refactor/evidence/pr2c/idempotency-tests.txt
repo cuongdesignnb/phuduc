@@ -1,0 +1,3 @@
+RESULT=PASS
+SAME_CHECKOUT_INTENT=one order and one stock decrement
+SUCCESS_URL=opaque non-numeric public token

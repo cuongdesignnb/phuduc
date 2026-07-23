@@ -1,0 +1,3 @@
+COMMAND=npm run build
+RESULT=PASS
+VITE=v7.3.1

@@ -1,0 +1,8 @@
+DATABASE=phuduc_pr2c_test
+DATABASE_MODE=isolated MySQL database
+COMMAND=APP_ENV=testing DB_CONNECTION=mysql DB_DATABASE=phuduc_pr2c_test php artisan test --filter='(CheckoutIdempotencyTest|CheckoutStockIntegrityTest)'
+RESULT=PASS
+TESTS=4
+ASSERTIONS=35
+TRANSACTION_AND_LOCKING_TESTED=YES
+CONCURRENT_REQUESTS_FULLY_PROVEN=NO
