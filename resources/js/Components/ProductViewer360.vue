@@ -1,107 +1,111 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps({
-    images: { type: Array, required: true },
+    frames: { type: Array, required: true },
 });
 
-const container = ref(null);
 const currentIndex = ref(0);
 const isDragging = ref(false);
 const startX = ref(0);
-const autoRotate = ref(true);
-let autoRotateInterval = null;
+const isPlaying = ref(false);
+const prefersReducedMotion = ref(false);
+let rotateInterval = null;
 
-const totalFrames = props.images.length;
+const totalFrames = computed(() => props.frames.length);
+const currentFrame = computed(() => props.frames[currentIndex.value] || null);
 
-const onMouseDown = (e) => {
-    isDragging.value = true;
-    startX.value = e.clientX || e.touches?.[0]?.clientX || 0;
-    autoRotate.value = false;
-    stopAutoRotate();
+const move = (direction) => {
+    if (totalFrames.value < 2) return;
+    currentIndex.value = (currentIndex.value + direction + totalFrames.value) % totalFrames.value;
 };
 
-const onMouseMove = (e) => {
-    if (!isDragging.value) return;
-    const x = e.clientX || e.touches?.[0]?.clientX || 0;
-    const diff = x - startX.value;
-    if (Math.abs(diff) > 10) {
-        const direction = diff > 0 ? 1 : -1;
-        currentIndex.value = (currentIndex.value + direction + totalFrames) % totalFrames;
-        startX.value = x;
+const stop = () => {
+    isPlaying.value = false;
+    if (rotateInterval) {
+        clearInterval(rotateInterval);
+        rotateInterval = null;
     }
 };
 
-const onMouseUp = () => {
+const play = () => {
+    if (totalFrames.value < 2 || prefersReducedMotion.value || rotateInterval) return;
+    isPlaying.value = true;
+    rotateInterval = setInterval(() => move(1), 160);
+};
+
+const toggle = () => {
+    if (isPlaying.value) {
+        stop();
+        return;
+    }
+    play();
+};
+
+const onPointerDown = (event) => {
+    if (totalFrames.value < 2) return;
+    isDragging.value = true;
+    startX.value = event.clientX;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    stop();
+};
+
+const onPointerMove = (event) => {
+    if (!isDragging.value) return;
+    const diff = event.clientX - startX.value;
+    if (Math.abs(diff) > 12) {
+        move(diff > 0 ? 1 : -1);
+        startX.value = event.clientX;
+    }
+};
+
+const onPointerUp = () => {
     isDragging.value = false;
 };
 
-const startAutoRotate = () => {
-    if (autoRotateInterval) return;
-    autoRotateInterval = setInterval(() => {
-        if (autoRotate.value) {
-            currentIndex.value = (currentIndex.value + 1) % totalFrames;
-        }
-    }, 100);
-};
-
-const stopAutoRotate = () => {
-    if (autoRotateInterval) {
-        clearInterval(autoRotateInterval);
-        autoRotateInterval = null;
-    }
-};
-
 onMounted(() => {
-    if (totalFrames > 1) startAutoRotate();
+    prefersReducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 });
 
 onUnmounted(() => {
-    stopAutoRotate();
+    stop();
 });
 </script>
 
 <template>
-    <div
-        ref="container"
-        class="relative select-none cursor-grab active:cursor-grabbing bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
-        @mousedown="onMouseDown"
-        @mousemove="onMouseMove"
-        @mouseup="onMouseUp"
-        @mouseleave="onMouseUp"
-        @touchstart="onMouseDown"
-        @touchmove="onMouseMove"
-        @touchend="onMouseUp"
+    <section
+        class="relative select-none overflow-hidden rounded-lg border border-line bg-surface-muted"
+        tabindex="0"
+        aria-label="Trinh xem 360"
+        @keydown.left.prevent="move(-1)"
+        @keydown.right.prevent="move(1)"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
     >
-        <div class="aspect-square relative">
+        <div class="relative aspect-square">
             <img
-                v-for="(img, i) in images"
-                :key="i"
-                :src="'/storage/' + img.image_path"
-                :class="i === currentIndex ? 'opacity-100' : 'opacity-0'"
-                class="absolute inset-0 w-full h-full object-contain transition-opacity duration-100"
+                v-if="currentFrame"
+                :src="currentFrame.url"
+                :alt="currentFrame.alt"
+                class="absolute inset-0 h-full w-full object-contain"
                 draggable="false"
-            />
-        </div>
-
-        <!-- 360 badge -->
-        <div class="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-            <svg class="w-4 h-4 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            360°
-        </div>
-
-        <!-- Controls -->
-        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-            <button
-                @click.stop="autoRotate = !autoRotate; autoRotate ? startAutoRotate() : stopAutoRotate()"
-                class="bg-black/60 text-white text-xs px-3 py-1 rounded-full hover:bg-black/80 transition"
             >
-                {{ autoRotate ? '⏸ Dừng' : '▶ Tự xoay' }}
+            <div v-else class="flex h-full w-full items-center justify-center text-sm text-content-muted">
+                Khong co khung hinh 360
+            </div>
+        </div>
+        <div class="absolute left-3 top-3 rounded-full bg-surface-card/90 px-3 py-1 text-xs font-semibold text-content-primary">
+            360
+        </div>
+        <div v-if="totalFrames > 1" class="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-surface-card/90 p-1 shadow-sm">
+            <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold text-content-primary hover:bg-surface-muted" :aria-label="isPlaying ? 'Dung xoay' : 'Tu xoay'" @click.stop="toggle">
+                {{ isPlaying ? 'Dung' : 'Xoay' }}
             </button>
         </div>
-
-        <p class="absolute bottom-3 right-3 text-xs text-gray-500 bg-white/80 dark:bg-gray-800/80 px-2 py-0.5 rounded">
+        <p class="absolute bottom-3 right-3 rounded bg-surface-card/90 px-2 py-1 text-xs text-content-muted">
             {{ currentIndex + 1 }}/{{ totalFrames }}
         </p>
-    </div>
+    </section>
 </template>
