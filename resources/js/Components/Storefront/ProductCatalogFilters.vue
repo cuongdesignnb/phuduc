@@ -11,7 +11,7 @@ const props = defineProps({
 
 const page = usePage();
 const firstError = ref(null);
-const minPriceInput = ref(null);
+const formElement = ref(null);
 
 const errors = computed(() => page.props.errors || {});
 const fieldError = (name) => {
@@ -19,6 +19,8 @@ const fieldError = (name) => {
 
     return Array.isArray(value) ? value[0] : value || '';
 };
+
+const firstErrorMessage = () => fieldError('search') || fieldError('min_price') || fieldError('max_price') || fieldError('sort') || null;
 
 const form = reactive({
     search: props.filters.search || '',
@@ -35,11 +37,12 @@ watch(() => props.filters, (filters) => {
 }, { deep: true });
 
 watch(errors, async () => {
-    firstError.value = fieldError('min_price') || fieldError('max_price') || fieldError('search') || fieldError('sort') || null;
-    if (firstError.value) {
-        await nextTick();
-        minPriceInput.value?.focus();
-    }
+    firstError.value = firstErrorMessage();
+
+    if (!firstError.value) return;
+
+    await nextTick();
+    formElement.value?.querySelector('[aria-invalid="true"]')?.focus();
 }, { immediate: true });
 
 const normalized = () => ({
@@ -67,8 +70,8 @@ const clear = () => {
 </script>
 
 <template>
-    <form class="storefront-card grid gap-4 p-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto_auto] lg:items-end" role="search" @submit.prevent="submit">
-        <p v-if="firstError" id="product-filter-error-summary" class="lg:col-span-6 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+    <form ref="formElement" class="storefront-card grid gap-4 p-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto_auto] lg:items-end" role="search" @submit.prevent="submit">
+        <p v-if="firstError" id="product-filter-error-summary" role="alert" aria-live="polite" class="lg:col-span-6 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
             {{ firstError }}
         </p>
 
@@ -79,7 +82,7 @@ const clear = () => {
         </FormField>
         <FormField id="min-price" label="Giá từ" :error="fieldError('min_price')">
             <template #default="{ id, describedBy }">
-                <input :id="id" ref="minPriceInput" v-model="form.min_price" :aria-describedby="describedBy || (firstError ? 'product-filter-error-summary' : undefined)" :aria-invalid="fieldError('min_price') ? 'true' : undefined" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
+                <input :id="id" v-model="form.min_price" :aria-describedby="describedBy" :aria-invalid="fieldError('min_price') ? 'true' : undefined" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
         <FormField id="max-price" label="Giá đến" :error="fieldError('max_price')">

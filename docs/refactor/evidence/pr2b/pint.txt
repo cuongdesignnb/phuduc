@@ -1,4 +1,3 @@
-COMMAND=docker compose exec -T app sh -lc "vendor/bin/pint --test app/Http/Controllers/Guest/ProductController.php app/Http/Requests/Storefront app/Services/Storefront tests/Feature/Storefront tests/Unit/Storefront"
+COMMAND=docker compose exec -T app sh -lc "vendor/bin/pint --test app/Http/Controllers/Guest/ProductController.php app/Http/Requests/Storefront app/Services/Storefront tests/Feature/Storefront"
 RESULT=PASS
-FILES=34
-NOTE=Full Guest controller directory includes pre-existing CheckoutController style drift outside this fix scope.
+FILES=28

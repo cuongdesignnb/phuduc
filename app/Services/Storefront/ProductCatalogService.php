@@ -16,7 +16,7 @@ class ProductCatalogService
     ) {}
 
     /**
-     * @param  array{search: ?string, min_price: mixed, max_price: mixed, sort: string}  $filters
+     * @param  array{search: ?string, min_price: ?float, max_price: ?float, sort: string}  $filters
      * @return array<string, mixed>
      */
     public function page(array $filters): array

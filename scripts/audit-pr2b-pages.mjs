@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const roots = [
+  'app/Http/Controllers/Guest/ProductController.php',
   'app/Http/Requests/Storefront',
   'app/Services/Storefront',
   'resources/js/Pages/Guest/Product',
@@ -125,12 +126,32 @@ for (const file of files) {
   }
 }
 
+const readIfExists = (file) => fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+const controllerSource = readIfExists('app/Http/Controllers/Guest/ProductController.php');
+const resolverSource = readIfExists('app/Services/Storefront/ProductCatalogFilterResolver.php');
+const requestExists = fs.existsSync('app/Http/Requests/Storefront/ProductCatalogRequest.php');
+const architectureCounts = {
+  PRODUCT_CONTROLLER_VALIDATOR_MAKE_HITS: controllerSource.includes('Validator::make') ? 1 : 0,
+  DUPLICATE_PRODUCT_FILTER_RULESETS: requestExists ? 1 : 0,
+  UNUSED_PRODUCT_CATALOG_REQUEST: requestExists ? 1 : 0,
+};
+
+if (!resolverSource.includes("'min_price' => ['nullable', 'numeric'")) {
+  failures.push('app/Services/Storefront/ProductCatalogFilterResolver.php: missing product min_price validation rules');
+}
+
+for (const [group, count] of Object.entries(architectureCounts)) {
+  if (count > 0) failures.push(`${group}=${count}`);
+}
+
 if (failures.length) {
   console.error('PR2B page audit failed:');
   for (const [group, count] of Object.entries(hitCounts)) console.error(`${group}=${count}`);
+  for (const [group, count] of Object.entries(architectureCounts)) console.error(`${group}=${count}`);
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
 for (const [group, count] of Object.entries(hitCounts)) console.log(`${group}=${count}`);
+for (const [group, count] of Object.entries(architectureCounts)) console.log(`${group}=${count}`);
 console.log(`PR2B page audit passed (${files.length} files scanned).`);
