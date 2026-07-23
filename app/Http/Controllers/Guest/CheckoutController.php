@@ -23,21 +23,28 @@ class CheckoutController extends Controller
         }
 
         $cart = $presentation->cart($resolved['entries']);
+        $meta = $seo->meta(['title' => 'Thanh toán', 'robots' => 'noindex, nofollow']);
 
         return Inertia::render('Guest/Checkout', [
-            ...$cart,
-            'warnings' => $resolved['warnings'],
-            'checkout_intent' => $intents->issue(),
-            'seo' => $seo->meta(['title' => 'Thanh toán', 'robots' => 'noindex, nofollow']),
+            'page' => [
+                'type' => 'checkout',
+                'seo' => $meta,
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Giỏ hàng', 'url' => route('cart.index')],
+                    ['name' => 'Thanh toán'],
+                ],
+                'checkout' => [
+                    'intent' => $intents->issue(),
+                    'cart' => [...$cart, 'warnings' => $resolved['warnings']],
+                    'fields' => ['customer_name', 'customer_phone', 'customer_email', 'shipping_address', 'notes'],
+                ],
+            ],
         ]);
     }
 
-    public function store(CheckoutRequest $request, CheckoutService $checkout, CheckoutIntentService $intents): RedirectResponse
+    public function store(CheckoutRequest $request, CheckoutService $checkout): RedirectResponse
     {
-        if (! hash_equals((string) $intents->current(), (string) $request->string('checkout_intent'))) {
-            return back()->withErrors(['checkout_intent' => 'Phiên thanh toán không hợp lệ. Vui lòng tải lại trang.']);
-        }
-
         $order = $checkout->checkout($request->validated(), (string) $request->string('checkout_intent'));
 
         return redirect()->route('checkout.success', ['token' => $order->public_token])->with('success', 'Đặt hàng thành công.');
@@ -48,8 +55,15 @@ class CheckoutController extends Controller
         $order = \App\Models\Order::query()->with('items')->where('public_token', $token)->firstOrFail();
 
         return Inertia::render('Guest/CheckoutSuccess', [
-            'order' => $orders->success($order),
-            'seo' => $seo->meta(['title' => 'Đặt hàng thành công', 'robots' => 'noindex, nofollow']),
+            'page' => [
+                'type' => 'checkout_success',
+                'seo' => $seo->meta(['title' => 'Đặt hàng thành công', 'robots' => 'noindex, nofollow']),
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Đặt hàng thành công'],
+                ],
+                'order' => $orders->success($order),
+            ],
         ]);
     }
 }

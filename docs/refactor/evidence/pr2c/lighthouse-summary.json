@@ -1,6 +1,21 @@
 {
-  "status": "NOT_RUN",
-  "reason": "Lighthouse CLI is not present in the existing dependency set; no dependency was installed.",
-  "production_compressed_retest": "NOT_RUN",
-  "scores": null
+  "status": "PASS",
+  "version": "12.8.2",
+  "command": "CHROME_PATH=Google Chrome npx --yes lighthouse@12.8.2 <route> --output=json",
+  "production_compressed_retest": "PASS",
+  "scores": {
+    "home": {"accessibility": 100, "performance": 57, "best-practices": 100, "seo": 100},
+    "products": {"accessibility": 96, "performance": 57, "best-practices": 100, "seo": 100},
+    "news": {"accessibility": 96, "performance": 58, "best-practices": 100, "seo": 100},
+    "about": {"accessibility": 95, "performance": 57, "best-practices": 100, "seo": 100},
+    "cart": {"accessibility": 95, "performance": 58, "best-practices": 100, "seo": 58},
+    "order-lookup": {"accessibility": 100, "performance": 58, "best-practices": 100, "seo": 58},
+    "warranty-lookup": {"accessibility": 100, "performance": 58, "best-practices": 100, "seo": 58},
+    "checkout": {"accessibility": 95, "performance": 58, "best-practices": 100, "seo": 58}
+  },
+  "notes": [
+    "Utility page SEO 58 reflects intentional noindex/nofollow metadata.",
+    "Checkout Lighthouse run has no session cart and therefore redirects to the cart page.",
+    "Windows Chrome temporary-profile cleanup emitted EPERM warnings after measurements; route JSON was produced for every route."
+  ]
 }

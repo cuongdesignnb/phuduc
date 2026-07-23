@@ -1,4 +1,6 @@
-COMMAND=APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=:memory: SESSION_DRIVER=array CACHE_STORE=array php artisan test
+COMMAND=docker compose exec -T app sh -lc 'APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test'
 RESULT=PASS
-TESTS=176
-ASSERTIONS=1407
+TESTS=191
+SKIPPED=1
+ASSERTIONS=1635
+DATABASE_MODE=SQLite in-memory; MySQL-only unique-conflict test skipped

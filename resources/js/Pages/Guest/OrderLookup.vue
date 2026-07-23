@@ -1,28 +1,60 @@
 <script setup>
+import { computed, nextTick, ref, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 import GuestPageLayout from '@/Layouts/GuestPageLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import SeoHead from '@/Components/SeoHead.vue';
+import Breadcrumbs from '@/Components/Storefront/Breadcrumbs.vue';
+import FormField from '@/Components/Storefront/FormField.vue';
 
-const props = defineProps({ searched: Boolean, order: { type: Object, default: null }, message: { type: String, default: null }, seo: { type: Object, default: () => ({}) } });
+const props = defineProps({ page: { type: Object, required: true } });
+const formElement = ref(null);
+const resultRegion = ref(null);
+const errorSummary = ref(null);
 const form = useForm({ order_number: '', customer_phone: '' });
+const errorFor = (field) => form.errors[field] || '';
+const firstErrorKey = computed(() => errorFor('order_number') ? 'order_number' : errorFor('customer_phone') ? 'customer_phone' : '');
+
+watch(() => Object.keys(form.errors).map((key) => `${key}:${form.errors[key]}`).join('|'), async () => {
+    if (!firstErrorKey.value) return;
+    await nextTick();
+    formElement.value?.querySelector(`[name="${firstErrorKey.value}"]`)?.focus();
+});
+
+watch(() => props.page.lookup.searched, async (searched) => {
+    if (searched) {
+        await nextTick();
+        (resultRegion.value || errorSummary.value)?.focus();
+    }
+});
+
 const submit = () => form.post(route('order-lookup.lookup'));
 </script>
 
 <template>
-    <Head v-bind="seo" />
+    <SeoHead v-bind="page.seo" />
     <GuestPageLayout>
-        <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
-            <h1 class="mb-8 text-center text-2xl font-display font-bold text-content-primary">Tra cứu đơn hàng</h1>
-            <form class="space-y-4 rounded-lg border border-line bg-surface-card p-6" @submit.prevent="submit">
-                <label class="block text-sm font-semibold text-content-secondary">Mã đơn hàng<input v-model="form.order_number" type="text" maxlength="64" placeholder="ORD-..." required class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" :aria-invalid="!!form.errors.order_number" /> <span v-if="form.errors.order_number" class="mt-1 block text-danger">{{ form.errors.order_number }}</span></label>
-                <label class="block text-sm font-semibold text-content-secondary">Số điện thoại<input v-model="form.customer_phone" type="tel" maxlength="20" required class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" :aria-invalid="!!form.errors.customer_phone" /> <span v-if="form.errors.customer_phone" class="mt-1 block text-danger">{{ form.errors.customer_phone }}</span></label>
-                <button type="submit" :disabled="form.processing" class="btn-primary min-h-11 w-full disabled:opacity-50">Tra cứu</button>
+        <div class="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+            <Breadcrumbs :items="page.breadcrumbs" class="mb-6" />
+            <h1 class="mb-8 text-2xl font-display font-bold text-content-primary">Tra cứu đơn hàng</h1>
+            <form ref="formElement" class="space-y-4 rounded-lg border border-line bg-surface-card p-6" novalidate @submit.prevent="submit">
+                <FormField id="order-lookup-number" label="Mã đơn hàng" :error="errorFor('order_number')" required>
+                    <template #default="{ id, describedBy }">
+                        <input :id="id" v-model="form.order_number" name="order_number" type="text" maxlength="64" placeholder="ORD-..." :aria-required="true" :aria-describedby="describedBy" :aria-invalid="errorFor('order_number') ? 'true' : undefined" class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" />
+                    </template>
+                </FormField>
+                <FormField id="order-lookup-phone" label="Số điện thoại" :error="errorFor('customer_phone')" required>
+                    <template #default="{ id, describedBy }">
+                        <input :id="id" v-model="form.customer_phone" name="customer_phone" type="tel" maxlength="20" :aria-required="true" :aria-describedby="describedBy" :aria-invalid="errorFor('customer_phone') ? 'true' : undefined" class="mt-2 w-full rounded-lg border border-line bg-surface-card px-3 py-2.5" />
+                    </template>
+                </FormField>
+                <button type="submit" :disabled="form.processing" class="btn-primary min-h-11 w-full disabled:opacity-50">{{ form.processing ? 'Đang tra cứu...' : 'Tra cứu' }}</button>
             </form>
 
-            <section v-if="searched && order" class="mt-8 rounded-lg border border-line bg-surface-card p-6" aria-labelledby="lookup-result-title">
-                <div class="flex flex-wrap items-center justify-between gap-3"><h2 id="lookup-result-title" class="font-display font-bold text-content-primary">{{ order.order_number }}</h2><span class="rounded-full border border-line px-3 py-1 text-xs font-semibold">{{ order.status_display }}</span></div>
-                <div class="mt-4 space-y-2 text-sm text-content-secondary"><p>Ngày đặt: {{ order.created_at_display }}</p><div class="border-t border-line pt-3"><div v-for="item in order.items" :key="`${item.product_name}-${item.quantity}`" class="flex justify-between gap-4 py-1"><span>{{ item.product_name }} × {{ item.quantity }}</span><span class="font-semibold text-content-primary">{{ item.total_display }}</span></div></div><div class="flex justify-between border-t border-line pt-3"><strong class="text-content-primary">Tổng cộng</strong><span class="font-display text-lg font-bold text-brand-text">{{ order.total_display }}</span></div></div>
+            <section v-if="page.lookup.searched && page.lookup.result" ref="resultRegion" tabindex="-1" role="status" aria-live="polite" aria-labelledby="lookup-result-title" class="mt-8 rounded-lg border border-line bg-surface-card p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3"><h2 id="lookup-result-title" class="font-display font-bold text-content-primary">{{ page.lookup.result.order_number }}</h2><span class="rounded-full border border-line px-3 py-1 text-xs font-semibold">{{ page.lookup.result.status_display }}</span></div>
+                <div class="mt-4 space-y-2 text-sm text-content-secondary"><p>Ngày đặt: {{ page.lookup.result.created_at_display }}</p><div class="border-t border-line pt-3"><div v-for="(item, index) in page.lookup.result.items" :key="`${item.product_name}-${index}`" class="flex justify-between gap-4 py-1"><span>{{ item.product_name }} × {{ item.quantity }}</span><span class="font-semibold text-content-primary">{{ item.subtotal_display }}</span></div></div><div class="flex justify-between border-t border-line pt-3"><strong class="text-content-primary">Tổng cộng</strong><span class="font-display text-lg font-bold text-brand-text">{{ page.lookup.result.total_display }}</span></div></div>
             </section>
-            <p v-else-if="searched" class="mt-8 rounded-lg border border-danger/30 bg-danger/10 p-6 text-center text-danger" role="alert">{{ message }}</p>
+            <p v-else-if="page.lookup.searched" ref="errorSummary" tabindex="-1" class="mt-8 rounded-lg border border-danger/30 bg-danger/10 p-6 text-center text-danger" role="alert" aria-live="polite">{{ page.lookup.message }}</p>
         </div>
     </GuestPageLayout>
 </template>

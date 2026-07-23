@@ -16,10 +16,15 @@ class OrderLookupController extends Controller
     public function index(StorefrontSeoService $seo)
     {
         return Inertia::render('Guest/OrderLookup', [
-            'searched' => false,
-            'order' => null,
-            'message' => null,
-            'seo' => $seo->meta(['title' => 'Tra cứu đơn hàng', 'robots' => 'noindex, nofollow']),
+            'page' => [
+                'type' => 'order_lookup',
+                'seo' => $seo->meta(['title' => 'Tra cứu đơn hàng', 'robots' => 'noindex, nofollow']),
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Tra cứu đơn hàng'],
+                ],
+                'lookup' => ['searched' => false, 'result' => null, 'message' => null],
+            ],
         ]);
     }
 
@@ -32,10 +37,19 @@ class OrderLookupController extends Controller
             ->first();
 
         return Inertia::render('Guest/OrderLookup', [
-            'searched' => true,
-            'order' => $order ? $orders->lookup($order) : null,
-            'message' => $order ? null : self::FAILURE,
-            'seo' => $seo->meta(['title' => 'Tra cứu đơn hàng', 'robots' => 'noindex, nofollow']),
+            'page' => [
+                'type' => 'order_lookup',
+                'seo' => $seo->meta(['title' => 'Tra cứu đơn hàng', 'robots' => 'noindex, nofollow']),
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Tra cứu đơn hàng'],
+                ],
+                'lookup' => [
+                    'searched' => true,
+                    'result' => $order ? $orders->lookup($order) : null,
+                    'message' => $order ? null : self::FAILURE,
+                ],
+            ],
         ]);
     }
 }

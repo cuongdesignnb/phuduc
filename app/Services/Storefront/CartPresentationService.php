@@ -22,8 +22,11 @@ class CartPresentationService
             'image_url' => $this->mediaUrl->resolve($product->cardImage?->image_path),
             'quantity' => $entry['quantity'],
             'stock' => (int) $product->stock,
+            'max_quantity' => min((int) $product->stock, 99),
+            'unit_price' => $unitPrice,
             'unit_price_display' => $this->money($unitPrice),
-            'line_total_display' => $this->money($lineTotal),
+            'subtotal' => $lineTotal,
+            'subtotal_display' => $this->money($lineTotal),
         ];
     }
 
@@ -31,24 +34,25 @@ class CartPresentationService
     public function cart(array $entries): array
     {
         $items = array_map(fn (array $entry) => $this->item($entry), $entries);
-        $total = collect($items)->sum(fn (array $item) => $this->integerMoney($item['line_total_display']));
+        $total = collect($items)->sum('subtotal');
+        $quantityCount = collect($items)->sum('quantity');
 
         return [
             'items' => $items,
             'summary' => [
-                'item_count' => collect($items)->sum('quantity'),
+                'item_count' => count($items),
+                'quantity_count' => $quantityCount,
+                'subtotal' => $total,
+                'subtotal_display' => $this->money($total),
+                'total' => $total,
                 'total_display' => $this->money($total),
             ],
+            'can_checkout' => $items !== [],
         ];
     }
 
     public function money(int $amount): string
     {
         return number_format($amount, 0, ',', '.').' ₫';
-    }
-
-    private function integerMoney(string $display): int
-    {
-        return (int) preg_replace('/[^0-9]/', '', $display);
     }
 }

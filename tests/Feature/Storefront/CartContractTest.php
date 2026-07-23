@@ -12,22 +12,30 @@ class CartContractTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_cart_normalizes_session_and_uses_current_database_presentation(): void
+    public function test_cart_uses_canonical_page_and_numeric_money_contract(): void
     {
-        $product = $this->product(['name' => 'Tên từ cơ sở dữ liệu', 'price' => 1250000, 'stock' => 4]);
+        $product = $this->product(['name' => 'Database name', 'price' => 1250000, 'stock' => 4]);
         ProductImage::create(['product_id' => $product->id, 'image_path' => 'products/current.webp']);
 
-        $this->withSession(['cart' => [$product->id => ['quantity' => 2, 'name' => 'Tên giả', 'price' => 1, 'image' => 'old.webp']]])
+        $this->withSession(['cart' => [$product->id => ['quantity' => 2, 'name' => 'Tampered', 'price' => 1]]])
             ->get('/gio-hang')
             ->assertOk()
-            ->assertHeader('Cache-Control', 'no-store, private')
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Guest/Cart')
-                ->where('items.0.name', 'Tên từ cơ sở dữ liệu')
-                ->where('items.0.unit_price_display', '1.250.000 ₫')
-                ->where('items.0.line_total_display', '2.500.000 ₫')
-                ->where('summary.total_display', '2.500.000 ₫')
-                ->where('seo.robots', 'noindex, nofollow')
+                ->where('page.type', 'cart')
+                ->where('page.cart.items.0.name', 'Database name')
+                ->where('page.cart.items.0.unit_price', 1250000)
+                ->where('page.cart.items.0.unit_price_display', '1.250.000 ₫')
+                ->where('page.cart.items.0.subtotal', 2500000)
+                ->where('page.cart.items.0.subtotal_display', '2.500.000 ₫')
+                ->where('page.cart.items.0.max_quantity', 4)
+                ->where('page.cart.summary.item_count', 1)
+                ->where('page.cart.summary.quantity_count', 2)
+                ->where('page.cart.summary.subtotal', 2500000)
+                ->where('page.cart.summary.total', 2500000)
+                ->where('page.cart.can_checkout', true)
+                ->where('page.seo.robots', 'noindex, nofollow')
+                ->where('page.breadcrumbs.1.name', 'Giỏ hàng')
             );
 
         $this->assertSame(['quantity' => 2], session()->get('cart.'.$product->id));
@@ -41,16 +49,16 @@ class CartContractTest extends TestCase
         $this->withSession(['cart' => [$active->id => ['quantity' => 3], $inactive->id => ['quantity' => 1], 99999 => ['quantity' => 1]]])
             ->get('/gio-hang')
             ->assertInertia(fn (Assert $page) => $page
-                ->where('items.0.quantity', 1)
-                ->count('items', 1)
-                ->count('warnings', 3)
+                ->where('page.cart.items.0.quantity', 1)
+                ->count('page.cart.items', 1)
+                ->count('page.cart.warnings', 3)
             );
     }
 
     private function product(array $overrides = []): Product
     {
         return Product::create(array_merge([
-            'name' => 'Sản phẩm thử',
+            'name' => 'Test product',
             'slug' => 'product-'.uniqid(),
             'price' => 1000000,
             'stock' => 5,

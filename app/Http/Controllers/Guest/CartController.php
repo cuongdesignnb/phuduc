@@ -18,12 +18,19 @@ class CartController extends Controller
     public function index(CartResolver $resolver, CartPresentationService $presentation, StorefrontSeoService $seo)
     {
         $resolved = $resolver->resolve();
-        $cart = $presentation->cart($resolved['entries']);
+        $cart = [...$presentation->cart($resolved['entries']), 'warnings' => $resolved['warnings']];
+        $meta = $seo->meta(['title' => 'Giỏ hàng', 'robots' => 'noindex, nofollow']);
 
         return Inertia::render('Guest/Cart', [
-            ...$cart,
-            'warnings' => $resolved['warnings'],
-            'seo' => $seo->meta(['title' => 'Giỏ hàng', 'robots' => 'noindex, nofollow']),
+            'page' => [
+                'type' => 'cart',
+                'seo' => $meta,
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Giỏ hàng'],
+                ],
+                'cart' => $cart,
+            ],
         ]);
     }
 
@@ -41,12 +48,13 @@ class CartController extends Controller
         }
 
         $cart = $sessionCart->normalize();
-        $nextQuantity = min(99, ($cart[$productId]['quantity'] ?? 0) + $quantity);
-        if ($nextQuantity > (int) $product->stock) {
+        $requestedTotal = ($cart[$productId]['quantity'] ?? 0) + $quantity;
+        $maximum = min((int) $product->stock, 99);
+        if ($requestedTotal > $maximum) {
             return back()->withErrors(['quantity' => 'Số lượng vượt quá tồn kho hiện tại.']);
         }
 
-        $cart[$productId] = ['quantity' => $nextQuantity];
+        $cart[$productId] = ['quantity' => $requestedTotal];
         $sessionCart->put($cart);
 
         return back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng.');
@@ -57,13 +65,6 @@ class CartController extends Controller
         $productId = (int) $request->integer('product_id');
         $quantity = (int) $request->integer('quantity');
         $cart = $sessionCart->normalize();
-
-        if ($quantity === 0) {
-            unset($cart[$productId]);
-            $sessionCart->put($cart);
-
-            return back()->with('success', 'Đã cập nhật giỏ hàng.');
-        }
 
         $product = $resolver->product($productId);
         if (! $product || $product->status !== 'active' || (int) $product->price <= 0 || (int) $product->stock < 1) {

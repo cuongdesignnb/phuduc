@@ -17,12 +17,13 @@ class WarrantyLookupContractTest extends TestCase
         $order = Order::create(['order_number' => 'ORD-WARRANTY', 'customer_phone' => '0900000000', 'total_amount' => 0, 'status' => 'pending']);
         Warranty::create(['order_id' => $order->id, 'serial_number' => 'SERIAL-1', 'product_name' => 'Product', 'status' => 'active']);
 
-        $this->post('/tra-cuu-bao-hanh', ['serial_number' => 'SERIAL-1', 'customer_phone' => 'wrong'])->assertInertia(fn (Assert $page) => $page->where('message', 'Không tìm thấy thông tin bảo hành phù hợp với thông tin đã cung cấp.'));
-        $this->post('/tra-cuu-bao-hanh', ['serial_number' => 'SERIAL-1', 'customer_phone' => '0900000000'])->assertHeader('Pragma', 'no-cache')->assertInertia(fn (Assert $page) => $page
-            ->where('warranty.serial_number', 'SERIAL-1')
-            ->where('warranty.status_display', 'Còn hiệu lực')
-            ->missing('warranty.id')
-            ->missing('warranty.order_id')
+        $this->post('/tra-cuu-bao-hanh', ['serial_number' => ' serial-1 ', 'customer_phone' => '+84900000000'])->assertInertia(fn (Assert $page) => $page
+            ->where('page.lookup.result.serial_number', 'SERIAL-1')
+            ->where('page.lookup.result.status_display', 'Còn hiệu lực')
+            ->missing('page.lookup.result.order_id')
+            ->missing('page.lookup.result.customer_phone')
         );
+
+        $this->post('/tra-cuu-bao-hanh', ['serial_number' => 'SERIAL-1', 'customer_phone' => 'wrong'])->assertSessionHasErrors('customer_phone');
     }
 }

@@ -17,9 +17,12 @@ class CartMutationTest extends TestCase
         $this->post('/gio-hang/add', ['product_id' => $product->id, 'quantity' => 2])->assertRedirect();
         $this->assertSame(['quantity' => 2], session()->get('cart.'.$product->id));
 
+        $this->post('/gio-hang/add', ['product_id' => $product->id, 'quantity' => 2])->assertSessionHasErrors('quantity');
+        $this->assertSame(['quantity' => 2], session()->get('cart.'.$product->id));
+
         $this->patch('/gio-hang/update', ['product_id' => $product->id, 'quantity' => 3])->assertRedirect();
+        $this->patch('/gio-hang/update', ['product_id' => $product->id, 'quantity' => 0])->assertSessionHasErrors('quantity');
         $this->assertSame(['quantity' => 3], session()->get('cart.'.$product->id));
-        $this->patch('/gio-hang/update', ['product_id' => $product->id, 'quantity' => 4])->assertSessionHasErrors('quantity');
 
         $this->delete('/gio-hang/remove', ['product_id' => $product->id])->assertRedirect();
         $this->delete('/gio-hang/remove', ['product_id' => $product->id])->assertRedirect();
@@ -37,5 +40,16 @@ class CartMutationTest extends TestCase
             $product = Product::create(['name' => $data['slug'], ...$data]);
             $this->post('/gio-hang/add', ['product_id' => $product->id])->assertSessionHasErrors('product_id');
         }
+    }
+
+    public function test_cart_mutation_rate_limit_is_named_and_bounded(): void
+    {
+        $product = Product::create(['name' => 'Rate limited', 'slug' => 'rate-limited', 'price' => 100000, 'stock' => 99, 'status' => 'active']);
+
+        for ($attempt = 0; $attempt < 60; $attempt++) {
+            $this->post('/gio-hang/add', ['product_id' => $product->id])->assertRedirect();
+        }
+
+        $this->post('/gio-hang/add', ['product_id' => $product->id])->assertStatus(429);
     }
 }
