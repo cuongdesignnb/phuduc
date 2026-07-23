@@ -1,15 +1,18 @@
-Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test"
-
-Result:
-PASS
-
-Security-relevant tests included in full suite:
-- RichHtmlSanitizerTest: safe content retained, unsafe script/event/JavaScript URL style patterns removed by sanitizer allowlist.
-- StorefrontSeoContractTest: product JSON-LD uses public aggregate/review payload.
-- AdminAuthorizationTest: admin access remains protected.
-- ProductionDefaultsSeederTest and StorefrontContentMigrationTest: no hardcoded admin promotion or credential creation.
-
-Full suite summary:
-Tests: 120 passed
-Assertions: 804
+COMMAND=docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Unit/Storefront/RichHtmlSanitizerTest.php"
+RESULT=PASS
+SANITIZER_TESTS=27
+SIMPLE_JAVASCRIPT_URL_BLOCKED=YES
+TAB_OBFUSCATED_JAVASCRIPT_URL_BLOCKED=YES
+NEWLINE_OBFUSCATED_JAVASCRIPT_URL_BLOCKED=YES
+CR_OBFUSCATED_JAVASCRIPT_URL_BLOCKED=YES
+DATA_URL_BLOCKED=YES
+FILE_URL_BLOCKED=YES
+UNKNOWN_SCHEME_BLOCKED=YES
+PROTOCOL_RELATIVE_URL_BLOCKED=YES
+HTTPS_RETAINED=YES
+HTTP_RETAINED=YES
+MAILTO_RETAINED_FOR_ANCHOR=YES
+TEL_RETAINED_FOR_ANCHOR=YES
+RELATIVE_URL_RETAINED=YES
+ROOT_RELATIVE_URL_RETAINED=YES
+FRAGMENT_RETAINED_FOR_ANCHOR=YES

@@ -1,23 +1,24 @@
-# PR2B Request-Only Query Count Comparison
+QUERY_COUNT_METHOD=Warm each scenario once, flush query log, count the second request only.
+WARMUP_REQUEST_EXCLUDED=YES
+FIXTURE_QUERIES_EXCLUDED=YES
+CLEANUP_QUERIES_EXCLUDED=YES
+CACHE_STATE_BALANCED=YES
+CACHE_FLUSH_BETWEEN_FIXTURE_RESETS=YES
+SCOPED_INSTANCES_FORGOTTEN_BETWEEN_FIXTURE_RESETS=YES
 
-Measurement method:
-- Fixture setup queries are excluded.
-- Query logging starts immediately before the HTTP request.
-- Query logging stops immediately after the response assertion.
-- Scenario state is reset between one/many comparisons.
-- SQLite PRAGMA metadata queries are excluded; business queries are not filtered.
+SCENARIO,BASE,HEAD,RESULT
+PRODUCT_INDEX_1,6,3,PASS
+PRODUCT_INDEX_12,6,3,PASS
+PRODUCT_DETAIL_ONE,8,5,PASS
+PRODUCT_DETAIL_MANY,8,5,PASS
+NEWS_INDEX_1,7,4,PASS
+NEWS_INDEX_12,7,4,PASS
+NEWS_DETAIL_1_RELATED,7,4,PASS
+NEWS_DETAIL_4_RELATED,7,4,PASS
+ABOUT,10,1,PASS
 
-| Scenario | Base request queries | Head request queries | Delta | Scaling assertion | N+1 |
-| --- | ---: | ---: | ---: | --- | --- |
-| PRODUCT_INDEX_1 | 10 | 7 | -3 | baseline | NO |
-| PRODUCT_INDEX_12 | 6 | 3 | -3 | `PRODUCT_INDEX_12 <= PRODUCT_INDEX_1 + 1` | NO |
-| PRODUCT_DETAIL_ONE | 12 | 9 | -3 | baseline | NO |
-| PRODUCT_DETAIL_MANY | 8 | 5 | -3 | `PRODUCT_DETAIL_MANY <= PRODUCT_DETAIL_ONE + 1` | NO |
-| NEWS_INDEX_1 | 11 | 8 | -3 | baseline | NO |
-| NEWS_INDEX_12 | 7 | 4 | -3 | `NEWS_INDEX_12 <= NEWS_INDEX_1 + 1` | NO |
-| NEWS_DETAIL_1_RELATED | 11 | 8 | -3 | baseline | NO |
-| NEWS_DETAIL_4_RELATED | 7 | 4 | -3 | `NEWS_DETAIL_4_RELATED <= NEWS_DETAIL_1_RELATED + 1` | NO |
-| ABOUT | 14 | 5 | -9 | `ABOUT <= 8` | NO |
-
-Result:
-PASS for head. Base evidence was regenerated and shows the previous About request-query budget failure.
+PRODUCT_INDEX_12_LE_PRODUCT_INDEX_1_PLUS_1=YES
+PRODUCT_DETAIL_MANY_LE_PRODUCT_DETAIL_ONE_PLUS_1=YES
+NEWS_INDEX_12_LE_NEWS_INDEX_1_PLUS_1=YES
+NEWS_DETAIL_MANY_LE_NEWS_DETAIL_ONE_PLUS_1=YES
+N_PLUS_ONE=NO

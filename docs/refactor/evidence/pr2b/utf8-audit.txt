@@ -1,17 +1,19 @@
-Command:
-docker compose exec -T app npm run audit:pr2b-pages
+COMMAND=node scripts/audit-pr2b-pages.mjs
+RESULT=PASS
+MOJIBAKE_REPLACEMENT_HITS=0
+UNACCENTED_VIETNAMESE_LABEL_HITS=0
+LEGACY_FORMATTER_HITS=0
+DIRECT_STORAGE_PATH_HITS=0
+LEGACY_THEME_HITS=0
+FILES_SCANNED=48
 
-Result:
-PASS
-
-Audit groups:
-- MOJIBAKE_REPLACEMENT_HITS=0
-- UNACCENTED_VIETNAMESE_LABEL_HITS=0
-- LEGACY_FORMATTER_HITS=0
-- DIRECT_STORAGE_PATH_HITS=0
-- LEGACY_THEME_HITS=0
-
-Notes:
-- Public PR2B labels and backend contract defaults now use UTF-8 Vietnamese with accents.
-- Technical identifiers such as `product_index`, `price_asc`, and `payload` remain ASCII by design.
-- MediaUrlService is the allowed storage URL normalization boundary; direct `/storage/` use in PR2B pages/components still fails the audit.
+Checked mandatory labels:
+- Ch?n h?nh
+- Ph?n trang
+- Tr??c
+- ??nh gi? ?? duy?t
+- X?a b? l?c
+- S? m?nh
+- T?m nh?n
+- G?i ?i?n
+- ?i?u h??ng ph?n c?p

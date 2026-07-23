@@ -1,16 +1,9 @@
-Command:
-docker compose exec -T app npm run build
-
-Result:
-PASS
-
-Summary:
-vite v7.3.1 built production assets successfully.
-Modules transformed: 887
-Largest generated assets:
-- public/build/assets/app-Clkrx9qy.js 324.68 kB, gzip 117.52 kB
-- public/build/assets/AdvancedTextEditor-Cv-JsiyM.js 258.71 kB, gzip 69.74 kB
-- public/build/assets/vuedraggable.umd-D-NdOtDO.js 178.07 kB, gzip 62.10 kB
-
-Production QA:
-`public/hot` was removed before Browser QA and Lighthouse so Laravel used the production Vite manifest.
+COMMAND=docker compose exec -T app npm run build
+RESULT=PASS
+VITE_MODULES_TRANSFORMED=887
+APP_JS=public/build/assets/app-B2LLXGdE.js
+APP_JS_SIZE=324.68 kB
+APP_JS_GZIP=117.53 kB
+APP_CSS=public/build/assets/app-niMEnUdI.css
+APP_CSS_SIZE=91.54 kB
+APP_CSS_GZIP=14.56 kB

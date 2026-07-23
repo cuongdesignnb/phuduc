@@ -16,6 +16,7 @@ defineProps({ page: { type: Object, required: true } });
 const inertiaPage = usePage();
 const site = computed(() => inertiaPage.props.site || {});
 const phone = computed(() => site.value.hotline || site.value.phone || '');
+const hasContact = computed(() => phone.value || site.value.email || site.value.address || site.value.working_hours);
 </script>
 
 <template>
@@ -32,22 +33,22 @@ const phone = computed(() => site.value.hotline || site.value.phone || '');
 
             <section v-if="page.about.mission || page.about.vision" class="mt-10 grid gap-6 md:grid-cols-2">
                 <UiCard v-if="page.about.mission" class="p-6">
-                    <h2 class="font-display text-2xl font-bold text-content-primary">Su menh</h2>
+                    <h2 class="font-display text-2xl font-bold text-content-primary">Sứ mệnh</h2>
                     <p class="mt-3 text-content-secondary">{{ page.about.mission }}</p>
                 </UiCard>
                 <UiCard v-if="page.about.vision" class="p-6">
-                    <h2 class="font-display text-2xl font-bold text-content-primary">Tam nhin</h2>
+                    <h2 class="font-display text-2xl font-bold text-content-primary">Tầm nhìn</h2>
                     <p class="mt-3 text-content-secondary">{{ page.about.vision }}</p>
                 </UiCard>
             </section>
 
-            <section class="mt-10">
+            <section v-if="hasContact" class="mt-10">
                 <SectionHeader title="Liên hệ" />
                 <div class="storefront-card space-y-3 p-6 text-content-secondary">
                     <p v-if="site.address">{{ site.address }}</p>
                     <p v-if="site.working_hours">{{ site.working_hours }}</p>
                     <div class="flex flex-wrap gap-3 pt-2">
-                        <UiButton v-if="phone" :href="`tel:${phone}`">Goi dien</UiButton>
+                        <UiButton v-if="phone" :href="`tel:${phone}`">Gọi điện</UiButton>
                         <UiButton v-if="site.email" :href="`mailto:${site.email}`" variant="outline">Email</UiButton>
                     </div>
                 </div>

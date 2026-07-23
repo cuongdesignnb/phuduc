@@ -1,8 +1,4 @@
-Command:
-docker compose exec -T app npm run audit:storefront-theme
-
-Result:
-PASS
-
-Output:
-Storefront theme audit passed (49 files, 13 forbidden patterns).
+COMMAND=docker compose exec -T app npm run audit:storefront-theme
+RESULT=PASS
+FILES_SCANNED=49
+FORBIDDEN_PATTERNS=13

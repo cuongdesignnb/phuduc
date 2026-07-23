@@ -1,13 +1,15 @@
-Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test"
-
-Result:
-PASS
-
-Summary:
-Tests: 120 passed
-Assertions: 804
-Duration: 8.18s
-
-Notes:
-SQLite in-memory testing was used explicitly so Docker MySQL restore data was not mutated by the test suite.
+COMMAND=docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test"
+RESULT=PASS
+PHP_TESTS=152
+PHP_ASSERTIONS=941
+QUERY_COUNTS_PRINTED=YES
+PRODUCT_INDEX_1=3
+PRODUCT_INDEX_12=3
+PRODUCT_DETAIL_ONE=5
+PRODUCT_DETAIL_MANY=5
+NEWS_INDEX_1=4
+NEWS_INDEX_12=4
+NEWS_DETAIL_1_RELATED=4
+NEWS_DETAIL_4_RELATED=4
+ABOUT=1
+DURATION=9.13s

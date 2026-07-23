@@ -9,6 +9,7 @@ use App\Models\ProductImage;
 use App\Models\Review;
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -19,11 +20,11 @@ class StorefrontQueryCountTest extends TestCase
     public function test_product_index_queries_do_not_scale_with_product_count(): void
     {
         $this->createProducts(1, 'product-one');
-        $one = $this->countRequestQueries(fn () => $this->get('/san-pham')->assertOk());
+        $one = $this->warmAndCount('/san-pham');
 
         $this->resetStorefrontFixtures();
         $this->createProducts(12, 'product-many');
-        $many = $this->countRequestQueries(fn () => $this->get('/san-pham')->assertOk());
+        $many = $this->warmAndCount('/san-pham');
 
         $this->recordCounts([
             'PRODUCT_INDEX_1' => $one,
@@ -39,14 +40,14 @@ class StorefrontQueryCountTest extends TestCase
         $this->createProductImages($product, normalImages: 1, spinFrames: 1);
         $this->createReviews($product, 1);
         $this->createProducts(1, 'related-one');
-        $one = $this->countRequestQueries(fn () => $this->get('/san-pham/measured-detail-one')->assertOk());
+        $one = $this->warmAndCount('/san-pham/measured-detail-one');
 
         $this->resetStorefrontFixtures();
         $product = $this->createProduct('Measured detail many', 'measured-detail-many', now());
         $this->createProductImages($product, normalImages: 6, spinFrames: 6);
         $this->createReviews($product, 20);
         $this->createProducts(4, 'related-many');
-        $many = $this->countRequestQueries(fn () => $this->get('/san-pham/measured-detail-many')->assertOk());
+        $many = $this->warmAndCount('/san-pham/measured-detail-many');
 
         $this->recordCounts([
             'PRODUCT_DETAIL_ONE' => $one,
@@ -59,11 +60,11 @@ class StorefrontQueryCountTest extends TestCase
     public function test_news_index_queries_do_not_scale_with_post_count(): void
     {
         $this->createPosts(1, null, 'post-one');
-        $one = $this->countRequestQueries(fn () => $this->get('/tin-tuc')->assertOk());
+        $one = $this->warmAndCount('/tin-tuc');
 
         $this->resetStorefrontFixtures();
         $this->createPosts(12, null, 'post-many');
-        $many = $this->countRequestQueries(fn () => $this->get('/tin-tuc')->assertOk());
+        $many = $this->warmAndCount('/tin-tuc');
 
         $this->recordCounts([
             'NEWS_INDEX_1' => $one,
@@ -78,13 +79,13 @@ class StorefrontQueryCountTest extends TestCase
         $category = PostCategory::create(['name' => 'Guides', 'slug' => 'guides']);
         $post = $this->createPost($category, 'Measured article one', 'measured-article-one', now());
         $this->createPosts(1, $category, 'related-one');
-        $one = $this->countRequestQueries(fn () => $this->get('/tin-tuc/'.$post->slug)->assertOk());
+        $one = $this->warmAndCount('/tin-tuc/'.$post->slug);
 
         $this->resetStorefrontFixtures();
         $category = PostCategory::create(['name' => 'Guides', 'slug' => 'guides']);
         $post = $this->createPost($category, 'Measured article many', 'measured-article-many', now());
         $this->createPosts(4, $category, 'related-many');
-        $many = $this->countRequestQueries(fn () => $this->get('/tin-tuc/'.$post->slug)->assertOk());
+        $many = $this->warmAndCount('/tin-tuc/'.$post->slug);
 
         $this->recordCounts([
             'NEWS_DETAIL_1_RELATED' => $one,
@@ -104,10 +105,17 @@ class StorefrontQueryCountTest extends TestCase
             Setting::set("unrelated.{$i}", "Value {$i}");
         }
 
-        $count = $this->countRequestQueries(fn () => $this->get('/gioi-thieu')->assertOk());
+        $count = $this->warmAndCount('/gioi-thieu');
 
         $this->recordCounts(['ABOUT' => $count]);
         $this->assertLessThanOrEqual(8, $count);
+    }
+
+    private function warmAndCount(string $url): int
+    {
+        $this->get($url)->assertOk();
+
+        return $this->countRequestQueries(fn () => $this->get($url)->assertOk());
     }
 
     private function countRequestQueries(callable $request): int
@@ -146,6 +154,8 @@ class StorefrontQueryCountTest extends TestCase
         Post::query()->delete();
         PostCategory::query()->delete();
         Setting::query()->delete();
+        Cache::flush();
+        app()->forgetScopedInstances();
     }
 
     private function createProducts(int $count, string $prefix = 'product'): void

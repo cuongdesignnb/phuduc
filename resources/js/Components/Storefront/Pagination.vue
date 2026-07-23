@@ -5,14 +5,14 @@ defineProps({ links: { type: Array, default: () => [] } });
 
 const labelFor = (label) => {
     const text = String(label);
-    if (text.includes('Previous') || text.includes('laquo')) return 'Truoc';
+    if (text.includes('Previous') || text.includes('laquo')) return 'Trước';
     if (text.includes('Next') || text.includes('raquo')) return 'Sau';
     return text.replace(/&[^;]+;/g, '').trim();
 };
 </script>
 
 <template>
-    <nav v-if="links.length > 3" aria-label="Phan trang" class="flex flex-wrap justify-center gap-2">
+    <nav v-if="links.length > 3" aria-label="Phân trang" class="flex flex-wrap justify-center gap-2">
         <component
             :is="link.url ? Link : 'span'"
             v-for="(link, index) in links"
@@ -21,6 +21,7 @@ const labelFor = (label) => {
             class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm"
             :class="link.active ? 'border-brand bg-brand text-brand-contrast' : link.url ? 'border-line bg-surface-card hover:border-brand-border' : 'border-line-subtle text-content-muted opacity-60'"
             :aria-current="link.active ? 'page' : undefined"
+            :aria-disabled="!link.url ? 'true' : undefined"
         >
             {{ labelFor(link.label) }}
         </component>

@@ -25,7 +25,7 @@ const move = (direction) => {
 </script>
 
 <template>
-    <section class="space-y-3" :aria-label="`${title} gallery`" @keydown.left.prevent="move(-1)" @keydown.right.prevent="move(1)">
+    <section class="space-y-3" :aria-label="`Thư viện ảnh của ${title}`" @keydown.left.prevent="move(-1)" @keydown.right.prevent="move(1)">
         <ResponsiveImage :src="current?.url" :alt="current?.alt || title" aspect="1/1" object-fit="contain" loading="eager" />
         <div v-if="images.length > 1" class="grid grid-cols-5 gap-2">
             <button
@@ -34,7 +34,7 @@ const move = (direction) => {
                 type="button"
                 class="overflow-hidden rounded-lg border"
                 :class="selected === index ? 'border-brand ring-2 ring-brand-border' : 'border-line'"
-                :aria-label="`Chon hinh ${index + 1}`"
+                :aria-label="`Chọn hình ${index + 1}`"
                 :aria-pressed="selected === index"
                 @click="select(index)"
             >

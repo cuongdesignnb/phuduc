@@ -7,6 +7,7 @@ use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -77,5 +78,60 @@ class VietnameseContentContractTest extends TestCase
                 ->where('page.breadcrumbs.0.name', 'Trang chủ')
                 ->where('page.breadcrumbs.1.name', 'Giới thiệu')
             );
+    }
+
+    public function test_public_vue_sources_use_accented_vietnamese_accessibility_labels(): void
+    {
+        $sources = collect([
+            resource_path('js/Components/Storefront/ProductGallery.vue'),
+            resource_path('js/Components/Storefront/Pagination.vue'),
+            resource_path('js/Components/Storefront/ProductReviewSummary.vue'),
+            resource_path('js/Components/Storefront/Breadcrumbs.vue'),
+            resource_path('js/Pages/Guest/Product/Index.vue'),
+            resource_path('js/Pages/Guest/About.vue'),
+        ])->map(fn (string $path) => file_get_contents($path))->implode("\n");
+
+        foreach ([
+            'Phân trang',
+            'Trước',
+            'Chọn hình',
+            'đánh giá đã duyệt',
+            'Xóa bộ lọc',
+            'Sứ mệnh',
+            'Tầm nhìn',
+            'Gọi điện',
+            'Điều hướng phân cấp',
+        ] as $label) {
+            $this->assertStringContainsString($label, $sources);
+        }
+
+        foreach ([
+            'Phan trang',
+            'Truoc',
+            'Chon hinh',
+            'danh gia da duyet',
+            'Xoa bo loc',
+            'Su menh',
+            'Tam nhin',
+            'Goi dien',
+        ] as $label) {
+            $this->assertStringNotContainsString($label, $sources);
+        }
+    }
+
+    public function test_storefront_pages_keep_single_h1_source_contract(): void
+    {
+        $pageHero = file_get_contents(resource_path('js/Components/Storefront/PageHero.vue'));
+        $this->assertSame(1, substr_count($pageHero, '<h1'));
+
+        foreach ([
+            'Product Index' => resource_path('js/Pages/Guest/Product/Index.vue'),
+            'Product Detail' => resource_path('js/Pages/Guest/Product/Show.vue'),
+            'News Index' => resource_path('js/Pages/Guest/News/Index.vue'),
+            'News Detail' => resource_path('js/Pages/Guest/News/Show.vue'),
+            'About' => resource_path('js/Pages/Guest/About.vue'),
+        ] as $page => $path) {
+            $this->assertFalse(Str::contains(file_get_contents($path), '<h1'), "{$page} must use PageHero as its only H1.");
+        }
     }
 }

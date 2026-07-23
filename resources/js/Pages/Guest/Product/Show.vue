@@ -57,7 +57,7 @@ const addToCart = () => {
                 <aside class="space-y-6">
                     <div class="storefront-card p-6">
                         <p v-if="product.sku" class="text-xs font-semibold uppercase tracking-wide text-content-muted">SKU: {{ product.sku }}</p>
-                        <h1 class="mt-2 font-display text-3xl font-bold text-content-primary">{{ product.name }}</h1>
+                        <h2 class="mt-2 font-display text-3xl font-bold text-content-primary">{{ product.name }}</h2>
                         <p class="mt-4 font-display text-3xl font-bold text-content-primary">{{ product.price_display }}</p>
 
                         <form v-if="product.price > 0" class="mt-6 flex flex-wrap items-center gap-4" @submit.prevent="addToCart">

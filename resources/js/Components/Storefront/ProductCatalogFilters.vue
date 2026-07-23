@@ -1,6 +1,6 @@
 <script setup>
-import { reactive, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import FormField from './FormField.vue';
 import UiButton from './UiButton.vue';
 
@@ -8,6 +8,17 @@ const props = defineProps({
     filters: { type: Object, required: true },
     sortOptions: { type: Array, default: () => [] },
 });
+
+const page = usePage();
+const firstError = ref(null);
+const minPriceInput = ref(null);
+
+const errors = computed(() => page.props.errors || {});
+const fieldError = (name) => {
+    const value = errors.value[name];
+
+    return Array.isArray(value) ? value[0] : value || '';
+};
 
 const form = reactive({
     search: props.filters.search || '',
@@ -22,6 +33,14 @@ watch(() => props.filters, (filters) => {
     form.max_price = filters.max_price ?? '';
     form.sort = filters.sort || 'latest';
 }, { deep: true });
+
+watch(errors, async () => {
+    firstError.value = fieldError('min_price') || fieldError('max_price') || fieldError('search') || fieldError('sort') || null;
+    if (firstError.value) {
+        await nextTick();
+        minPriceInput.value?.focus();
+    }
+}, { immediate: true });
 
 const normalized = () => ({
     search: form.search || undefined,
@@ -49,24 +68,28 @@ const clear = () => {
 
 <template>
     <form class="storefront-card grid gap-4 p-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto_auto] lg:items-end" role="search" @submit.prevent="submit">
-        <FormField id="product-search" label="Tìm sản phẩm">
+        <p v-if="firstError" id="product-filter-error-summary" class="lg:col-span-6 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {{ firstError }}
+        </p>
+
+        <FormField id="product-search" label="Tìm sản phẩm" :error="fieldError('search')">
             <template #default="{ id, describedBy }">
-                <input :id="id" v-model="form.search" :aria-describedby="describedBy" type="search" maxlength="100" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
+                <input :id="id" v-model="form.search" :aria-describedby="describedBy" :aria-invalid="fieldError('search') ? 'true' : undefined" type="search" maxlength="100" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
-        <FormField id="min-price" label="Giá từ">
+        <FormField id="min-price" label="Giá từ" :error="fieldError('min_price')">
             <template #default="{ id, describedBy }">
-                <input :id="id" v-model="form.min_price" :aria-describedby="describedBy" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
+                <input :id="id" ref="minPriceInput" v-model="form.min_price" :aria-describedby="describedBy || (firstError ? 'product-filter-error-summary' : undefined)" :aria-invalid="fieldError('min_price') ? 'true' : undefined" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
-        <FormField id="max-price" label="Giá đến">
+        <FormField id="max-price" label="Giá đến" :error="fieldError('max_price')">
             <template #default="{ id, describedBy }">
-                <input :id="id" v-model="form.max_price" :aria-describedby="describedBy" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
+                <input :id="id" v-model="form.max_price" :aria-describedby="describedBy" :aria-invalid="fieldError('max_price') ? 'true' : undefined" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
-        <FormField id="sort" label="Sắp xếp">
+        <FormField id="sort" label="Sắp xếp" :error="fieldError('sort')">
             <template #default="{ id, describedBy }">
-                <select :id="id" v-model="form.sort" :aria-describedby="describedBy" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
+                <select :id="id" v-model="form.sort" :aria-describedby="describedBy" :aria-invalid="fieldError('sort') ? 'true' : undefined" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
                     <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                 </select>
             </template>

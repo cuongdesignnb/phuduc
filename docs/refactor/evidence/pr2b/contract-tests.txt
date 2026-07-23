@@ -1,16 +1,10 @@
-Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/VietnameseContentContractTest.php tests/Unit/Storefront/ProductPresentationServiceTest.php tests/Feature/Storefront/NewsIndexContractTest.php tests/Feature/Storefront/StorefrontQueryCountTest.php"
-
-Result:
-PASS
-
-Summary:
-Tests: 15 passed
-Assertions: 152
-Duration: 1.93s
-
-Coverage:
-- Accented Vietnamese page contracts.
-- Price display and specification aliases.
-- Valid/invalid news category slug behavior.
-- Request-only query count scaling assertions.
+COMMAND=docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/ProductCatalogContractTest.php tests/Feature/Storefront/AboutPageContractTest.php tests/Feature/Storefront/VietnameseContentContractTest.php tests/Feature/Storefront/StorefrontQueryCountTest.php tests/Unit/Storefront/RichHtmlSanitizerTest.php"
+RESULT=PASS
+TESTS=45
+ASSERTIONS=284
+PRODUCT_FILTER_VALIDATION_CONTRACT=PASS
+ABOUT_CONTRACTS=PASS
+VIETNAMESE_SOURCE_CONTRACTS=PASS
+SINGLE_H1_SOURCE_CONTRACT=PASS
+QUERY_COUNT_CONTRACTS=PASS
+SANITIZER_CONTRACTS=PASS

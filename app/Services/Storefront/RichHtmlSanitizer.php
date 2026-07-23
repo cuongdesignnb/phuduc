@@ -80,7 +80,7 @@ class RichHtmlSanitizer
             $allowed = in_array($name, self::GLOBAL_ATTRIBUTES, true)
                 || in_array($name, self::TAG_ATTRIBUTES[$node->tagName] ?? [], true);
 
-            if (! $allowed || str_starts_with($name, 'on') || $this->hasUnsafeUrl($name, $value)) {
+            if (! $allowed || str_starts_with($name, 'on') || ! $this->hasAllowedUrl($name, $value)) {
                 $node->removeAttribute($attribute->name);
             }
         }
@@ -90,9 +90,46 @@ class RichHtmlSanitizer
         }
     }
 
-    private function hasUnsafeUrl(string $name, string $value): bool
+    private function hasAllowedUrl(string $name, string $value): bool
     {
-        return in_array($name, ['href', 'src'], true)
-            && preg_match('/^\s*(javascript|vbscript|data):/i', $value) === 1;
+        if (! in_array($name, ['href', 'src'], true)) {
+            return true;
+        }
+
+        $decoded = trim(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        if ($decoded === '' || str_starts_with($decoded, '//')) {
+            return false;
+        }
+
+        if ($name === 'src' && str_starts_with($decoded, '#')) {
+            return false;
+        }
+
+        $schemeProbe = preg_replace('/[\x00-\x20\x7F]+/', '', $decoded) ?? '';
+        $colonPosition = strpos($schemeProbe, ':');
+        $pathDelimiterPosition = $this->firstDelimiterPosition($schemeProbe);
+
+        if ($colonPosition !== false && ($pathDelimiterPosition === null || $colonPosition < $pathDelimiterPosition)) {
+            $scheme = strtolower(substr($schemeProbe, 0, $colonPosition));
+            $allowedSchemes = $name === 'href'
+                ? ['http', 'https', 'mailto', 'tel']
+                : ['http', 'https'];
+
+            return in_array($scheme, $allowedSchemes, true);
+        }
+
+        return true;
+    }
+
+    private function firstDelimiterPosition(string $value): ?int
+    {
+        $positions = array_filter([
+            strpos($value, '/'),
+            strpos($value, '?'),
+            strpos($value, '#'),
+        ], fn ($position) => $position !== false);
+
+        return $positions === [] ? null : min($positions);
     }
 }

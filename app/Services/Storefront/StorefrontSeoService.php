@@ -129,9 +129,12 @@ class StorefrontSeoService
     public function organizationJsonLd(): array
     {
         $site = $this->siteConfiguration->get();
+        $telephone = $site['hotline'] ?: $site['phone'];
+        $hasContact = filled($telephone) || filled($site['email']);
+        $hasAddress = filled($site['address']);
         $contactPoint = array_filter([
             '@type' => 'ContactPoint',
-            'telephone' => $site['hotline'] ?: $site['phone'],
+            'telephone' => $telephone,
             'email' => $site['email'],
             'contactType' => 'customer service',
         ]);
@@ -147,8 +150,8 @@ class StorefrontSeoService
             'name' => $site['name'],
             'url' => url('/'),
             'logo' => $site['logo_url'],
-            'contactPoint' => count($contactPoint) > 1 ? $contactPoint : null,
-            'address' => count($address) > 1 ? $address : null,
+            'contactPoint' => $hasContact ? $contactPoint : null,
+            'address' => $hasAddress ? $address : null,
             'sameAs' => collect($site['social_links'])->filter()->values()->all() ?: null,
         ], fn ($value) => $value !== null && $value !== '' && $value !== []);
     }

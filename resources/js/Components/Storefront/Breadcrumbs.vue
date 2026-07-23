@@ -5,7 +5,7 @@ defineProps({ items: { type: Array, default: () => [] } });
 </script>
 
 <template>
-    <nav aria-label="Breadcrumb" class="text-sm text-content-muted">
+    <nav aria-label="Điều hướng phân cấp" class="text-sm text-content-muted">
         <ol class="flex flex-wrap items-center gap-2">
             <li v-for="(item, index) in items" :key="`${item.name || item.label}-${index}`" class="flex items-center gap-2">
                 <span v-if="index" aria-hidden="true">/</span>

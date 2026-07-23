@@ -28,7 +28,10 @@ class AboutPageService
         $site = $this->siteConfiguration->get();
         $settings = Setting::query()->whereIn('key', self::KEYS)->pluck('value', 'key');
         $title = $settings->get('about.title') ?: 'Giới thiệu';
-        $description = $settings->get('about.description') ?: $site['description'];
+        $description = $settings->get('about.description')
+            ?: $site['description']
+            ?: $site['tagline']
+            ?: "Giới thiệu về {$site['name']}.";
         $breadcrumbs = [
             ['name' => 'Trang chủ', 'url' => url('/')],
             ['name' => 'Giới thiệu', 'url' => route('about')],

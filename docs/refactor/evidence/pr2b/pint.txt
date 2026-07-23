@@ -1,13 +1,4 @@
-Command:
-docker compose exec -T app sh -lc "vendor/bin/pint --test app/Http/Requests/Storefront app/Services/Storefront tests/Feature/Storefront tests/Unit/Storefront"
-
-Result:
-PASS
-
-Summary:
-33 PHP files checked.
-Laravel Pint reported PASS.
-
-Additional check:
-git diff --check
-Result: PASS
+COMMAND=docker compose exec -T app sh -lc "vendor/bin/pint --test app/Http/Controllers/Guest/ProductController.php app/Http/Requests/Storefront app/Services/Storefront tests/Feature/Storefront tests/Unit/Storefront"
+RESULT=PASS
+FILES=34
+NOTE=Full Guest controller directory includes pre-existing CheckoutController style drift outside this fix scope.

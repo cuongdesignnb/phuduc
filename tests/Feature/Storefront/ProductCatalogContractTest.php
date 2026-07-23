@@ -45,7 +45,14 @@ class ProductCatalogContractTest extends TestCase
 
     public function test_product_index_validates_price_range(): void
     {
-        $this->get('/san-pham?min_price=10&max_price=1')->assertSessionHasErrors('min_price');
+        $this->get('/san-pham?min_price=10&max_price=1')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Guest/Product/Index')
+                ->where('page.catalog.filters.min_price', '10')
+                ->where('page.catalog.filters.max_price', '1')
+                ->where('errors.min_price.0', 'Giá tối thiểu phải nhỏ hơn hoặc bằng giá tối đa.')
+            );
     }
 
     public function test_product_sort_is_deterministic(): void

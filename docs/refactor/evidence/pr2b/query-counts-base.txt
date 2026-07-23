@@ -1,28 +1,18 @@
-Branch:
-temporary worktree at main base SHA
-
-HEAD:
-10a53ff534820d1d5d1e356d3cc928e11059a756
-
-Command:
-docker run --rm --entrypoint sh phuduc-base-query -lc "npm run build >/tmp/base-build.log && APP_ENV=testing APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
-
-Method:
-The BA-fixed query test was copied into a detached base-SHA worktree. Fixtures are created before query logging. Query logging is enabled only around the HTTP request.
-
-Result:
-FAIL, expected for base comparison because About exceeded the bounded request-query budget.
-
-Counts:
-PRODUCT_INDEX_1=10
+BASE_SHA=10a53ff534820d1d5d1e356d3cc928e11059a756
+METHOD=Current warmAndCount StorefrontQueryCountTest copied into temporary base worktree
+RESULT=EXPECTED_FAIL_FOR_ABOUT_BUDGET
+WARMUP_REQUEST_EXCLUDED=YES
+FIXTURE_QUERIES_EXCLUDED=YES
+CLEANUP_QUERIES_EXCLUDED=YES
+CACHE_STATE_BALANCED=YES
+PRODUCT_INDEX_1=6
 PRODUCT_INDEX_12=6
-PRODUCT_DETAIL_ONE=12
+PRODUCT_DETAIL_ONE=8
 PRODUCT_DETAIL_MANY=8
-NEWS_INDEX_1=11
+NEWS_INDEX_1=7
 NEWS_INDEX_12=7
-NEWS_DETAIL_1_RELATED=11
+NEWS_DETAIL_1_RELATED=7
 NEWS_DETAIL_4_RELATED=7
-ABOUT=14
-
-Failure:
-ABOUT <= 8 failed because base count was 14.
+ABOUT=10
+BASE_FAILURE=ABOUT <= 8 budget failed because base used 10 queries
+NOTES=Base emitted Vite manifest warnings in the temporary image, but query counts were captured.

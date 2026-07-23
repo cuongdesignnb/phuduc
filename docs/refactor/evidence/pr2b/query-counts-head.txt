@@ -1,29 +1,21 @@
-Branch:
-refactor/storefront-catalog-content-pages
-
-HEAD at measurement:
-working tree with BA review fixes before final commit
-
-Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
-
-Method:
-Fixtures are created before query logging. Query logging is enabled only around each HTTP request. Scenario fixture state is reset between one/many comparisons.
-
-Result:
-PASS
-
-Counts:
-PRODUCT_INDEX_1=7
+HEAD_BRANCH=refactor/storefront-catalog-content-pages
+METHOD=warmAndCount per scenario with isolated fixtures and cache flush between resets
+RESULT=PASS
+WARMUP_REQUEST_EXCLUDED=YES
+FIXTURE_QUERIES_EXCLUDED=YES
+CLEANUP_QUERIES_EXCLUDED=YES
+CACHE_STATE_BALANCED=YES
+PRODUCT_INDEX_1=3
 PRODUCT_INDEX_12=3
-PRODUCT_DETAIL_ONE=9
+PRODUCT_DETAIL_ONE=5
 PRODUCT_DETAIL_MANY=5
-NEWS_INDEX_1=8
+NEWS_INDEX_1=4
 NEWS_INDEX_12=4
-NEWS_DETAIL_1_RELATED=8
+NEWS_DETAIL_1_RELATED=4
 NEWS_DETAIL_4_RELATED=4
-ABOUT=5
-
-Summary:
-Tests: 5 passed
-Assertions: included in 15-test BA review slice
+ABOUT=1
+PRODUCT_INDEX_12_LE_PRODUCT_INDEX_1_PLUS_1=YES
+PRODUCT_DETAIL_MANY_LE_PRODUCT_DETAIL_ONE_PLUS_1=YES
+NEWS_INDEX_12_LE_NEWS_INDEX_1_PLUS_1=YES
+NEWS_DETAIL_MANY_LE_NEWS_DETAIL_ONE_PLUS_1=YES
+N_PLUS_ONE=NO

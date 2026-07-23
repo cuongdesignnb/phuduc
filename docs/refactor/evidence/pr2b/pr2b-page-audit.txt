@@ -1,13 +1,8 @@
-Command:
-docker compose exec -T app npm run audit:pr2b-pages
-
-Result:
-PASS
-
-Output:
+COMMAND=docker compose exec -T app npm run audit:pr2b-pages
+RESULT=PASS
 MOJIBAKE_REPLACEMENT_HITS=0
 UNACCENTED_VIETNAMESE_LABEL_HITS=0
 LEGACY_FORMATTER_HITS=0
 DIRECT_STORAGE_PATH_HITS=0
 LEGACY_THEME_HITS=0
-PR2B page audit passed (48 files scanned).
+FILES_SCANNED=48

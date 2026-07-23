@@ -30,7 +30,7 @@ defineProps({ page: { type: Object, required: true } });
                 v-else
                 class="mt-8"
                 :title="page.catalog.filters.search || page.catalog.filters.min_price || page.catalog.filters.max_price ? 'Không tìm thấy sản phẩm phù hợp.' : 'Chưa có sản phẩm được công bố.'"
-                action-label="Xoa bo loc"
+                action-label="Xóa bộ lọc"
                 :action-href="route('products.index')"
             />
 
