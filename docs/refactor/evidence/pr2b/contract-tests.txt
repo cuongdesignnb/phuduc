@@ -1,19 +1,16 @@
 Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/AboutPageContractTest.php tests/Feature/Storefront/NewsDetailContractTest.php tests/Feature/Storefront/NewsIndexContractTest.php tests/Feature/Storefront/ProductCatalogContractTest.php tests/Feature/Storefront/ProductDetailContractTest.php tests/Feature/Storefront/StorefrontSeoContractTest.php tests/Feature/Storefront/StorefrontQueryCountTest.php tests/Unit/Storefront/PostPresentationServiceTest.php"
+docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/VietnameseContentContractTest.php tests/Unit/Storefront/ProductPresentationServiceTest.php tests/Feature/Storefront/NewsIndexContractTest.php tests/Feature/Storefront/StorefrontQueryCountTest.php"
 
 Result:
 PASS
 
 Summary:
-Tests: 11 passed
-Assertions: 163
-Duration: 1.73s
+Tests: 15 passed
+Assertions: 152
+Duration: 1.93s
 
-Query output from this run:
-PRODUCT_INDEX_1=9
-PRODUCT_INDEX_12=27
-PRODUCT_DETAIL=28
-NEWS_INDEX_1=6
-NEWS_INDEX_12=17
-NEWS_DETAIL=10
-ABOUT=7
+Coverage:
+- Accented Vietnamese page contracts.
+- Price display and specification aliases.
+- Valid/invalid news category slug behavior.
+- Request-only query count scaling assertions.

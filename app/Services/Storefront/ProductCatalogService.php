@@ -42,8 +42,8 @@ class ProductCatalogService
             ->withQueryString();
 
         $breadcrumbs = [
-            ['name' => 'Trang chu', 'url' => url('/')],
-            ['name' => 'San pham', 'url' => route('products.index')],
+            ['name' => 'Trang chủ', 'url' => url('/')],
+            ['name' => 'Sản phẩm', 'url' => route('products.index')],
         ];
         $hasFilters = filled($filters['search']) || $filters['min_price'] !== null || $filters['max_price'] !== null;
 
@@ -51,17 +51,17 @@ class ProductCatalogService
             'page' => [
                 'type' => 'product_index',
                 'seo' => $this->seo->meta([
-                    'title' => 'San pham',
-                    'description' => 'Danh sach san pham xe dien cong nghiep',
+                    'title' => 'Sản phẩm',
+                    'description' => 'Danh sách sản phẩm xe điện công nghiệp',
                     'canonical' => route('products.index'),
                     'robots' => $hasFilters ? 'noindex, follow' : 'index, follow',
                 ]),
                 'json_ld' => [$this->seo->breadcrumbJsonLd($breadcrumbs)],
                 'breadcrumbs' => $breadcrumbs,
                 'hero' => [
-                    'eyebrow' => 'San pham',
-                    'title' => 'Giai phap xe dien cong nghiep',
-                    'description' => 'Kham pha cac dong xe dien phu hop cho van chuyen va van hanh noi bo.',
+                    'eyebrow' => 'Sản phẩm',
+                    'title' => 'Giải pháp xe điện công nghiệp',
+                    'description' => 'Khám phá các dòng xe điện phù hợp cho vận chuyển và vận hành nội bộ.',
                 ],
                 'catalog' => [
                     'items' => $paginator->getCollection()->map(fn (Product $product) => $this->products->present($product))->values()->all(),
@@ -73,11 +73,11 @@ class ProductCatalogService
                         'sort' => $filters['sort'],
                     ],
                     'sort_options' => [
-                        ['value' => 'latest', 'label' => 'Moi nhat'],
-                        ['value' => 'price_asc', 'label' => 'Gia tang dan'],
-                        ['value' => 'price_desc', 'label' => 'Gia giam dan'],
-                        ['value' => 'name_asc', 'label' => 'Ten A-Z'],
-                        ['value' => 'name_desc', 'label' => 'Ten Z-A'],
+                        ['value' => 'latest', 'label' => 'Mới nhất'],
+                        ['value' => 'price_asc', 'label' => 'Giá tăng dần'],
+                        ['value' => 'price_desc', 'label' => 'Giá giảm dần'],
+                        ['value' => 'name_asc', 'label' => 'Tên A-Z'],
+                        ['value' => 'name_desc', 'label' => 'Tên Z-A'],
                     ],
                 ],
             ],

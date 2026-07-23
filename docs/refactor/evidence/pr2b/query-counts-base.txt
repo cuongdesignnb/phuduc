@@ -1,25 +1,28 @@
 Branch:
-main
+temporary worktree at main base SHA
 
 HEAD:
 10a53ff534820d1d5d1e356d3cc928e11059a756
 
 Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
+docker run --rm --entrypoint sh phuduc-base-query -lc "npm run build >/tmp/base-build.log && APP_ENV=testing APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
+
+Method:
+The BA-fixed query test was copied into a detached base-SHA worktree. Fixtures are created before query logging. Query logging is enabled only around the HTTP request.
 
 Result:
-PASS
+FAIL, expected for base comparison because About exceeded the bounded request-query budget.
 
 Counts:
-PRODUCT_INDEX_1=12
-PRODUCT_INDEX_12=30
-PRODUCT_DETAIL=31
-NEWS_INDEX_1=9
-NEWS_INDEX_12=20
-NEWS_DETAIL=13
-ABOUT=16
+PRODUCT_INDEX_1=10
+PRODUCT_INDEX_12=6
+PRODUCT_DETAIL_ONE=12
+PRODUCT_DETAIL_MANY=8
+NEWS_INDEX_1=11
+NEWS_INDEX_12=7
+NEWS_DETAIL_1_RELATED=11
+NEWS_DETAIL_4_RELATED=7
+ABOUT=14
 
-Summary:
-Tests: 1 passed
-Assertions: 14
-Duration: 0.67s
+Failure:
+ABOUT <= 8 failed because base count was 14.

@@ -5,4 +5,9 @@ Result:
 PASS
 
 Output:
-PR2B page audit passed (32 files scanned).
+MOJIBAKE_REPLACEMENT_HITS=0
+UNACCENTED_VIETNAMESE_LABEL_HITS=0
+LEGACY_FORMATTER_HITS=0
+DIRECT_STORAGE_PATH_HITS=0
+LEGACY_THEME_HITS=0
+PR2B page audit passed (48 files scanned).

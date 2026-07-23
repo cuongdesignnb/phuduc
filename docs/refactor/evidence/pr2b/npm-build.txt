@@ -8,9 +8,9 @@ Summary:
 vite v7.3.1 built production assets successfully.
 Modules transformed: 887
 Largest generated assets:
-- public/build/assets/app-D99FMWJ9.js 324.68 kB, gzip 117.52 kB
-- public/build/assets/AdvancedTextEditor-CQBZT2gT.js 258.71 kB, gzip 69.74 kB
-- public/build/assets/vuedraggable.umd-BpeiIO5C.js 178.07 kB, gzip 62.10 kB
+- public/build/assets/app-Clkrx9qy.js 324.68 kB, gzip 117.52 kB
+- public/build/assets/AdvancedTextEditor-Cv-JsiyM.js 258.71 kB, gzip 69.74 kB
+- public/build/assets/vuedraggable.umd-D-NdOtDO.js 178.07 kB, gzip 62.10 kB
 
-Note:
-Host `npm run build` was not used for final evidence because host Composer vendor did not include `vendor/tightenco/ziggy`; Docker app vendor did, and Docker is the QA runtime for this closure.
+Production QA:
+`public/hot` was removed before Browser QA and Lighthouse so Laravel used the production Vite manifest.

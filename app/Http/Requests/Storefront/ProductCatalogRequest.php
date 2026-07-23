@@ -34,7 +34,7 @@ class ProductCatalogRequest extends FormRequest
                 $max = $this->input('max_price');
 
                 if ($min !== null && $max !== null && (float) $min > (float) $max) {
-                    $validator->errors()->add('min_price', 'Minimum price must be less than or equal to maximum price.');
+                    $validator->errors()->add('min_price', 'Giá tối thiểu phải nhỏ hơn hoặc bằng giá tối đa.');
                 }
             },
         ];

@@ -16,81 +16,115 @@ class StorefrontQueryCountTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_storefront_routes_do_not_scale_queries_with_collection_size(): void
+    public function test_product_index_queries_do_not_scale_with_product_count(): void
     {
-        $productIndexOne = $this->countQueries(function (): void {
-            $this->createProducts(1, 'product-one');
-            $this->get('/san-pham')->assertOk();
-        });
+        $this->createProducts(1, 'product-one');
+        $one = $this->countRequestQueries(fn () => $this->get('/san-pham')->assertOk());
 
-        $productIndexTwelve = $this->countQueries(function (): void {
-            $this->createProducts(12, 'product-many');
-            $this->get('/san-pham')->assertOk();
-        });
-
-        $productDetail = $this->countQueries(function (): void {
-            $product = $this->createProduct('Measured detail', 'measured-detail', now());
-            $this->createProductImages($product, 6);
-            $this->createReviews($product, 8);
-            $this->createProducts(4, 'related');
-            $this->get('/san-pham/measured-detail')->assertOk();
-        });
-
-        $newsIndexOne = $this->countQueries(function (): void {
-            $this->createPosts(1, null, 'post-one');
-            $this->get('/tin-tuc')->assertOk();
-        });
-
-        $newsIndexTwelve = $this->countQueries(function (): void {
-            $this->createPosts(12, PostCategory::create(['name' => 'News many', 'slug' => 'news-many']), 'post-many');
-            $this->get('/tin-tuc')->assertOk();
-        });
-
-        $newsDetail = $this->countQueries(function (): void {
-            $category = PostCategory::create(['name' => 'Guides', 'slug' => 'guides']);
-            $post = $this->createPost($category, 'Measured article', 'measured-article', now());
-            $this->createPosts(4, $category, 'related');
-            $this->get('/tin-tuc/'.$post->slug)->assertOk();
-        });
-
-        $about = $this->countQueries(function (): void {
-            Setting::set('about.title', 'About');
-            Setting::set('about.content', '<p>About content</p>');
-            Setting::set('site.name', 'Phu Duc');
-            $this->get('/gioi-thieu')->assertOk();
-        });
+        $this->resetStorefrontFixtures();
+        $this->createProducts(12, 'product-many');
+        $many = $this->countRequestQueries(fn () => $this->get('/san-pham')->assertOk());
 
         $this->recordCounts([
-            'PRODUCT_INDEX_1' => $productIndexOne,
-            'PRODUCT_INDEX_12' => $productIndexTwelve,
-            'PRODUCT_DETAIL' => $productDetail,
-            'NEWS_INDEX_1' => $newsIndexOne,
-            'NEWS_INDEX_12' => $newsIndexTwelve,
-            'NEWS_DETAIL' => $newsDetail,
-            'ABOUT' => $about,
+            'PRODUCT_INDEX_1' => $one,
+            'PRODUCT_INDEX_12' => $many,
         ]);
 
-        $this->assertLessThanOrEqual(40, $productIndexTwelve);
-        $this->assertLessThanOrEqual(25, $newsIndexTwelve);
-        $this->assertGreaterThan(0, $productDetail);
-        $this->assertGreaterThan(0, $newsDetail);
-        $this->assertGreaterThan(0, $about);
+        $this->assertLessThanOrEqual($one + 1, $many);
     }
 
-    private function countQueries(callable $callback): int
+    public function test_product_detail_queries_do_not_scale_with_images_reviews_or_related_products(): void
+    {
+        $product = $this->createProduct('Measured detail one', 'measured-detail-one', now());
+        $this->createProductImages($product, normalImages: 1, spinFrames: 1);
+        $this->createReviews($product, 1);
+        $this->createProducts(1, 'related-one');
+        $one = $this->countRequestQueries(fn () => $this->get('/san-pham/measured-detail-one')->assertOk());
+
+        $this->resetStorefrontFixtures();
+        $product = $this->createProduct('Measured detail many', 'measured-detail-many', now());
+        $this->createProductImages($product, normalImages: 6, spinFrames: 6);
+        $this->createReviews($product, 20);
+        $this->createProducts(4, 'related-many');
+        $many = $this->countRequestQueries(fn () => $this->get('/san-pham/measured-detail-many')->assertOk());
+
+        $this->recordCounts([
+            'PRODUCT_DETAIL_ONE' => $one,
+            'PRODUCT_DETAIL_MANY' => $many,
+        ]);
+
+        $this->assertLessThanOrEqual($one + 1, $many);
+    }
+
+    public function test_news_index_queries_do_not_scale_with_post_count(): void
+    {
+        $this->createPosts(1, null, 'post-one');
+        $one = $this->countRequestQueries(fn () => $this->get('/tin-tuc')->assertOk());
+
+        $this->resetStorefrontFixtures();
+        $this->createPosts(12, null, 'post-many');
+        $many = $this->countRequestQueries(fn () => $this->get('/tin-tuc')->assertOk());
+
+        $this->recordCounts([
+            'NEWS_INDEX_1' => $one,
+            'NEWS_INDEX_12' => $many,
+        ]);
+
+        $this->assertLessThanOrEqual($one + 1, $many);
+    }
+
+    public function test_news_detail_queries_do_not_scale_with_related_post_count(): void
+    {
+        $category = PostCategory::create(['name' => 'Guides', 'slug' => 'guides']);
+        $post = $this->createPost($category, 'Measured article one', 'measured-article-one', now());
+        $this->createPosts(1, $category, 'related-one');
+        $one = $this->countRequestQueries(fn () => $this->get('/tin-tuc/'.$post->slug)->assertOk());
+
+        $this->resetStorefrontFixtures();
+        $category = PostCategory::create(['name' => 'Guides', 'slug' => 'guides']);
+        $post = $this->createPost($category, 'Measured article many', 'measured-article-many', now());
+        $this->createPosts(4, $category, 'related-many');
+        $many = $this->countRequestQueries(fn () => $this->get('/tin-tuc/'.$post->slug)->assertOk());
+
+        $this->recordCounts([
+            'NEWS_DETAIL_1_RELATED' => $one,
+            'NEWS_DETAIL_4_RELATED' => $many,
+        ]);
+
+        $this->assertLessThanOrEqual($one + 1, $many);
+    }
+
+    public function test_about_query_count_is_bounded(): void
+    {
+        Setting::set('about.title', 'Giới thiệu');
+        Setting::set('about.content', '<p>Nội dung giới thiệu</p>');
+        Setting::set('site.name', 'Phú Đức');
+
+        for ($i = 1; $i <= 30; $i++) {
+            Setting::set("unrelated.{$i}", "Value {$i}");
+        }
+
+        $count = $this->countRequestQueries(fn () => $this->get('/gioi-thieu')->assertOk());
+
+        $this->recordCounts(['ABOUT' => $count]);
+        $this->assertLessThanOrEqual(8, $count);
+    }
+
+    private function countRequestQueries(callable $request): int
     {
         DB::flushQueryLog();
         DB::enableQueryLog();
 
-        $callback();
+        try {
+            $request();
 
-        $queries = collect(DB::getQueryLog())
-            ->reject(fn (array $query) => str_starts_with(strtolower($query['query'] ?? ''), 'pragma '));
-
-        DB::disableQueryLog();
-        DB::flushQueryLog();
-
-        return $queries->count();
+            return collect(DB::getQueryLog())
+                ->reject(fn (array $query) => str_starts_with(strtolower($query['query'] ?? ''), 'pragma '))
+                ->count();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
     }
 
     /**
@@ -102,6 +136,16 @@ class StorefrontQueryCountTest extends TestCase
         foreach ($counts as $key => $value) {
             fwrite(STDERR, $key.'='.$value.PHP_EOL);
         }
+    }
+
+    private function resetStorefrontFixtures(): void
+    {
+        Review::query()->delete();
+        ProductImage::query()->delete();
+        Product::query()->delete();
+        Post::query()->delete();
+        PostCategory::query()->delete();
+        Setting::query()->delete();
     }
 
     private function createProducts(int $count, string $prefix = 'product'): void
@@ -130,14 +174,23 @@ class StorefrontQueryCountTest extends TestCase
         ]);
     }
 
-    private function createProductImages(Product $product, int $count): void
+    private function createProductImages(Product $product, int $normalImages, int $spinFrames): void
     {
-        for ($i = 1; $i <= $count; $i++) {
+        for ($i = 1; $i <= $normalImages; $i++) {
             ProductImage::create([
                 'product_id' => $product->id,
-                'image_path' => "products/detail-{$i}.webp",
-                'is_360' => $i > 3,
+                'image_path' => "products/detail-normal-{$i}.webp",
+                'is_360' => false,
                 'sort_order' => $i,
+            ]);
+        }
+
+        for ($i = 1; $i <= $spinFrames; $i++) {
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_path' => "products/detail-spin-{$i}.webp",
+                'is_360' => true,
+                'sort_order' => $normalImages + $i,
             ]);
         }
     }

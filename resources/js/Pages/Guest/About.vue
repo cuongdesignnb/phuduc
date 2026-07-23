@@ -42,7 +42,7 @@ const phone = computed(() => site.value.hotline || site.value.phone || '');
             </section>
 
             <section class="mt-10">
-                <SectionHeader title="Lien he" />
+                <SectionHeader title="Liên hệ" />
                 <div class="storefront-card space-y-3 p-6 text-content-secondary">
                     <p v-if="site.address">{{ site.address }}</p>
                     <p v-if="site.working_hours">{{ site.working_hours }}</p>

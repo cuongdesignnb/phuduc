@@ -44,7 +44,7 @@ class ProductDetailContractTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Guest/Product/Show')
                 ->where('page.type', 'product_detail')
-                ->where('page.product.price_display', 'Lien he')
+                ->where('page.product.price_display', 'Liên hệ')
                 ->where('page.product.gallery.0.url', url('/storage/products/main.webp'))
                 ->where('page.product.spin_frames.0.url', url('/storage/products/spin.webp'))
                 ->where('page.product.review_summary.count', 1)

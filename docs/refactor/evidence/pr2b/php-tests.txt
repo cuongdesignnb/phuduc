@@ -5,9 +5,9 @@ Result:
 PASS
 
 Summary:
-Tests: 107 passed
-Assertions: 691
-Duration: 6.21s
+Tests: 120 passed
+Assertions: 804
+Duration: 8.18s
 
 Notes:
 SQLite in-memory testing was used explicitly so Docker MySQL restore data was not mutated by the test suite.

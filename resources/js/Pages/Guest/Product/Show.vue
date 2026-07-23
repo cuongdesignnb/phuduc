@@ -62,17 +62,17 @@ const addToCart = () => {
 
                         <form v-if="product.price > 0" class="mt-6 flex flex-wrap items-center gap-4" @submit.prevent="addToCart">
                             <QuantityStepper v-model="quantity" :min="1" :max="99" />
-                            <UiButton type="submit" :disabled="processing">{{ processing ? 'Dang them' : 'Them vao gio hang' }}</UiButton>
+                            <UiButton type="submit" :disabled="processing">{{ processing ? 'Đang thêm' : 'Thêm vào giỏ hàng' }}</UiButton>
                         </form>
 
                         <div v-else class="mt-6">
-                            <UiButton v-if="contactPhone" :href="`tel:${contactPhone}`">Lien he bao gia</UiButton>
-                            <UiButton v-else :href="route('about')" variant="outline">Thong tin lien he</UiButton>
+                            <UiButton v-if="contactPhone" :href="`tel:${contactPhone}`">Liên hệ báo giá</UiButton>
+                            <UiButton v-else :href="route('about')" variant="outline">Thông tin liên hệ</UiButton>
                         </div>
                     </div>
 
                     <div v-if="product.specifications.length" class="storefront-card p-6">
-                        <h2 class="font-display text-xl font-bold text-content-primary">Thong so ky thuat</h2>
+                        <h2 class="font-display text-xl font-bold text-content-primary">Thông số kỹ thuật</h2>
                         <dl class="mt-4 divide-y divide-line">
                             <div v-for="specification in product.specifications" :key="`${specification.key}-${specification.value}`" class="grid grid-cols-2 gap-4 py-3 text-sm">
                                 <dt class="text-content-muted">{{ specification.label }}</dt>
@@ -84,10 +84,10 @@ const addToCart = () => {
             </div>
 
             <section class="mt-12">
-                <SectionHeader title="Mo ta san pham" />
+                <SectionHeader title="Mô tả sản phẩm" />
                 <div class="storefront-card mt-5 p-6">
                     <RichContent v-if="product.description_html" :html="product.description_html" />
-                    <EmptyState v-else title="Chua co mo ta" />
+                    <EmptyState v-else title="Chưa có mô tả" />
                 </div>
             </section>
 
@@ -98,7 +98,7 @@ const addToCart = () => {
             </section>
 
             <section v-if="page.related_products.length" class="mt-12">
-                <SectionHeader title="San pham goi y" />
+                <SectionHeader title="Sản phẩm gợi ý" />
                 <div class="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <ProductCard v-for="related in page.related_products" :key="related.id" :product="related" />
                 </div>

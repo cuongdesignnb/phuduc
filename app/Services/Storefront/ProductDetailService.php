@@ -49,8 +49,8 @@ class ProductDetailService
             ->values()
             ->all();
         $breadcrumbs = [
-            ['name' => 'Trang chu', 'url' => url('/')],
-            ['name' => 'San pham', 'url' => route('products.index')],
+            ['name' => 'Trang chủ', 'url' => url('/')],
+            ['name' => 'Sản phẩm', 'url' => route('products.index')],
             ['name' => $presented['name'], 'url' => route('products.show', $presented['slug'])],
         ];
 
@@ -70,7 +70,7 @@ class ProductDetailService
                 ],
                 'breadcrumbs' => $breadcrumbs,
                 'hero' => [
-                    'eyebrow' => $presented['sku'] ? 'SKU: '.$presented['sku'] : 'San pham',
+                    'eyebrow' => $presented['sku'] ? 'SKU: '.$presented['sku'] : 'Sản phẩm',
                     'title' => $presented['name'],
                     'description' => mb_substr(strip_tags((string) $presented['description_html']), 0, 140),
                 ],

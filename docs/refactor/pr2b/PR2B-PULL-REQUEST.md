@@ -26,16 +26,27 @@ Unify the product catalog, product detail, news and About pages on the canonical
 
 ## Testing
 
-- PHP and contract tests.
+- PHP suite: 120 passed, 804 assertions.
+- Contract/BA review slice: 15 passed, 152 assertions.
 - SEO/schema tests.
 - Rich-content security tests.
-- Vite build.
+- Vite production build.
 - Theme audit.
-- PR 2B static page audit.
+- PR 2B static page audit with unaccented Vietnamese label checks.
 - Changed-scope Pint.
-- Query-count base/head evidence.
-- Browser screenshot QA across 7 viewports.
-- Lighthouse summary across 5 storefront routes.
+- Request-only query-count base/head evidence.
+- Browser screenshot QA across all 7 required viewports.
+- Lighthouse summary with 3 simulated mobile runs per route and 1 desktop run per route.
+
+## BA review fixes
+
+- Restored fully accented Vietnamese storefront content.
+- Added Vietnamese contract and price-display regression tests.
+- Corrected query-count measurement to exclude fixture setup queries.
+- Added collection-size scaling assertions for N+1 protection.
+- Re-ran Lighthouse with simulated mobile profiles, medians and Web Vitals.
+- Completed evidence across all seven required viewports.
+- Invalid news category slugs now return 404.
 
 ## Known limitations
 
@@ -43,9 +54,9 @@ Unify the product catalog, product detail, news and About pages on the canonical
 - Product category schema remains deferred.
 - Full production stock/cart validation remains deferred to PR 2C.
 - Dependency advisories remain deferred.
-- Full-repository Pint remains deferred because existing CheckoutController style is outside PR2B scope.
 - ESLint and GitHub Actions are not configured.
 - Docker QA used temporary local fixtures because the restored SQL dump contains no products/posts and media files were not restored.
+- Production compressed retest remains required; local Docker QA is not compressed production hosting.
 
 ## Rollback
 

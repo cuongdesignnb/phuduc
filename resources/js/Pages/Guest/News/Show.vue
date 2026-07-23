@@ -35,7 +35,7 @@ defineProps({ page: { type: Object, required: true } });
             </article>
 
             <section v-if="page.related_posts.length" class="mt-12">
-                <SectionHeader title="Bai viet lien quan" />
+                <SectionHeader title="Bài viết liên quan" />
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <NewsCard v-for="post in page.related_posts" :key="post.id" :post="post" variant="compact" />
                 </div>
@@ -43,4 +43,3 @@ defineProps({ page: { type: Object, required: true } });
         </StorefrontContainer>
     </GuestPageLayout>
 </template>
-

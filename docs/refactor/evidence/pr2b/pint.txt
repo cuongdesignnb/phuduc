@@ -1,11 +1,11 @@
 Command:
-docker compose exec -T app sh -lc "vendor/bin/pint --test <PR2B changed PHP files>"
+docker compose exec -T app sh -lc "vendor/bin/pint --test app/Http/Requests/Storefront app/Services/Storefront tests/Feature/Storefront tests/Unit/Storefront"
 
 Result:
 PASS
 
 Summary:
-22 changed PHP files checked.
+33 PHP files checked.
 Laravel Pint reported PASS.
 
 Additional check:

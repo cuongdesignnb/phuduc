@@ -1,17 +1,24 @@
-Base:
-10a53ff534820d1d5d1e356d3cc928e11059a756
+Previous PR head:
+563cd02b6fe8ad2d3e86a1ef4050b54e7f5d65b2
 
-Implementation checkpoint:
-40cff69bf715f5b65f317974d62656b5358ca856
+BA review fix summary before commit:
+34 tracked files changed, 586 insertions(+), 310 deletions(-)
 
-Summary before closure evidence commit:
-44 tracked files changed, 2173 insertions(+), 655 deletions(-)
+Additional new files:
+- docs/refactor/evidence/pr2b/screenshots/about-1280.png
+- docs/refactor/evidence/pr2b/screenshots/about-1920.png
+- docs/refactor/evidence/pr2b/screenshots/news-index-768.png
+- docs/refactor/evidence/pr2b/screenshots/product-detail-1024.png
+- docs/refactor/evidence/pr2b/screenshots/product-detail-1440.png
+- docs/refactor/evidence/pr2b/screenshots/product-index-360.png
+- docs/refactor/evidence/pr2b/screenshots/product-index-390.png
+- tests/Feature/Storefront/VietnameseContentContractTest.php
+- tests/Unit/Storefront/ProductPresentationServiceTest.php
 
-Closure adds:
-- docs/refactor/evidence/pr2b/*
-- tests/Feature/Storefront/StorefrontQueryCountTest.php
-- deterministic timestamp fix in tests/Unit/Storefront/PostPresentationServiceTest.php
-
-Command:
-git diff --stat 10a53ff534820d1d5d1e356d3cc928e11059a756..HEAD
-git diff --stat
+Primary changes:
+- Restored accented Vietnamese backend and frontend labels.
+- Added Vietnamese content/price/specification regression tests.
+- Reworked request-only query-count test methodology.
+- Added invalid news category 404 behavior and tests.
+- Expanded PR2B static audit output groups.
+- Regenerated query, Lighthouse, screenshot, and manual QA evidence.

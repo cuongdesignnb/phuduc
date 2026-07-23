@@ -17,6 +17,6 @@ defineProps({
             </div>
             <p class="mt-3 text-sm leading-6 text-content-secondary">{{ review.content }}</p>
         </article>
-        <EmptyState v-if="!reviews.length" title="Chua co danh gia" description="San pham nay chua co danh gia da duyet." />
+        <EmptyState v-if="!reviews.length" title="Chưa có đánh giá" description="Sản phẩm này chưa có đánh giá đã duyệt." />
     </div>
 </template>

@@ -2,24 +2,28 @@ Branch:
 refactor/storefront-catalog-content-pages
 
 HEAD at measurement:
-40cff69bf715f5b65f317974d62656b5358ca856 plus uncommitted query-count test
+working tree with BA review fixes before final commit
 
 Command:
 docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
+
+Method:
+Fixtures are created before query logging. Query logging is enabled only around each HTTP request. Scenario fixture state is reset between one/many comparisons.
 
 Result:
 PASS
 
 Counts:
-PRODUCT_INDEX_1=9
-PRODUCT_INDEX_12=27
-PRODUCT_DETAIL=28
-NEWS_INDEX_1=6
-NEWS_INDEX_12=17
-NEWS_DETAIL=10
-ABOUT=7
+PRODUCT_INDEX_1=7
+PRODUCT_INDEX_12=3
+PRODUCT_DETAIL_ONE=9
+PRODUCT_DETAIL_MANY=5
+NEWS_INDEX_1=8
+NEWS_INDEX_12=4
+NEWS_DETAIL_1_RELATED=8
+NEWS_DETAIL_4_RELATED=4
+ABOUT=5
 
 Summary:
-Tests: 1 passed
-Assertions: 14
-Duration: 0.72s
+Tests: 5 passed
+Assertions: included in 15-test BA review slice

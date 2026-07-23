@@ -29,7 +29,7 @@ defineProps({ page: { type: Object, required: true } });
             <EmptyState
                 v-else
                 class="mt-8"
-                :title="page.catalog.filters.search || page.catalog.filters.min_price || page.catalog.filters.max_price ? 'Khong tim thay san pham phu hop.' : 'Chua co san pham duoc cong bo.'"
+                :title="page.catalog.filters.search || page.catalog.filters.min_price || page.catalog.filters.max_price ? 'Không tìm thấy sản phẩm phù hợp.' : 'Chưa có sản phẩm được công bố.'"
                 action-label="Xoa bo loc"
                 :action-href="route('products.index')"
             />

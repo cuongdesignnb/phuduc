@@ -27,11 +27,11 @@ class AboutPageService
     {
         $site = $this->siteConfiguration->get();
         $settings = Setting::query()->whereIn('key', self::KEYS)->pluck('value', 'key');
-        $title = $settings->get('about.title') ?: 'Gioi thieu';
+        $title = $settings->get('about.title') ?: 'Giới thiệu';
         $description = $settings->get('about.description') ?: $site['description'];
         $breadcrumbs = [
-            ['name' => 'Trang chu', 'url' => url('/')],
-            ['name' => 'Gioi thieu', 'url' => route('about')],
+            ['name' => 'Trang chủ', 'url' => url('/')],
+            ['name' => 'Giới thiệu', 'url' => route('about')],
         ];
 
         return [

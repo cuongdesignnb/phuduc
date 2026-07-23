@@ -1,17 +1,23 @@
-# PR2B Query Count Comparison
+# PR2B Request-Only Query Count Comparison
 
-Measurement command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
+Measurement method:
+- Fixture setup queries are excluded.
+- Query logging starts immediately before the HTTP request.
+- Query logging stops immediately after the response assertion.
+- Scenario state is reset between one/many comparisons.
+- SQLite PRAGMA metadata queries are excluded; business queries are not filtered.
 
-| Route scenario | Base count | Head count | Delta |
-| --- | ---: | ---: | ---: |
-| PRODUCT_INDEX_1 | 12 | 9 | -3 |
-| PRODUCT_INDEX_12 | 30 | 27 | -3 |
-| PRODUCT_DETAIL | 31 | 28 | -3 |
-| NEWS_INDEX_1 | 9 | 6 | -3 |
-| NEWS_INDEX_12 | 20 | 17 | -3 |
-| NEWS_DETAIL | 13 | 10 | -3 |
-| ABOUT | 16 | 7 | -9 |
+| Scenario | Base request queries | Head request queries | Delta | Scaling assertion | N+1 |
+| --- | ---: | ---: | ---: | --- | --- |
+| PRODUCT_INDEX_1 | 10 | 7 | -3 | baseline | NO |
+| PRODUCT_INDEX_12 | 6 | 3 | -3 | `PRODUCT_INDEX_12 <= PRODUCT_INDEX_1 + 1` | NO |
+| PRODUCT_DETAIL_ONE | 12 | 9 | -3 | baseline | NO |
+| PRODUCT_DETAIL_MANY | 8 | 5 | -3 | `PRODUCT_DETAIL_MANY <= PRODUCT_DETAIL_ONE + 1` | NO |
+| NEWS_INDEX_1 | 11 | 8 | -3 | baseline | NO |
+| NEWS_INDEX_12 | 7 | 4 | -3 | `NEWS_INDEX_12 <= NEWS_INDEX_1 + 1` | NO |
+| NEWS_DETAIL_1_RELATED | 11 | 8 | -3 | baseline | NO |
+| NEWS_DETAIL_4_RELATED | 7 | 4 | -3 | `NEWS_DETAIL_4_RELATED <= NEWS_DETAIL_1_RELATED + 1` | NO |
+| ABOUT | 14 | 5 | -9 | `ABOUT <= 8` | NO |
 
 Result:
-PASS. Head query counts are lower than base for every measured storefront catalog/content route scenario.
+PASS for head. Base evidence was regenerated and shows the previous About request-query budget failure.

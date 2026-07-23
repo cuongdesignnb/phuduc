@@ -1,16 +1,15 @@
 Command:
-docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Unit/Storefront/RichHtmlSanitizerTest.php tests/Feature/Storefront/StorefrontSeoContractTest.php tests/Feature/Admin/AdminAuthorizationTest.php tests/Feature/Seeders/ProductionDefaultsSeederTest.php tests/Feature/Database/StorefrontContentMigrationTest.php"
+docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test"
 
 Result:
 PASS
 
-Summary:
-Tests: 9 passed
-Assertions: 49
-Duration: 1.32s
+Security-relevant tests included in full suite:
+- RichHtmlSanitizerTest: safe content retained, unsafe script/event/JavaScript URL style patterns removed by sanitizer allowlist.
+- StorefrontSeoContractTest: product JSON-LD uses public aggregate/review payload.
+- AdminAuthorizationTest: admin access remains protected.
+- ProductionDefaultsSeederTest and StorefrontContentMigrationTest: no hardcoded admin promotion or credential creation.
 
-Coverage:
-- Rich HTML sanitizer removes unsafe markup while preserving allowed content.
-- SEO schema contract covers product aggregate/review payload.
-- Admin access remains protected.
-- Production defaults and storefront content migration do not create/promote hardcoded admin users.
+Full suite summary:
+Tests: 120 passed
+Assertions: 804

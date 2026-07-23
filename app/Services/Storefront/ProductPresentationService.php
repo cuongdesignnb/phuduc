@@ -16,8 +16,8 @@ class ProductPresentationService
     ];
 
     private const SPECIFICATION_LABELS = [
-        'payload' => 'Tai trong',
-        'range' => 'Quang duong',
+        'payload' => 'Tải trọng',
+        'range' => 'Quãng đường',
         'battery' => 'Pin',
     ];
 
@@ -127,6 +127,7 @@ class ProductPresentationService
             ->map(function (array $aliases, string $key) use ($normalized) {
                 $match = collect($aliases)
                     ->map(fn (string $alias) => $normalized->get(Str::lower($this->fold($alias))))
+                    ->filter()
                     ->first();
 
                 return $match ? [
@@ -158,13 +159,13 @@ class ProductPresentationService
     private function priceDisplay(?float $price): string
     {
         return $price !== null && $price > 0
-            ? number_format($price, 0, ',', '.').' VND'
-            : 'Lien he';
+            ? number_format($price, 0, ',', '.').' ₫'
+            : 'Liên hệ';
     }
 
     private function fold(string $value): string
     {
-        return str_replace('d', 'd', Str::ascii(Str::lower(trim($value))));
+        return Str::ascii(Str::lower(trim($value)));
     }
 
     /**

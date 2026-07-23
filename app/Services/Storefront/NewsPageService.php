@@ -23,11 +23,18 @@ class NewsPageService
      */
     public function index(array $filters): array
     {
+        $selectedCategory = $filters['category']
+            ? PostCategory::query()
+                ->select(['id', 'name', 'slug'])
+                ->where('slug', $filters['category'])
+                ->firstOrFail()
+            : null;
+
         $paginator = Post::query()
             ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'created_at', 'updated_at'])
             ->where('status', 'published')
             ->with('category:id,name,slug')
-            ->when($filters['category'], fn (Builder $query, string $slug) => $query->whereHas('category', fn (Builder $category) => $category->where('slug', $slug)))
+            ->when($selectedCategory, fn (Builder $query) => $query->where('post_category_id', $selectedCategory->id))
             ->when($filters['search'], fn (Builder $query, string $search) => $query->where(function (Builder $query) use ($search): void {
                 $keyword = $this->escapeLike($search);
                 $query->whereRaw("title LIKE ? ESCAPE '\\'", ["%{$keyword}%"])
@@ -51,8 +58,8 @@ class NewsPageService
             ])
             ->all();
         $breadcrumbs = [
-            ['name' => 'Trang chu', 'url' => url('/')],
-            ['name' => 'Tin tuc', 'url' => route('news.index')],
+            ['name' => 'Trang chủ', 'url' => url('/')],
+            ['name' => 'Tin tức', 'url' => route('news.index')],
         ];
         $hasSearch = filled($filters['search']);
 
@@ -60,17 +67,17 @@ class NewsPageService
             'page' => [
                 'type' => 'news_index',
                 'seo' => $this->seo->meta([
-                    'title' => 'Tin tuc',
-                    'description' => 'Tin tuc va bai viet moi nhat',
-                    'canonical' => route('news.index', array_filter(['category' => $filters['category']])),
+                    'title' => 'Tin tức',
+                    'description' => 'Tin tức và bài viết mới nhất',
+                    'canonical' => route('news.index', array_filter(['category' => $selectedCategory?->slug])),
                     'robots' => $hasSearch ? 'noindex, follow' : 'index, follow',
                 ]),
                 'json_ld' => [$this->seo->breadcrumbJsonLd($breadcrumbs)],
                 'breadcrumbs' => $breadcrumbs,
                 'hero' => [
-                    'eyebrow' => 'Tin tuc',
-                    'title' => 'Tin tuc moi nhat',
-                    'description' => 'Cap nhat kien thuc, giai phap va cau chuyen van hanh xe dien.',
+                    'eyebrow' => 'Tin tức',
+                    'title' => 'Tin tức mới nhất',
+                    'description' => 'Cập nhật kiến thức, giải pháp và câu chuyện vận hành xe điện.',
                 ],
                 'news' => [
                     'items' => $paginator->getCollection()->map(fn (Post $post) => $this->posts->card($post))->values()->all(),
@@ -78,7 +85,7 @@ class NewsPageService
                     'pagination' => $this->pagination($paginator),
                     'filters' => [
                         'search' => $filters['search'] ?? '',
-                        'category' => $filters['category'] ?? '',
+                        'category' => $selectedCategory?->slug ?? '',
                     ],
                 ],
             ],
@@ -112,8 +119,8 @@ class NewsPageService
             ->values()
             ->all();
         $breadcrumbs = [
-            ['name' => 'Trang chu', 'url' => url('/')],
-            ['name' => 'Tin tuc', 'url' => route('news.index')],
+            ['name' => 'Trang chủ', 'url' => url('/')],
+            ['name' => 'Tin tức', 'url' => route('news.index')],
             ['name' => $presented['title'], 'url' => route('news.show', $presented['slug'])],
         ];
 
@@ -133,7 +140,7 @@ class NewsPageService
                 ],
                 'breadcrumbs' => $breadcrumbs,
                 'hero' => [
-                    'eyebrow' => $presented['category']['name'] ?? 'Tin tuc',
+                    'eyebrow' => $presented['category']['name'] ?? 'Tin tức',
                     'title' => $presented['title'],
                     'description' => $presented['summary'],
                 ],

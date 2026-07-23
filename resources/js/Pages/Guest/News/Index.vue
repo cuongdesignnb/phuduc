@@ -52,20 +52,20 @@ const clear = () => {
 
         <StorefrontContainer class="py-10">
             <form class="storefront-card grid gap-4 p-5 md:grid-cols-[minmax(0,1fr)_auto]" role="search" @submit.prevent="submit">
-                <FormField id="news-search" label="Tim bai viet">
+                <FormField id="news-search" label="Tìm bài viết">
                     <template #default="{ id, describedBy }">
                         <input :id="id" v-model="form.search" :aria-describedby="describedBy" type="search" maxlength="100" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
                     </template>
                 </FormField>
                 <div class="flex items-end gap-2">
-                    <UiButton type="submit">Tim kiem</UiButton>
-                    <UiButton type="button" variant="outline" @click="clear">Xoa loc</UiButton>
+                    <UiButton type="submit">Tìm kiếm</UiButton>
+                    <UiButton type="button" variant="outline" @click="clear">Xóa bộ lọc</UiButton>
                 </div>
             </form>
 
-            <div class="mt-5 flex flex-wrap gap-2" aria-label="Danh muc tin tuc">
+            <div class="mt-5 flex flex-wrap gap-2" aria-label="Danh mục tin tức">
                 <button type="button" class="rounded-lg border px-4 py-2 text-sm" :class="!form.category ? 'border-brand bg-brand text-brand-contrast' : 'border-line bg-surface-card text-content-secondary'" @click="selectCategory('')">
-                    Tat ca
+                    Tất cả
                 </button>
                 <button
                     v-for="category in page.news.categories"
@@ -84,7 +84,7 @@ const clear = () => {
                 <NewsCard v-for="post in page.news.items" :key="post.id" :post="post" />
             </div>
 
-            <EmptyState v-else class="mt-8" title="Khong tim thay bai viet phu hop." action-label="Xoa bo loc" :action-href="route('news.index')" />
+            <EmptyState v-else class="mt-8" title="Không tìm thấy bài viết phù hợp." action-label="Xóa bộ lọc" :action-href="route('news.index')" />
 
             <Pagination class="mt-10" :links="page.news.pagination.links" />
         </StorefrontContainer>

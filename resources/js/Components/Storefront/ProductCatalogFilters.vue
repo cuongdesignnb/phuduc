@@ -49,29 +49,29 @@ const clear = () => {
 
 <template>
     <form class="storefront-card grid gap-4 p-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto_auto] lg:items-end" role="search" @submit.prevent="submit">
-        <FormField id="product-search" label="Tim san pham">
+        <FormField id="product-search" label="Tìm sản phẩm">
             <template #default="{ id, describedBy }">
                 <input :id="id" v-model="form.search" :aria-describedby="describedBy" type="search" maxlength="100" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
-        <FormField id="min-price" label="Gia tu">
+        <FormField id="min-price" label="Giá từ">
             <template #default="{ id, describedBy }">
                 <input :id="id" v-model="form.min_price" :aria-describedby="describedBy" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
-        <FormField id="max-price" label="Gia den">
+        <FormField id="max-price" label="Giá đến">
             <template #default="{ id, describedBy }">
                 <input :id="id" v-model="form.max_price" :aria-describedby="describedBy" type="number" min="0" step="1" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
             </template>
         </FormField>
-        <FormField id="sort" label="Sap xep">
+        <FormField id="sort" label="Sắp xếp">
             <template #default="{ id, describedBy }">
                 <select :id="id" v-model="form.sort" :aria-describedby="describedBy" class="w-full rounded-lg border border-line bg-surface-card px-3 py-2.5 text-sm">
                     <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                 </select>
             </template>
         </FormField>
-        <UiButton type="submit">Ap dung</UiButton>
-        <UiButton type="button" variant="outline" @click="clear">Xoa loc</UiButton>
+        <UiButton type="submit">Áp dụng</UiButton>
+        <UiButton type="button" variant="outline" @click="clear">Xóa bộ lọc</UiButton>
     </form>
 </template>

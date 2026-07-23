@@ -76,7 +76,7 @@ onUnmounted(() => {
     <section
         class="relative select-none overflow-hidden rounded-lg border border-line bg-surface-muted"
         tabindex="0"
-        aria-label="Trinh xem 360"
+        aria-label="Trình xem 360"
         @keydown.left.prevent="move(-1)"
         @keydown.right.prevent="move(1)"
         @pointerdown="onPointerDown"
@@ -93,15 +93,15 @@ onUnmounted(() => {
                 draggable="false"
             >
             <div v-else class="flex h-full w-full items-center justify-center text-sm text-content-muted">
-                Khong co khung hinh 360
+                Không có khung hình 360
             </div>
         </div>
         <div class="absolute left-3 top-3 rounded-full bg-surface-card/90 px-3 py-1 text-xs font-semibold text-content-primary">
             360
         </div>
         <div v-if="totalFrames > 1" class="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-surface-card/90 p-1 shadow-sm">
-            <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold text-content-primary hover:bg-surface-muted" :aria-label="isPlaying ? 'Dung xoay' : 'Tu xoay'" @click.stop="toggle">
-                {{ isPlaying ? 'Dung' : 'Xoay' }}
+            <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold text-content-primary hover:bg-surface-muted" :aria-label="isPlaying ? 'Dừng xoay' : 'Tự xoay'" @click.stop="toggle">
+                {{ isPlaying ? 'Dừng xoay' : 'Tự xoay' }}
             </button>
         </div>
         <p class="absolute bottom-3 right-3 rounded bg-surface-card/90 px-2 py-1 text-xs text-content-muted">
