@@ -1,0 +1,11 @@
+Command:
+rg -n "replacement/mojibake and legacy frontend formatting patterns" <PR2B storefront scope>
+
+Result:
+PASS WITH EXPECTED LEGACY-SCOPE EXCLUSIONS
+
+Findings:
+- No replacement-character/mojibake hits were found in PR2B storefront source scope.
+- No `$fixText`, `new Date(`, `IntersectionObserver`, or `formatPrice` hits were found in PR2B catalog/content page components.
+- `/storage/` hits remain expected in backend media URL tests and MediaUrlService, where normalized storage URLs are the intended contract.
+- Legacy cart/checkout guest pages still contain `formatPrice` and direct `/storage/` usage; they are outside PR2B catalog/content page scope.

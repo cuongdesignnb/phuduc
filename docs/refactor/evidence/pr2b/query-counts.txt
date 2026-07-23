@@ -1,0 +1,17 @@
+# PR2B Query Count Comparison
+
+Measurement command:
+docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
+
+| Route scenario | Base count | Head count | Delta |
+| --- | ---: | ---: | ---: |
+| PRODUCT_INDEX_1 | 12 | 9 | -3 |
+| PRODUCT_INDEX_12 | 30 | 27 | -3 |
+| PRODUCT_DETAIL | 31 | 28 | -3 |
+| NEWS_INDEX_1 | 9 | 6 | -3 |
+| NEWS_INDEX_12 | 20 | 17 | -3 |
+| NEWS_DETAIL | 13 | 10 | -3 |
+| ABOUT | 16 | 7 | -9 |
+
+Result:
+PASS. Head query counts are lower than base for every measured storefront catalog/content route scenario.

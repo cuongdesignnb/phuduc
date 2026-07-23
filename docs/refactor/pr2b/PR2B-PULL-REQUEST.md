@@ -33,6 +33,9 @@ Unify the product catalog, product detail, news and About pages on the canonical
 - Theme audit.
 - PR 2B static page audit.
 - Changed-scope Pint.
+- Query-count base/head evidence.
+- Browser screenshot QA across 7 viewports.
+- Lighthouse summary across 5 storefront routes.
 
 ## Known limitations
 
@@ -42,7 +45,7 @@ Unify the product catalog, product detail, news and About pages on the canonical
 - Dependency advisories remain deferred.
 - Full-repository Pint remains deferred because existing CheckoutController style is outside PR2B scope.
 - ESLint and GitHub Actions are not configured.
-- Browser/Lighthouse evidence still needs a longer visual QA pass before marking ready for production deployment.
+- Docker QA used temporary local fixtures because the restored SQL dump contains no products/posts and media files were not restored.
 
 ## Rollback
 

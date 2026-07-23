@@ -1,0 +1,8 @@
+Command:
+docker compose exec -T app npm run audit:pr2b-pages
+
+Result:
+PASS
+
+Output:
+PR2B page audit passed (32 files scanned).

@@ -1,0 +1,17 @@
+Base:
+10a53ff534820d1d5d1e356d3cc928e11059a756
+
+Implementation checkpoint:
+40cff69bf715f5b65f317974d62656b5358ca856
+
+Summary before closure evidence commit:
+44 tracked files changed, 2173 insertions(+), 655 deletions(-)
+
+Closure adds:
+- docs/refactor/evidence/pr2b/*
+- tests/Feature/Storefront/StorefrontQueryCountTest.php
+- deterministic timestamp fix in tests/Unit/Storefront/PostPresentationServiceTest.php
+
+Command:
+git diff --stat 10a53ff534820d1d5d1e356d3cc928e11059a756..HEAD
+git diff --stat

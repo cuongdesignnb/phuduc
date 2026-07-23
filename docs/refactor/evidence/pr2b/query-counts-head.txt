@@ -1,0 +1,25 @@
+Branch:
+refactor/storefront-catalog-content-pages
+
+HEAD at measurement:
+40cff69bf715f5b65f317974d62656b5358ca856 plus uncommitted query-count test
+
+Command:
+docker compose exec -T app sh -lc "APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=':memory:' CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync php artisan test tests/Feature/Storefront/StorefrontQueryCountTest.php"
+
+Result:
+PASS
+
+Counts:
+PRODUCT_INDEX_1=9
+PRODUCT_INDEX_12=27
+PRODUCT_DETAIL=28
+NEWS_INDEX_1=6
+NEWS_INDEX_12=17
+NEWS_DETAIL=10
+ABOUT=7
+
+Summary:
+Tests: 1 passed
+Assertions: 14
+Duration: 0.72s
