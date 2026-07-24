@@ -1,0 +1,1 @@
+Generated at final validation with: git diff --stat main...HEAD

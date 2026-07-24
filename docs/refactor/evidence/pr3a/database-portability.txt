@@ -1,0 +1,3 @@
+RESULT: PASS
+DATABASE: SQLite in-memory testing connection
+REVENUE: six zero-filled months returned without DATE_FORMAT()

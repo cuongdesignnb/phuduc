@@ -1,0 +1,3 @@
+RESULT: PASS
+SCOPE: all 12 changed PR3A PHP files
+NOTE: full-repository Pint reports pre-existing style issues outside PR3A scope

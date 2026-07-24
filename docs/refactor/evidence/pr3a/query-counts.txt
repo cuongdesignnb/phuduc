@@ -1,0 +1,4 @@
+RESULT: PASS
+BUDGET: <=12 queries for AdminDashboardService::page()
+N_PLUS_1: NO
+METHOD: DB::listen query budget feature test

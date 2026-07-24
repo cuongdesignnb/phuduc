@@ -1,0 +1,3 @@
+RESULT: PASS
+AUDITS: audit:storefront-theme, audit:pr2b-pages, audit:pr2b-evidence, audit:pr2c-commerce
+COUNTERS: all reported zero or passed

@@ -1,0 +1,4 @@
+COMMAND: php artisan test tests/Feature/Admin --env=testing with explicit SQLite and array session/cache drivers
+RESULT: PASS
+TESTS: 29 passed
+ASSERTIONS: 129

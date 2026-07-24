@@ -1,0 +1,4 @@
+COMMAND: docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: -e CACHE_STORE=array -e SESSION_DRIVER=array -e QUEUE_CONNECTION=sync app php artisan test --env=testing
+RESULT: PASS
+TESTS: 200 passed, 1 skipped
+ASSERTIONS: 1707
