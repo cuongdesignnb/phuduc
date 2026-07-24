@@ -1,0 +1,8 @@
+RESULT: PASS
+DASHBOARD_EMPTY=10
+DASHBOARD_1=11
+DASHBOARD_12=11
+QUERY_BUDGET=12
+N_PLUS_ONE=NO
+SQLITE_MYSQL_PARITY=PASS
+METHOD: warm service, then isolated query-log measurement excluding fixture creation

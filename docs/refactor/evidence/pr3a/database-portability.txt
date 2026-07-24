@@ -1,0 +1,8 @@
+RESULT: PASS
+SQLITE_ADMIN_TESTS=PASS
+MYSQL_ADMIN_TESTS=PASS
+DATABASE: SQLite in-memory plus isolated MySQL database `phuduc_testing`
+MYSQL_DATE_FORMAT_HITS=0
+MONTHLY_REVENUE_PARITY=PASS
+QUERY_BUDGET_PARITY=PASS
+REVENUE: six zero-filled months, exact integer VND aggregation, cancelled exclusion, no DATE_FORMAT()

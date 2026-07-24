@@ -1,0 +1,4 @@
+RESULT: PASS
+SCOPE: all changed PR3A PHP files, including new tests
+NEW_TEST_SCOPE: PASS
+NOTE: full-repository Pint reports pre-existing style issues outside PR3A scope

@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './storefront.css';
+@import './admin-tokens.css';
 @import './admin-legacy.css';
 
 @tailwind base;

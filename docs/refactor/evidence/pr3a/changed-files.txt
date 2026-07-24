@@ -1,0 +1,13 @@
+app/Http/Controllers/Admin/DashboardController.php
+app/Http/Middleware/HandleInertiaRequests.php
+app/Services/Admin/AdminDashboardService.php
+app/Services/Admin/AdminNavigationService.php
+app/Services/Admin/AdminPermissionService.php
+app/Services/Admin/AdminPresentationService.php
+resources/js/Layouts/AuthenticatedLayout.vue
+resources/js/Pages/Dashboard.vue
+resources/js/Components/Admin/
+scripts/audit-pr3a-admin.mjs
+tests/Feature/Admin/
+docs/refactor/pr3a/
+docs/refactor/evidence/pr3a/

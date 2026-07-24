@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Admin\AdminNavigationService;
+use App\Services\Admin\AdminPermissionService;
 use App\Services\Storefront\NavigationService;
 use App\Services\Storefront\SiteConfigurationService;
 use Illuminate\Http\Request;
@@ -35,6 +37,14 @@ class HandleInertiaRequests extends Middleware
                     'ogType' => 'website',
                     'canonical' => url()->current(),
                     'robots' => 'index, follow',
+                ];
+            },
+            'admin' => function (Request $request): array {
+                $user = $request->user();
+
+                return [
+                    'navigation' => app(AdminNavigationService::class)->for($user),
+                    'permissions' => app(AdminPermissionService::class)->for($user),
                 ];
             },
         ];

@@ -1,0 +1,47 @@
+<script setup>
+import { computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import AdminBreadcrumbs from './AdminBreadcrumbs.vue';
+import AdminMobileNavigation from './AdminMobileNavigation.vue';
+import AdminSidebar from './AdminSidebar.vue';
+import AdminTopbar from './AdminTopbar.vue';
+
+const page = usePage();
+const sidebarCollapsed = ref(false);
+const mobileOpen = ref(false);
+const topbar = ref(null);
+const site = computed(() => page.props.site || {});
+const user = computed(() => page.props.auth?.user || {});
+const navigation = computed(() => page.props.admin?.navigation || []);
+const breadcrumbs = computed(() => page.props.page?.admin?.breadcrumbs || []);
+
+const closeMobile = () => {
+    mobileOpen.value = false;
+    topbar.value?.focusMenuButton();
+};
+</script>
+
+<template>
+    <div class="min-h-screen bg-admin-page text-admin-content">
+        <a href="#admin-main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-admin-accent focus:px-4 focus:py-2 focus:text-admin-page">Bỏ qua đến nội dung chính</a>
+        <div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block" :class="sidebarCollapsed ? 'lg:w-[4.5rem]' : 'lg:w-64'">
+            <AdminSidebar :navigation="navigation" :site="site" :collapsed="sidebarCollapsed" />
+        </div>
+        <AdminMobileNavigation :open="mobileOpen" :navigation="navigation" :site="site" @close="closeMobile" />
+        <div :class="sidebarCollapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-64'" class="min-h-screen transition-[padding] duration-200">
+            <AdminTopbar ref="topbar" :site="site" :user="user" @menu="mobileOpen = true" />
+            <div v-if="$slots.breadcrumb || breadcrumbs.length" class="border-b border-admin-border bg-admin-page px-4 py-3 sm:px-6">
+                <div class="mx-auto max-w-7xl"><slot name="breadcrumb"><AdminBreadcrumbs :items="breadcrumbs" /></slot></div>
+            </div>
+            <div v-if="$slots.header" class="border-b border-admin-border bg-admin-page px-4 py-5 sm:px-6">
+                <div class="mx-auto max-w-7xl"><slot name="header" /></div>
+            </div>
+            <main id="admin-main" tabindex="-1" class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+                <slot />
+            </main>
+        </div>
+        <button type="button" class="fixed bottom-4 right-4 z-30 hidden rounded-lg border border-admin-border bg-admin-surface p-2 text-admin-content-muted shadow-lg hover:text-admin-content focus:outline-none focus:ring-2 focus:ring-admin-focus lg:block" :aria-label="sidebarCollapsed ? 'Mở rộng menu quản trị' : 'Thu gọn menu quản trị'" @click="sidebarCollapsed = !sidebarCollapsed">
+            <span aria-hidden="true">{{ sidebarCollapsed ? '→' : '←' }}</span>
+        </button>
+    </div>
+</template>
