@@ -11,6 +11,7 @@ const pageFiles = [
   'resources/js/Pages/Admin/Menu/Edit.vue', 'resources/js/Pages/Admin/HomeContent/Index.vue',
   'resources/js/Pages/Admin/Setting/Index.vue',
   'resources/js/Components/AdvancedTextEditor.vue', 'resources/js/Components/MenuItemTree.vue',
+  'resources/js/Components/Admin/AdminMediaPicker.vue', 'resources/js/Components/Admin/AdminEntityPicker.vue',
   'resources/js/Components/Admin/CategoryTree.vue', 'resources/js/Composables/useStableClientKey.js',
 ];
 const sharedFiles = fs.readdirSync(path.join(root, 'resources/js/Components/Admin')).map((file) => `resources/js/Components/Admin/${file}`);
@@ -35,6 +36,12 @@ const mediaJob = read('app/Jobs/ProcessMediaUpload.php');
 const mediaReferences = read('app/Services/Admin/Media/MediaReferenceService.php');
 const mediaStorage = read('app/Services/Admin/Media/AdminImageStorageService.php');
 const postService = read('app/Services/Admin/Content/AdminPostService.php');
+const mediaAssetRule = read('app/Rules/MediaAssetRule.php');
+const mediaAssetService = read('app/Services/Admin/Media/MediaAssetService.php');
+const menuTargetService = read('app/Services/Admin/Content/AdminMenuTargetService.php');
+const menuTargetController = read('app/Http/Controllers/Admin/MenuTargetController.php');
+const menuUpdateRequest = read('app/Http/Requests/Admin/UpdateMenuRequest.php');
+const menuTree = read('resources/js/Components/MenuItemTree.vue');
 const postEdit = read('resources/js/Pages/Admin/Post/Edit.vue');
 const productEdit = read('resources/js/Pages/Admin/Product/Edit.vue');
 const menuEdit = read('resources/js/Pages/Admin/Menu/Edit.vue');
@@ -87,7 +94,7 @@ const counters = {
   MENU_NON_RECURSIVE_UI_HITS: menuEdit.includes('v-for="(child') || menuEdit.includes('item.children"') ? 1 : 0,
   MENU_DATE_NOW_KEY_HITS: (menuEdit.match(/Date\.now\(/g) || []).length,
   UNSAFE_MENU_URL_GUARD_MISSING: read('app/Services/Admin/Content/AdminUrlService.php').includes('javascript') && menuService.includes('urls->normalize') ? 0 : 1,
-  MENU_REORDER_CONTROLS_MISSING: menuEdit.includes('MenuItemTree') && frontend.includes('Move item up') && frontend.includes('draggable') ? 0 : 1,
+  MENU_REORDER_CONTROLS_MISSING: menuEdit.includes('MenuItemTree') && frontend.includes('Đưa mục lên') && frontend.includes('draggable') ? 0 : 1,
   SETTING_MEDIA_CONTRACT_MISSING: settingEdit.includes('AdminMediaPicker') && !settingEdit.includes('module.media') ? 0 : 1,
   SETTING_OG_KEY_MISMATCH: settingRegistry.includes('seo.og_image') || mediaReferences.includes('seo.og_image') ? 1 : 0,
   SETTING_FONT_OPTIONS_UNUSED: settingEdit.includes('module.font_options') ? 0 : 1,
@@ -95,10 +102,24 @@ const counters = {
   PRODUCT_WEBP_PIPELINE_MISSING: imageService.includes('AdminImageStorageService') && mediaStorage.includes('toWebp') ? 0 : 1,
   HOME_ITEM_FINGERPRINT_MISSING: homeService.includes("'item:'") && homeService.includes('item->updated_at') ? 0 : 1,
   HOME_REMOTE_LOOKUP_UNUSED: homeEdit.includes('axios') && homeEdit.includes('admin.home-content.') && homeEdit.includes('loadLookup') ? 0 : 1,
-  PRODUCT_360_UI_MISSING: productEdit.includes('Upload 360 images') && productEdit.includes('pickerIs360') ? 0 : 1,
+  PRODUCT_360_UI_MISSING: productEdit.includes('Tải ảnh 360') && productEdit.includes('pickerIs360') ? 0 : 1,
   PRODUCT_REORDER_UI_MISSING: productEdit.includes('vuedraggable') && productEdit.includes('products.images.reorder') ? 0 : 1,
   POST_RICH_EDITOR_MISSING: postEdit.includes('AdvancedTextEditor') ? 0 : 1,
   CATEGORY_RECURSIVE_UI_MISSING: read('resources/js/Components/Admin/CategoryTree.vue').includes('<CategoryTree') ? 0 : 1,
+  IMAGE_PICKER_MEDIA_TYPE_MISSING: frontend.includes('mediaType') && ['Product/Edit.vue', 'Post/Edit.vue', 'HomeContent/Index.vue', 'Setting/Index.vue'].every((file) => read(`resources/js/Pages/Admin/${file}`).includes('media-type="image"')) ? 0 : 1,
+  PRODUCT_MEDIA_IMAGE_GUARD_MISSING: mediaAssetRule.includes("mime_type', 'like', 'image/%'") && read('app/Http/Requests/Admin/AttachProductMediaRequest.php').includes('MediaAssetRule::image') && imageService.includes('requireImage') ? 0 : 1,
+  POST_MEDIA_IMAGE_GUARD_MISSING: read('app/Http/Requests/Admin/StorePostRequest.php').includes('MediaAssetRule::image') && postService.includes('requireImage') ? 0 : 1,
+  SETTING_MEDIA_IMAGE_GUARD_MISSING: read('app/Http/Requests/Admin/SaveSettingsRequest.php').includes('MediaAssetRule::image') && settingsService.includes('requireImage') ? 0 : 1,
+  HOME_MEDIA_IMAGE_GUARD_MISSING: read('app/Http/Requests/Admin/SaveHomeContentRequest.php').includes('MediaAssetRule::image') && homeService.includes('requireImage') ? 0 : 1,
+  MENU_TARGET_SELECTOR_MISSING: menuTargetController.includes('products') && menuTargetController.includes('categories') && menuTargetService.includes('limit') ? 0 : 1,
+  MENU_MODEL_ID_CONTROL_MISSING: menuTree.includes('AdminEntityPicker') && menuTree.includes('model_id') ? 0 : 1,
+  MENU_DETAILS_VERSION_MISSING: menuUpdateRequest.includes("rules['version']") && menuEdit.includes('version: menu?.version') ? 0 : 1,
+  MENU_CROSS_FORM_VERSION_SYNC_MISSING: menuEdit.includes('itemForm.version = version') && menuEdit.includes('form.version = version') ? 0 : 1,
+  TEL_URL_RUNTIME_GUARD_MISSING: read('app/Services/Admin/Content/AdminUrlService.php').includes("/^tel:") && read('app/Services/Admin/Content/AdminUrlService.php').includes('FILTER_VALIDATE_EMAIL') ? 0 : 1,
+  PRODUCT_IMAGE_STATE_SYNC_MISSING: productEdit.includes('syncImages') && productEdit.includes('onSuccess: syncFromPage') ? 0 : 1,
+  PRODUCT_KEYBOARD_REORDER_MISSING: productEdit.includes('moveImage') && productEdit.includes('aria-label="Đưa ảnh sang trái"') ? 0 : 1,
+  IMAGE_CLEAR_ACTION_MISSING: postEdit.includes('clearMedia') && settingEdit.includes('clearMedia') && homeEdit.includes('clearItemMedia') && homeEdit.includes('clearConfigMedia') ? 0 : 1,
+  UNINTENDED_ENGLISH_ADMIN_LABEL_HITS: (frontend.match(/(?:Choose media|Search media|Save settings|Save content|Save product|Save post|Delete product image|Add item|Remove item|Item label|Safe URL|Back|Loading\.\.\.|No media found|Previous|Next)/g) || []).length,
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);

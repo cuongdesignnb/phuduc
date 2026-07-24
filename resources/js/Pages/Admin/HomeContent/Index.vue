@@ -43,11 +43,11 @@ const setPath = (object, path, value) => {
         else { target[part] ??= {}; target = target[part]; }
     });
 };
-const mediaLabel = (id) => id ? `Media #${id}` : 'No media selected';
+const mediaLabel = (id) => id ? `Tệp #${id}` : 'Chưa chọn tệp';
 const configMediaLabel = (config, key) => mediaLabel(getPath(config, `${key}_media_id`));
 const productLabel = (id) => productOptions.value.find((product) => product.id === id)?.name || `Product #${id}`;
-const fieldLabel = (field) => ({ title: 'Title', subtitle: 'Subtitle', description: 'Description', image: 'Image', icon: 'Icon', url: 'URL', tone: 'Tone', avatar_text: 'Avatar fallback' }[field] || field);
-const sourceLabel = (value) => ({ manual: 'Manual selection', latest: 'Latest records' }[value] || value);
+const fieldLabel = (field) => ({ title: 'Tiêu đề', subtitle: 'Tiêu đề phụ', description: 'Mô tả', image: 'Ảnh', icon: 'Biểu tượng', url: 'URL', tone: 'Tông màu', avatar_text: 'Chữ thay thế' }[field] || field);
+const sourceLabel = (value) => ({ manual: 'Chọn thủ công', latest: 'Mới nhất' }[value] || value);
 const selectedIds = (key) => activeSection.value?.config?.[key] || [];
 const filteredProducts = computed(() => productOptions.value.filter((product) => !selectedIds('product_ids').includes(product.id)));
 const filteredPosts = computed(() => postOptions.value);
@@ -61,9 +61,11 @@ const setItemValue = (item, field, value) => { if (['tone', 'avatar_text'].inclu
 const openConfigMedia = (path) => { pickerTarget.value = { kind: 'config', path }; pickerOpen.value = true; };
 const openItemMedia = (item) => { pickerTarget.value = { kind: 'item', item }; pickerOpen.value = true; };
 const chooseMedia = (media) => { if (pickerTarget.value?.kind === 'config') setPath(activeSection.value.config, `${pickerTarget.value.path}_media_id`, media.id); if (pickerTarget.value?.kind === 'item') pickerTarget.value.item.media_id = media.id; pickerOpen.value = false; };
+const clearConfigMedia = (path) => { setPath(activeSection.value.config, `${path}_media_id`, null); setPath(activeSection.value.config, path, null); };
+const clearItemMedia = (item) => { item.media_id = null; item.image = null; };
 const itemPayload = (item, definition) => {
     const payload = { id: item.id || null, enabled: Boolean(item.enabled), sort_order: item.sort_order, metadata: {} };
-    (definition.item_fields || []).forEach((field) => { if (['tone', 'avatar_text'].includes(field)) payload.metadata[field] = item.metadata?.[field] ?? null; else if (field === 'image') { payload.image = item.image || null; if (item.media_id) payload.media_id = item.media_id; } else payload[field] = item[field] ?? null; });
+    (definition.item_fields || []).forEach((field) => { if (['tone', 'avatar_text'].includes(field)) payload.metadata[field] = item.metadata?.[field] ?? null; else if (field === 'image') { payload.image = item.image || null; payload.media_id = item.media_id || null; } else payload[field] = item[field] ?? null; });
     return payload;
 };
 const save = () => {
@@ -80,14 +82,14 @@ onMounted(() => { const productIds = [...new Set(sections.value.flatMap((section
 <template>
     <Head :title="page.meta.title" />
     <AuthenticatedLayout>
-        <AdminPageHeader :title="page.meta.title" description="Manage homepage sections, media references and ordering from one server-owned contract.">
-            <button type="button" class="rounded-lg bg-admin-accent px-4 py-2 text-sm font-semibold text-admin-page disabled:opacity-60" :disabled="form.processing" @click="save">{{ form.processing ? 'Saving...' : 'Save content' }}</button>
+        <AdminPageHeader :title="page.meta.title" description="Quản lý các khu vực, hình ảnh và thứ tự hiển thị trên trang chủ.">
+            <button type="button" class="rounded-lg bg-admin-accent px-4 py-2 text-sm font-semibold text-admin-page disabled:opacity-60" :disabled="form.processing" @click="save">{{ form.processing ? 'Đang lưu...' : 'Lưu nội dung' }}</button>
         </AdminPageHeader>
         <div class="mt-6 grid gap-6 lg:grid-cols-[15rem_1fr]">
-            <AdminDataCard title="Sections">
+            <AdminDataCard title="Khu vực">
                 <div class="space-y-1">
                     <button v-for="section in sections" :key="section.key" type="button" class="flex w-full items-center justify-between border px-3 py-2 text-left text-sm" :class="activeKey === section.key ? 'border-admin-accent bg-admin-accent/10 text-admin-content' : 'border-admin-border text-admin-content-muted'" @click="activeKey = section.key">
-                        <span>{{ module.registry[section.key]?.label || section.key }}</span><span aria-hidden="true">{{ section.enabled ? 'On' : 'Off' }}</span>
+                        <span>{{ module.registry[section.key]?.label || section.key }}</span><span aria-hidden="true">{{ section.enabled ? 'Bật' : 'Tắt' }}</span>
                     </button>
                 </div>
             </AdminDataCard>
@@ -95,34 +97,34 @@ onMounted(() => { const productIds = [...new Set(sections.value.flatMap((section
                 <AdminErrorSummary :errors="errors" />
                 <AdminDataCard :title="activeDefinition.label || activeSection.key">
                     <div class="grid gap-4 md:grid-cols-2">
-                        <AdminFormField v-if="activeDefinition.heading_fields?.includes('title')" label="Title" for-id="section-title"><AdminTextInput id="section-title" v-model="activeSection.heading.title" /></AdminFormField>
-                        <AdminFormField v-if="activeDefinition.heading_fields?.includes('subtitle')" label="Subtitle" for-id="section-subtitle"><AdminTextInput id="section-subtitle" v-model="activeSection.heading.subtitle" /></AdminFormField>
-                        <AdminFormField v-if="activeDefinition.heading_fields?.includes('description')" label="Description" for-id="section-description"><AdminTextarea id="section-description" v-model="activeSection.heading.description" /></AdminFormField>
-                        <AdminFormField label="Variant" for-id="section-variant"><AdminSelect id="section-variant" v-model="activeSection.variant" :options="(activeDefinition.allowed_variants || []).map((value) => ({ key: value, label: value }))" /></AdminFormField>
-                        <label class="flex items-center gap-2 text-sm text-admin-content"><input v-model="activeSection.enabled" type="checkbox" /> Enabled</label>
+                        <AdminFormField v-if="activeDefinition.heading_fields?.includes('title')" label="Tiêu đề" for-id="section-title"><AdminTextInput id="section-title" v-model="activeSection.heading.title" /></AdminFormField>
+                        <AdminFormField v-if="activeDefinition.heading_fields?.includes('subtitle')" label="Tiêu đề phụ" for-id="section-subtitle"><AdminTextInput id="section-subtitle" v-model="activeSection.heading.subtitle" /></AdminFormField>
+                        <AdminFormField v-if="activeDefinition.heading_fields?.includes('description')" label="Mô tả" for-id="section-description"><AdminTextarea id="section-description" v-model="activeSection.heading.description" /></AdminFormField>
+                        <AdminFormField label="Biến thể" for-id="section-variant"><AdminSelect id="section-variant" v-model="activeSection.variant" :options="(activeDefinition.allowed_variants || []).map((value) => ({ key: value, label: sourceLabel(value) }))" /></AdminFormField>
+                        <label class="flex items-center gap-2 text-sm text-admin-content"><input v-model="activeSection.enabled" type="checkbox" /> Đang bật</label>
                     </div>
                 </AdminDataCard>
-                <AdminDataCard v-if="activeDefinition.config_fields?.length" title="Section configuration">
+                <AdminDataCard v-if="activeDefinition.config_fields?.length" title="Cấu hình khu vực">
                     <div class="grid gap-4 md:grid-cols-2">
                         <template v-for="field in activeDefinition.config_fields" :key="field.key">
                             <AdminFormField v-if="['text', 'number'].includes(field.control)" :label="field.label" :for-id="`config-${field.key}`"><AdminTextInput :id="`config-${field.key}`" :type="field.control" :model-value="getPath(activeSection.config, field.key)" @update:model-value="setPath(activeSection.config, field.key, field.control === 'number' ? Number($event) : $event)" /></AdminFormField>
                             <AdminFormField v-else-if="field.control === 'select'" :label="field.label" :for-id="`config-${field.key}`"><AdminSelect :id="`config-${field.key}`" :model-value="getPath(activeSection.config, field.key)" :options="(field.options || []).map((value) => ({ key: value, label: sourceLabel(value) }))" @update:model-value="setPath(activeSection.config, field.key, $event)" /></AdminFormField>
-                            <AdminFormField v-else-if="field.control === 'media'" :label="field.label" :for-id="`config-${field.key}`"><div class="flex items-center gap-3"><span class="text-sm text-admin-content-muted">{{ configMediaLabel(activeSection.config, field.key) }}</span><button type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content" @click="openConfigMedia(field.key)">Choose media</button></div></AdminFormField>
-                            <div v-else-if="field.control === 'product_picker' && activeSection.config.source === 'manual'" class="md:col-span-2"><label class="mb-2 block text-sm font-medium text-admin-content">{{ field.label }}</label><AdminTextInput v-model="productSearch" placeholder="Search products" /><div class="mt-2 space-y-1"><button v-for="product in filteredProducts" :key="product.id" type="button" class="block w-full border border-admin-border px-3 py-2 text-left text-sm text-admin-content" @click="addProduct(product)">{{ product.name }} <span class="text-admin-content-muted">{{ product.sku }}</span></button></div><div class="mt-3 space-y-1"><div v-for="id in selectedIds('product_ids')" :key="id" class="flex items-center justify-between border border-admin-border px-3 py-2 text-sm text-admin-content"><span>{{ productLabel(id) }}</span><button type="button" class="text-admin-danger" @click="removeProduct(id)">Remove</button></div></div></div>
-                            <div v-else-if="field.control === 'post_picker' && activeSection.config.source === 'manual'" class="md:col-span-2"><label class="mb-2 block text-sm font-medium text-admin-content">{{ field.label }}</label><AdminTextInput v-model="postSearch" placeholder="Search posts" /><label v-for="post in filteredPosts" :key="post.id" class="mt-2 flex items-center gap-2 text-sm text-admin-content"><input type="checkbox" :checked="selectedIds('post_ids').includes(post.id)" @change="togglePost(post.id)" />{{ post.title }}</label></div>
+                            <AdminFormField v-else-if="field.control === 'media'" :label="field.label" :for-id="`config-${field.key}`"><div class="flex items-center gap-3"><span class="text-sm text-admin-content-muted">{{ configMediaLabel(activeSection.config, field.key) }}</span><button type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content" @click="openConfigMedia(field.key)">Chọn tệp</button><button v-if="getPath(activeSection.config, `${field.key}_media_id`)" type="button" class="border border-admin-border px-3 py-2 text-sm text-admin-danger" @click="clearConfigMedia(field.key)">Xóa ảnh</button></div></AdminFormField>
+                            <div v-else-if="field.control === 'product_picker' && activeSection.config.source === 'manual'" class="md:col-span-2"><label class="mb-2 block text-sm font-medium text-admin-content">{{ field.label }}</label><AdminTextInput v-model="productSearch" placeholder="Tìm sản phẩm" /><div class="mt-2 space-y-1"><button v-for="product in filteredProducts" :key="product.id" type="button" class="block w-full border border-admin-border px-3 py-2 text-left text-sm text-admin-content" @click="addProduct(product)">{{ product.name }} <span class="text-admin-content-muted">{{ product.sku }}</span></button></div><div class="mt-3 space-y-1"><div v-for="id in selectedIds('product_ids')" :key="id" class="flex items-center justify-between border border-admin-border px-3 py-2 text-sm text-admin-content"><span>{{ productLabel(id) }}</span><button type="button" class="text-admin-danger" @click="removeProduct(id)">Xóa</button></div></div></div>
+                            <div v-else-if="field.control === 'post_picker' && activeSection.config.source === 'manual'" class="md:col-span-2"><label class="mb-2 block text-sm font-medium text-admin-content">{{ field.label }}</label><AdminTextInput v-model="postSearch" placeholder="Tìm bài viết" /><label v-for="post in filteredPosts" :key="post.id" class="mt-2 flex items-center gap-2 text-sm text-admin-content"><input type="checkbox" :checked="selectedIds('post_ids').includes(post.id)" @change="togglePost(post.id)" />{{ post.title }}</label></div>
                         </template>
                     </div>
                 </AdminDataCard>
-                <AdminDataCard v-if="activeDefinition.supports_items" title="Items">
-                    <div class="mb-4 flex justify-end"><button type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content" @click="addItem">Add item</button></div>
+                <AdminDataCard v-if="activeDefinition.supports_items" title="Danh sách mục">
+                    <div class="mb-4 flex justify-end"><button type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content" @click="addItem">Thêm mục</button></div>
                     <draggable v-model="activeSection.items" item-key="_key" class="space-y-4">
                         <template #item="{ element: item, index }">
-                            <div class="border border-admin-border p-4"><div class="mb-3 flex items-center justify-between text-sm text-admin-content"><span>Item {{ index + 1 }}</span><button type="button" class="text-admin-danger" @click="removeItem(index)">Remove</button></div><div class="grid gap-4 md:grid-cols-2"><template v-for="field in activeDefinition.item_fields" :key="field"><AdminFormField v-if="!['description', 'image'].includes(field)" :label="fieldLabel(field)" :for-id="`item-${item._key}-${field}`"><AdminTextInput :id="`item-${item._key}-${field}`" :model-value="itemValue(item, field)" @update:model-value="setItemValue(item, field, $event)" /></AdminFormField><AdminFormField v-else-if="field === 'description'" :label="fieldLabel(field)" :for-id="`item-${item._key}-description`"><AdminTextarea :id="`item-${item._key}-description`" :model-value="item.description" @update:model-value="item.description = $event" /></AdminFormField><AdminFormField v-else :label="fieldLabel(field)" :for-id="`item-${item._key}-image`"><div class="flex items-center gap-3"><span class="text-sm text-admin-content-muted">{{ mediaLabel(item.media_id) }}</span><button type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content" @click="openItemMedia(item)">Choose media</button></div></AdminFormField></template></div></div>
+                            <div class="border border-admin-border p-4"><div class="mb-3 flex items-center justify-between text-sm text-admin-content"><span>Mục {{ index + 1 }}</span><button type="button" class="text-admin-danger" @click="removeItem(index)">Xóa</button></div><div class="grid gap-4 md:grid-cols-2"><template v-for="field in activeDefinition.item_fields" :key="field"><AdminFormField v-if="!['description', 'image'].includes(field)" :label="fieldLabel(field)" :for-id="`item-${item._key}-${field}`"><AdminTextInput :id="`item-${item._key}-${field}`" :model-value="itemValue(item, field)" @update:model-value="setItemValue(item, field, $event)" /></AdminFormField><AdminFormField v-else-if="field === 'description'" :label="fieldLabel(field)" :for-id="`item-${item._key}-description`"><AdminTextarea :id="`item-${item._key}-description`" :model-value="item.description" @update:model-value="item.description = $event" /></AdminFormField><AdminFormField v-else :label="fieldLabel(field)" :for-id="`item-${item._key}-image`"><div class="flex items-center gap-3"><span class="text-sm text-admin-content-muted">{{ mediaLabel(item.media_id) }}</span><button type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content" @click="openItemMedia(item)">Chọn tệp</button><button v-if="item.media_id" type="button" class="border border-admin-border px-3 py-2 text-sm text-admin-danger" @click="clearItemMedia(item)">Xóa ảnh</button></div></AdminFormField></template></div></div>
                         </template>
                     </draggable>
                 </AdminDataCard>
             </main>
         </div>
-        <AdminMediaPicker :open="pickerOpen" @close="pickerOpen = false" @select="chooseMedia" />
+        <AdminMediaPicker :open="pickerOpen" media-type="image" @close="pickerOpen = false" @select="chooseMedia" />
     </AuthenticatedLayout>
 </template>

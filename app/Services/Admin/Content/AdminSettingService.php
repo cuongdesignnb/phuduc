@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Admin\AdminPageService;
+use App\Services\Admin\Media\MediaAssetService;
 use App\Services\Admin\Media\MediaReferenceService;
 use App\Services\Storefront\ThemeTokenService;
 use Illuminate\Support\Collection;
@@ -14,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class AdminSettingService
 {
-    public function __construct(private readonly AdminPageService $pages, private readonly AdminConcurrencyService $concurrency, private readonly MediaReferenceService $mediaReferences) {}
+    public function __construct(private readonly AdminPageService $pages, private readonly AdminConcurrencyService $concurrency, private readonly MediaReferenceService $mediaReferences, private readonly MediaAssetService $assets) {}
 
     public function page(User $user): array
     {
@@ -45,7 +46,7 @@ class AdminSettingService
             if (! $definition) {
                 throw ValidationException::withMessages(['settings' => 'Setting is not registered.']);
             }
-            $value = $definition['type'] === 'image' && isset($item['media_id']) ? (string) $this->mediaReferences->resolvePath((int) $item['media_id']) : (string) ($item['value'] ?? '');
+            $value = $definition['type'] === 'image' && array_key_exists('media_id', $item) ? (string) ($item['media_id'] ? $this->assets->requireImage((int) $item['media_id'])->file_path : '') : (string) ($item['value'] ?? '');
             $this->validate($definition, $value);
         }
 
@@ -54,7 +55,7 @@ class AdminSettingService
             $this->concurrency->assertFingerprint($payload['version'] ?? null, $this->version($stored), 'Settings changed in another session. Reload and try again.');
             foreach ($payload['settings'] as $item) {
                 $definition = $registry[$item['key']];
-                $value = $definition['type'] === 'image' && isset($item['media_id']) ? $this->mediaReferences->resolvePath((int) $item['media_id']) : ($item['value'] ?? '');
+                $value = $definition['type'] === 'image' && array_key_exists('media_id', $item) ? ($item['media_id'] ? $this->assets->requireImage((int) $item['media_id'])->file_path : null) : ($item['value'] ?? '');
                 Setting::updateOrCreate(['key' => $item['key']], ['value' => $value, 'type' => $definition['type']]);
             }
 

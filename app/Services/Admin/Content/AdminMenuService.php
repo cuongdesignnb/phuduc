@@ -4,12 +4,13 @@ namespace App\Services\Admin\Content;
 
 use App\Models\Menu;
 use App\Models\User;
+use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Admin\AdminPageService;
 use Illuminate\Support\Facades\DB;
 
 class AdminMenuService
 {
-    public function __construct(private readonly AdminPageService $pages, private readonly AdminMenuPresentationService $presentation, private readonly MenuItemSyncService $sync) {}
+    public function __construct(private readonly AdminPageService $pages, private readonly AdminMenuPresentationService $presentation, private readonly MenuItemSyncService $sync, private readonly AdminConcurrencyService $concurrency) {}
 
     public function index(User $user): array
     {
@@ -32,9 +33,14 @@ class AdminMenuService
 
     public function update(Menu $menu, array $data): Menu
     {
-        $menu->update($data);
+        return DB::transaction(function () use ($menu, $data): Menu {
+            $locked = Menu::query()->lockForUpdate()->findOrFail($menu->id);
+            $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Menu đã được cập nhật ở phiên khác.');
+            unset($data['version']);
+            $locked->update($data);
 
-        return $menu->refresh();
+            return $locked->refresh();
+        });
     }
 
     public function destroy(Menu $menu): void

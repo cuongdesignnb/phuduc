@@ -13,5 +13,5 @@ const selectMedia = (media) => { showPicker.value = false; const quill = quillRe
 </script>
 
 <template>
-    <div class="quill-editor-wrap relative"><QuillEditor ref="quillRef" :content="modelValue" content-type="html" :options="editorOptions" :style="{ height: `${height}px` }" @update:content="emit('update:modelValue', $event)" /><AdminMediaPicker :open="showPicker" @close="showPicker = false" @select="selectMedia" /></div>
+    <div class="quill-editor-wrap relative"><QuillEditor ref="quillRef" :content="modelValue" content-type="html" :options="editorOptions" :style="{ height: `${height}px` }" @update:content="emit('update:modelValue', $event)" /><AdminMediaPicker :open="showPicker" media-type="image" @close="showPicker = false" @select="selectMedia" /></div>
 </template>

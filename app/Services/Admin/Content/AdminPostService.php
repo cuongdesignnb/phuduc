@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Admin\AdminPageService;
 use App\Services\Admin\AdminPresentationService;
+use App\Services\Admin\Media\MediaAssetService;
 use App\Services\Admin\Media\MediaReferenceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,6 +23,7 @@ class AdminPostService
         private readonly AdminPresentationService $adminPresentation,
         private readonly AdminConcurrencyService $concurrency,
         private readonly MediaReferenceService $mediaReferences,
+        private readonly MediaAssetService $assets,
     ) {}
 
     public function index(User $user, array $filters): array
@@ -98,7 +100,7 @@ class AdminPostService
 
     private function path(?int $mediaId): ?string
     {
-        return $mediaId ? $this->mediaReferences->resolvePath($mediaId) : null;
+        return $mediaId ? $this->assets->requireImage($mediaId)->file_path : null;
     }
 
     private function uniqueSlug(string $value, ?int $ignoreId = null): string

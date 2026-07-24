@@ -6,6 +6,7 @@ use App\Models\MediaLibrary;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Services\Admin\Media\AdminImageStorageService;
+use App\Services\Admin\Media\MediaAssetService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class ProductImageService
 {
-    public function __construct(private readonly AdminImageStorageService $storage) {}
+    public function __construct(private readonly AdminImageStorageService $storage, private readonly MediaAssetService $assets) {}
 
     public function upload(Product $product, array $files, bool $is360): void
     {
@@ -41,6 +42,7 @@ class ProductImageService
 
     public function attach(Product $product, MediaLibrary $media, bool $is360): ProductImage
     {
+        $media = $this->assets->requireImage((int) $media->id);
         $path = $this->storage->copyMedia($media, 'products/'.$product->id);
 
         try {

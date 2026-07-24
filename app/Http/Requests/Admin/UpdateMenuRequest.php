@@ -12,6 +12,8 @@ class UpdateMenuRequest extends StoreMenuRequest
         $menu = $this->route('menu');
         $rules = parent::rules();
         $rules['location'] = ['required', Rule::in(MenuLocationRegistry::keys()), Rule::unique('menus', 'location')->ignore($menu?->id)];
+        $rules['version'] = ['required', 'string', 'max:100'];
+
         return $rules;
     }
 }

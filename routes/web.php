@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\MenuTargetController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PostCategoryController;
 use App\Http\Controllers\Admin\PostController;
@@ -77,6 +78,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('media/{media}', [MediaLibraryController::class, 'destroy'])->name('media.destroy');
 
         // Menus
+        Route::get('menu-targets/products', [MenuTargetController::class, 'products'])->name('menu-targets.products');
+        Route::get('menu-targets/posts', [MenuTargetController::class, 'posts'])->name('menu-targets.posts');
+        Route::get('menu-targets/categories', [MenuTargetController::class, 'categories'])->name('menu-targets.categories');
         Route::resource('menus', MenuController::class);
         Route::post('menus/{menu}/items', [MenuController::class, 'saveItems'])->name('menus.items');
 

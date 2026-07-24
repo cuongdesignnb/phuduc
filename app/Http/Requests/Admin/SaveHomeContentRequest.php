@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Rules\MediaAssetRule;
 use App\Support\Homepage\HomeSectionRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -37,7 +38,7 @@ class SaveHomeContentRequest extends FormRequest
             'sections.*.heading.subtitle' => ['nullable', 'string', 'max:300'],
             'sections.*.heading.description' => ['nullable', 'string', 'max:3000'],
             'sections.*.config' => ['present', 'array'],
-            'sections.*.config.image_media_id' => ['nullable', 'integer', 'exists:media_libraries,id'],
+            'sections.*.config.image_media_id' => ['nullable', 'integer', MediaAssetRule::image()],
             'sections.*.config.product_ids' => ['sometimes', 'array', 'max:12'],
             'sections.*.config.post_ids' => ['sometimes', 'array', 'max:12'],
             'sections.*.items' => ['present', 'array'],
@@ -46,7 +47,7 @@ class SaveHomeContentRequest extends FormRequest
             'sections.*.items.*.subtitle' => ['nullable', 'string', 'max:255'],
             'sections.*.items.*.description' => ['nullable', 'string', 'max:3000'],
             'sections.*.items.*.image' => ['nullable', 'string', 'max:500'],
-            'sections.*.items.*.media_id' => ['nullable', 'integer', 'exists:media_libraries,id'],
+            'sections.*.items.*.media_id' => ['nullable', 'integer', MediaAssetRule::image()],
             'sections.*.items.*.icon' => ['nullable', 'string', 'max:100'],
             'sections.*.items.*.url' => ['nullable', 'string', 'max:500'],
             'sections.*.items.*.metadata' => ['present', 'array'],
@@ -124,7 +125,7 @@ class SaveHomeContentRequest extends FormRequest
                 }
 
                 $allowedBusinessFields = array_intersect($definition['item_fields'], self::BUSINESS_ITEM_FIELDS);
-                    $allowedItemKeys = array_merge(self::COMMON_ITEM_FIELDS, ['media_id'], $allowedBusinessFields);
+                $allowedItemKeys = array_merge(self::COMMON_ITEM_FIELDS, ['media_id'], $allowedBusinessFields);
                 $allowedMetadata = array_intersect($definition['item_fields'], self::METADATA_ITEM_FIELDS);
                 foreach ($section['items'] ?? [] as $itemIndex => $item) {
                     if (array_diff(array_keys($item), $allowedItemKeys) !== []) {

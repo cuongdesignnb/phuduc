@@ -1,6 +1,6 @@
-PR3B_STORAGE_INTEGRITY=PASS
-MEDIA_UPLOAD=Stable UUID media path persisted with MediaLibrary row
-PRODUCT_IMAGE_ATTACH=Media is copied to products/{product_id}/owned path
-PRODUCT_IMAGE_DELETE=Only owned product paths are removed after commit
-MEDIA_DELETE=Reference-aware and only removes physical file after commit
-MEDIA_PATH_MUTATION_JOB=Disabled; MediaLibrary path is immutable
+STORAGE_INTEGRITY=PASS
+PRODUCT_MEDIA=owned_copy_only
+SOURCE_MEDIA=preserved
+MEDIA_DELETE=blocked_when_referenced
+MEDIA_PATHS=uuid_or_server_owned
+PRODUCTION_DATABASE_USED=NO

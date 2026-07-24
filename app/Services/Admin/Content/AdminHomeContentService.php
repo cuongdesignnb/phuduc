@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Admin\AdminPageService;
+use App\Services\Admin\Media\MediaAssetService;
 use App\Services\Admin\Media\MediaReferenceService;
 use App\Support\Homepage\HomeSectionRegistry;
 use Illuminate\Support\Arr;
@@ -22,18 +23,23 @@ class AdminHomeContentService
 
     private const METADATA_FIELDS = ['tone', 'avatar_text'];
 
-    public function __construct(private readonly AdminPageService $pages, private readonly MediaReferenceService $mediaReferences, private readonly AdminConcurrencyService $concurrency) {}
+    public function __construct(private readonly AdminPageService $pages, private readonly MediaReferenceService $mediaReferences, private readonly AdminConcurrencyService $concurrency, private readonly MediaAssetService $assets) {}
 
     public function page(User $user): array
     {
         $sections = HomeSection::query()->with('items')->orderBy('sort_order')->orderBy('id')->get();
         $definitions = HomeSectionRegistry::definitions();
-        $paths = $sections->flatMap(fn (HomeSection $section) => $section->items->pluck('image'))->all();
+        $paths = $sections->flatMap(fn (HomeSection $section) => [$section->settings_json['image'] ?? null, ...$section->items->pluck('image')->all()])->all();
         $mediaIds = $this->mediaReferences->idsForPaths($paths);
         $items = collect($definitions)->map(function (array $definition, string $key) use ($sections, $mediaIds): array {
             $section = $sections->firstWhere('key', $key);
 
-            return ['id' => $section?->id, 'key' => $key, 'type' => $section?->type ?: $definition['type'], 'enabled' => $section?->is_enabled ?? true, 'sort_order' => $section?->sort_order ?? 999, 'variant' => $section?->variant ?: $definition['allowed_variants'][0], 'heading' => ['eyebrow' => $section?->settings_json['eyebrow'] ?? null, 'title' => $section?->title ?? $definition['label'], 'subtitle' => $section?->subtitle, 'description' => $section?->description], 'config' => array_replace_recursive($definition['defaults'], $section?->settings_json ?? []), 'items' => $section?->items->map(fn (HomeSectionItem $item) => ['id' => $item->id, 'title' => $item->title, 'subtitle' => $item->subtitle, 'description' => $item->description, 'image' => $item->image, 'media_id' => $mediaIds[$this->mediaReferences->normalize($item->image)] ?? null, 'icon' => $item->icon, 'url' => $item->url, 'metadata' => $item->metadata_json ?? [], 'enabled' => $item->is_active, 'sort_order' => $item->sort_order])->values()->all() ?? []];
+            $config = array_replace_recursive($definition['defaults'], $section?->settings_json ?? []);
+            if (! empty($config['image'])) {
+                $config['image_media_id'] = $mediaIds[$this->mediaReferences->normalize($config['image'])] ?? null;
+            }
+
+            return ['id' => $section?->id, 'key' => $key, 'type' => $section?->type ?: $definition['type'], 'enabled' => $section?->is_enabled ?? true, 'sort_order' => $section?->sort_order ?? 999, 'variant' => $section?->variant ?: $definition['allowed_variants'][0], 'heading' => ['eyebrow' => $section?->settings_json['eyebrow'] ?? null, 'title' => $section?->title ?? $definition['label'], 'subtitle' => $section?->subtitle, 'description' => $section?->description], 'config' => $config, 'items' => $section?->items->map(fn (HomeSectionItem $item) => ['id' => $item->id, 'title' => $item->title, 'subtitle' => $item->subtitle, 'description' => $item->description, 'image' => $item->image, 'media_id' => $mediaIds[$this->mediaReferences->normalize($item->image)] ?? null, 'icon' => $item->icon, 'url' => $item->url, 'metadata' => $item->metadata_json ?? [], 'enabled' => $item->is_active, 'sort_order' => $item->sort_order])->values()->all() ?? []];
         })->sortBy('sort_order')->values()->all();
 
         return $this->pages->envelope($user, 'admin_home_content_index', 'Homepage content', [['label' => 'Homepage content', 'url' => route('admin.home-content.index')]], ['sections' => $items, 'registry' => $definitions, 'version' => $this->version($sections, $sections->flatMap->items)]);
@@ -87,8 +93,8 @@ class AdminHomeContentService
             throw ValidationException::withMessages(['sections' => 'Section is not registered.']);
         }
         $config = $data['config'] ?? [];
-        if (isset($config['image_media_id'])) {
-            $config['image'] = $this->mediaReferences->resolvePath((int) $config['image_media_id']);
+        if (array_key_exists('image_media_id', $config)) {
+            $config['image'] = $config['image_media_id'] ? $this->assets->requireImage((int) $config['image_media_id'])->file_path : null;
             unset($config['image_media_id']);
         }
         $section = HomeSection::query()->firstOrNew(['key' => $data['key']]);
@@ -108,8 +114,8 @@ class AdminHomeContentService
         $metadata = array_values(array_intersect($allowedFields, self::METADATA_FIELDS));
         $kept = [];
         foreach ($items as $data) {
-            if (isset($data['media_id'])) {
-                $data['image'] = $this->mediaReferences->resolvePath((int) $data['media_id']);
+            if (array_key_exists('media_id', $data)) {
+                $data['image'] = $data['media_id'] ? $this->assets->requireImage((int) $data['media_id'])->file_path : null;
             }
             $item = filled($data['id'] ?? null) ? HomeSectionItem::query()->where('home_section_id', $section->id)->findOrFail($data['id']) : new HomeSectionItem;
             $item->fill(['home_section_id' => $section->id, 'section_key' => $section->key, ...Arr::only($data, $business), 'metadata_json' => Arr::only($data['metadata'] ?? [], $metadata), 'is_active' => $data['enabled'], 'sort_order' => $data['sort_order']])->save();

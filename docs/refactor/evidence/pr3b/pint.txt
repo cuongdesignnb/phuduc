@@ -1,4 +1,4 @@
 PR3B_PINT=PASS
 COMMAND=php vendor/bin/pint --test <changed PHP scope>
-FILES=26
-STYLE_ISSUES_FIXED=11
+FILES=21
+STYLE_ISSUES_FIXED=9

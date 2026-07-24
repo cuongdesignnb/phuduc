@@ -1,0 +1,7 @@
+CONCURRENCY=PASS
+MENU_DETAILS=lockForUpdate_and_assertVersion
+MENU_STRUCTURE=lockForUpdate_and_assertVersion
+HOME_CONTENT=deterministic_section_item_fingerprint
+SETTINGS=deterministic_setting_fingerprint
+POST=lockForUpdate_and_assertVersion
+STALE_SESSION_REJECTION=PASS

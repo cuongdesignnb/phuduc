@@ -1,6 +1,4 @@
-PR3B_SQLITE_VALIDATION=PASS
-COMMAND=php artisan test --env=testing
-TESTS=238 passed, 1 skipped
-ASSERTIONS=1981
-DATABASE=SQLite in-memory
-PRODUCTION_DATABASE_USED=NO
+SQLITE_FULL_SUITE=PASS
+TESTS=245 passed, 1 skipped
+ASSERTIONS=2018
+COMMAND=php artisan test --env=testing with SQLite memory database

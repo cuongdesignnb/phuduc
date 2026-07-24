@@ -60,7 +60,9 @@ class AdminMediaService
         $query = MediaLibrary::query()->when($filters['search'] ?? null, fn ($query, $search) => $query->where(function ($query) use ($search): void {
             $value = '%'.addcslashes($search, '%_\\').'%';
             $query->where('file_name', 'like', $value)->orWhere('alt_text', 'like', $value);
-        }));
+        }))->when($filters['media_type'] ?? null, fn ($query, $type) => $type === 'image'
+            ? $query->where('mime_type', 'like', 'image/%')
+            : $query->where('mime_type', 'not like', 'image/%'));
         $paginator = $query->latest()->paginate($limit, ['*'], 'page', (int) ($filters['page'] ?? 1));
         $selected = $ids === [] ? collect() : MediaLibrary::query()->whereIn('id', $ids)->get();
         $items = $selected->concat($paginator->getCollection())->unique('id')->map(fn (MediaLibrary $media) => $this->presentation->pickerItem($media))->values()->all();
@@ -68,7 +70,7 @@ class AdminMediaService
         return [
             'items' => $items,
             'pagination' => $this->adminPresentation->pagination($paginator),
-            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'ids' => $ids, 'limit' => $limit],
+            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'media_type' => (string) ($filters['media_type'] ?? ''), 'ids' => $ids, 'limit' => $limit],
             'data' => $items,
         ];
     }
