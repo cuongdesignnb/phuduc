@@ -1,0 +1,4 @@
+COMMAND=php vendor/bin/pint --test on the explicit changed PHP file set relative to base SHA ac12007861530cdb08cd7f44ccf6babfc103b5a4
+RESULT=PASS
+FILES=41
+DIFF_CHECK=PASS

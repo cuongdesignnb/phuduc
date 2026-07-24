@@ -31,24 +31,24 @@ Route::get('/san-pham', [GuestProductController::class, 'index'])->name('product
 Route::get('/san-pham/{slug}', [GuestProductController::class, 'show'])->name('products.show');
 
 // Cart & Checkout
-Route::get('/gio-hang', [CartController::class, 'index'])->name('cart.index');
-Route::post('/gio-hang/add', [CartController::class, 'add'])->name('cart.add');
-Route::patch('/gio-hang/update', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/gio-hang/remove', [CartController::class, 'remove'])->name('cart.remove');
-Route::get('/thanh-toan', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/thanh-toan', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/thanh-toan/thanh-cong/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::middleware('commerce.utility')->group(function () {
+    Route::get('/gio-hang', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/gio-hang/add', [CartController::class, 'add'])->middleware('throttle:commerce-cart')->name('cart.add');
+    Route::patch('/gio-hang/update', [CartController::class, 'update'])->middleware('throttle:commerce-cart')->name('cart.update');
+    Route::delete('/gio-hang/remove', [CartController::class, 'remove'])->middleware('throttle:commerce-cart')->name('cart.remove');
+    Route::post('/gio-hang/clear', [CartController::class, 'clear'])->middleware('throttle:commerce-cart')->name('cart.clear');
+    Route::get('/thanh-toan', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/thanh-toan', [CheckoutController::class, 'store'])->middleware('throttle:commerce-checkout')->name('checkout.store');
+    Route::get('/thanh-toan/thanh-cong/{token}', [CheckoutController::class, 'success'])->name('checkout.success');
 
-// Order Lookup
-Route::get('/tra-cuu-don-hang', [OrderLookupController::class, 'index'])->name('order-lookup.index');
-Route::post('/tra-cuu-don-hang', [OrderLookupController::class, 'lookup'])->name('order-lookup.lookup');
+    Route::get('/tra-cuu-don-hang', [OrderLookupController::class, 'index'])->name('order-lookup.index');
+    Route::post('/tra-cuu-don-hang', [OrderLookupController::class, 'lookup'])->middleware('throttle:commerce-order-lookup')->name('order-lookup.lookup');
+    Route::get('/tra-cuu-bao-hanh', [WarrantyLookupController::class, 'index'])->name('warranty-lookup.index');
+    Route::post('/tra-cuu-bao-hanh', [WarrantyLookupController::class, 'lookup'])->middleware('throttle:commerce-warranty-lookup')->name('warranty-lookup.lookup');
+});
 
 // Guest Reviews
 Route::post('/danh-gia', [GuestReviewController::class, 'store'])->name('reviews.store');
-
-// Warranty Lookup
-Route::get('/tra-cuu-bao-hanh', [WarrantyLookupController::class, 'index'])->name('warranty-lookup.index');
-Route::post('/tra-cuu-bao-hanh', [WarrantyLookupController::class, 'lookup'])->name('warranty-lookup.lookup');
 
 // News
 Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');

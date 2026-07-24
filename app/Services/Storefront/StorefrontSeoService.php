@@ -23,7 +23,9 @@ class StorefrontSeoService
             'description' => $overrides['description'] ?? $site['description'],
             'ogImage' => $overrides['ogImage'] ?? $site['og_image_url'],
             'ogType' => $overrides['ogType'] ?? 'website',
-            'canonical' => $overrides['canonical'] ?? url()->current(),
+            'canonical' => array_key_exists('canonical', $overrides)
+                ? $overrides['canonical']
+                : url()->current(),
             'robots' => $overrides['robots'] ?? 'index, follow',
         ];
     }

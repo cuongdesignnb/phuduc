@@ -8,8 +8,7 @@ const page = usePage();
 const site = computed(() => page.props.site || {});
 const navigation = computed(() => page.props.navigation || { header: [], footer: [] });
 const authUser = computed(() => page.props.auth?.user || null);
-const cartCount = computed(() => Object.values(page.props.cart || {})
-    .reduce((total, item) => total + Number(item.quantity || 0), 0));
+const cartCount = computed(() => Number(page.props.cart_count || 0));
 </script>
 
 <template>

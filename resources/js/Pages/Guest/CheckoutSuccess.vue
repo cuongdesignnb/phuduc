@@ -1,34 +1,47 @@
 <script setup>
+import { nextTick, onMounted, ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import GuestPageLayout from '@/Layouts/GuestPageLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import SeoHead from '@/Components/SeoHead.vue';
+import Breadcrumbs from '@/Components/Storefront/Breadcrumbs.vue';
 
-const props = defineProps({ order: Object });
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
+const props = defineProps({ page: { type: Object, required: true } });
+const resultRegion = ref(null);
+
+onMounted(() => nextTick(() => resultRegion.value?.focus()));
 </script>
 
 <template>
-    <Head title="Đặt hàng thành công" />
+    <SeoHead v-bind="page.seo" />
     <GuestPageLayout>
-        <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16 text-center">
-            <div class="storefront-card p-8">
-                <div class="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-5">
-                    <svg class="w-8 h-8 text-brand-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </div>
-                <h1 class="text-2xl font-display font-bold text-ink-primary mb-2">Đặt hàng thành công!</h1>
-                <p class="text-ink-secondary mb-6">Mã đơn hàng của bạn: <span class="font-mono font-bold text-brand-hover">{{ order.order_number }}</span></p>
-
-                <div class="text-left border-t border-surface-border pt-6 space-y-2 text-sm text-ink-secondary">
-                    <p><strong class="text-ink-primary">Khách hàng:</strong> {{ order.customer_name }}</p>
-                    <p><strong class="text-ink-primary">SĐT:</strong> {{ order.customer_phone }}</p>
-                    <p><strong class="text-ink-primary">Địa chỉ:</strong> {{ order.shipping_address }}</p>
-                    <p><strong class="text-ink-primary">Tổng tiền:</strong> <span class="text-brand-hover font-display font-bold">{{ formatPrice(order.total_amount) }}</span></p>
+        <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+            <Breadcrumbs :items="page.breadcrumbs" class="mb-6" />
+            <section ref="resultRegion" tabindex="-1" role="status" aria-live="polite" aria-labelledby="success-title" class="rounded-lg border border-line bg-surface-card p-8">
+                <h1 id="success-title" class="text-2xl font-display font-bold text-content-primary">Đặt hàng thành công</h1>
+                <div class="mt-6 space-y-2 border-t border-line pt-6 text-sm text-content-secondary">
+                    <p><strong class="text-content-primary">Mã đơn hàng:</strong> <span class="font-mono text-brand-text">{{ page.order.order_number }}</span></p>
+                    <p><strong class="text-content-primary">Trạng thái:</strong> {{ page.order.status_display }}</p>
+                    <p><strong class="text-content-primary">Ngày đặt:</strong> {{ page.order.created_at_display }}</p>
+                    <p><strong class="text-content-primary">Khách hàng:</strong> {{ page.order.customer.name }}</p>
+                    <p><strong class="text-content-primary">Số điện thoại:</strong> {{ page.order.customer.phone_masked }}</p>
                 </div>
 
-                <div class="mt-8 flex justify-center gap-4">
-                    <Link :href="route('products.index')" class="btn-outline text-sm">Tiếp tục mua</Link>
-                    <Link :href="route('order-lookup.index')" class="btn-primary text-sm">Tra cứu đơn hàng</Link>
+                <div class="mt-6 border-t border-line pt-6">
+                    <h2 class="font-display font-bold text-content-primary">Chi tiết đơn hàng</h2>
+                    <div class="mt-3 space-y-2 text-sm">
+                        <div v-for="(item, index) in page.order.items" :key="`${item.product_name}-${index}`" class="flex justify-between gap-4">
+                            <span class="text-content-secondary">{{ item.product_name }} × {{ item.quantity }}<span class="block text-xs text-content-muted">{{ item.unit_price_display }} / sản phẩm</span></span>
+                            <span class="font-semibold text-content-primary">{{ item.subtotal_display }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between border-t border-line pt-4"><strong class="text-content-primary">Tổng cộng</strong><span class="text-xl font-display font-bold text-brand-text">{{ page.order.total_display }}</span></div>
                 </div>
-            </div>
+
+                <div class="mt-8 flex flex-wrap gap-4">
+                    <Link :href="route('products.index')" class="btn-outline">Tiếp tục mua</Link>
+                    <Link :href="route('order-lookup.index')" class="btn-primary">Tra cứu đơn hàng</Link>
+                </div>
+            </section>
         </div>
     </GuestPageLayout>
 </template>

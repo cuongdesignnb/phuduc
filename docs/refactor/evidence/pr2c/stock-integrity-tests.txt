@@ -1,0 +1,4 @@
+RESULT=PASS
+PRICE_SOURCE=current database row
+LOCKING=product rows selected in sorted order with FOR UPDATE
+FAILURE_BEHAVIOR=insufficient stock preserves cart and stock and creates no order

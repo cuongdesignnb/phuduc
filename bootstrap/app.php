@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'commerce.utility' => \App\Http\Middleware\CommerceUtilityHeaders::class,
         ]);
 
         $middleware->web(append: [

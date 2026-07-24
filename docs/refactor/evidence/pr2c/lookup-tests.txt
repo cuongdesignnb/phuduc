@@ -1,0 +1,7 @@
+COMMAND=php artisan test --filter='(OrderLookupContractTest|WarrantyLookupContractTest)'
+RESULT=PASS
+TESTS=3
+ASSERTIONS=27
+FACTORS=order number plus customer phone; serial number plus customer phone
+FAILURE_RESPONSE=generic lookup failure without PII in URL
+RATE_LIMIT=6 requests per minute on POST lookup endpoints

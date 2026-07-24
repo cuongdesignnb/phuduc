@@ -1,0 +1,5 @@
+COMMAND=php artisan test --filter='(CartContractTest|CartMutationTest)'
+RESULT=PASS
+TESTS=4
+ASSERTIONS=16
+CONTRACTS=canonical session schema, bounded mutations, stale product removal, stock and price validation

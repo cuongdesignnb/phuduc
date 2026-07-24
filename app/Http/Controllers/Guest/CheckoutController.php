@@ -3,79 +3,71 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\OrderItem;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\Storefront\CheckoutRequest;
+use App\Services\Storefront\CartPresentationService;
+use App\Services\Storefront\CartResolver;
+use App\Services\Storefront\CheckoutIntentService;
+use App\Services\Storefront\CheckoutService;
+use App\Services\Storefront\OrderPresentationService;
+use App\Services\Storefront\StorefrontSeoService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(CartResolver $resolver, CartPresentationService $presentation, CheckoutIntentService $intents, StorefrontSeoService $seo)
     {
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
+        $resolved = $resolver->resolve();
+        if ($resolved['entries'] === []) {
             return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống.');
         }
 
+        $cart = $presentation->cart($resolved['entries']);
+        $meta = $seo->meta(['title' => 'Thanh toán', 'robots' => 'noindex, nofollow']);
+
         return Inertia::render('Guest/Checkout', [
-            'cart' => array_values($cart),
+            'page' => [
+                'type' => 'checkout',
+                'seo' => $meta,
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Giỏ hàng', 'url' => route('cart.index')],
+                    ['name' => 'Thanh toán'],
+                ],
+                'checkout' => [
+                    'intent' => $intents->issue(),
+                    'cart' => [...$cart, 'warnings' => $resolved['warnings']],
+                    'fields' => ['customer_name', 'customer_phone', 'customer_email', 'shipping_address', 'notes'],
+                ],
+            ],
         ]);
     }
 
-    public function store(Request $request)
+    public function store(CheckoutRequest $request, CheckoutService $checkout): RedirectResponse
     {
-        $data = $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
-            'customer_email' => 'nullable|email|max:255',
-            'shipping_address' => 'required|string|max:1000',
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $order = $checkout->checkout($request->validated(), (string) $request->string('checkout_intent'));
 
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
-            return back()->withErrors(['cart' => 'Giỏ hàng trống.']);
-        }
-
-        $order = DB::transaction(function () use ($data, $cart) {
-            $totalAmount = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-
-            $order = Order::create([
-                'order_number' => Order::generateOrderNumber(),
-                'customer_name' => $data['customer_name'],
-                'customer_phone' => $data['customer_phone'],
-                'customer_email' => $data['customer_email'] ?? null,
-                'shipping_address' => $data['shipping_address'],
-                'total_amount' => $totalAmount,
-                'status' => 'pending',
-                'notes' => $data['notes'] ?? null,
-            ]);
-
-            foreach ($cart as $item) {
-                $order->items()->create([
-                    'product_id' => $item['product_id'],
-                    'product_name' => $item['name'],
-                    'price' => $item['price'],
-                    'quantity' => $item['quantity'],
-                    'total' => $item['price'] * $item['quantity'],
-                ]);
-            }
-
-            return $order;
-        });
-
-        session()->forget('cart');
-
-        return redirect()->route('checkout.success', $order)->with('success', 'Đặt hàng thành công!');
+        return redirect()->route('checkout.success', ['token' => $order->public_token])->with('success', 'Đặt hàng thành công.');
     }
 
-    public function success(Order $order)
+    public function success(string $token, OrderPresentationService $orders, StorefrontSeoService $seo)
     {
-        $order->load('items');
+        $order = \App\Models\Order::query()->with('items')->where('public_token', $token)->firstOrFail();
 
         return Inertia::render('Guest/CheckoutSuccess', [
-            'order' => $order,
+            'page' => [
+                'type' => 'checkout_success',
+                'seo' => $seo->meta([
+                    'title' => 'Đặt hàng thành công',
+                    'robots' => 'noindex, nofollow',
+                    'canonical' => null,
+                ]),
+                'breadcrumbs' => [
+                    ['name' => 'Trang chủ', 'url' => route('home')],
+                    ['name' => 'Đặt hàng thành công'],
+                ],
+                'order' => $orders->success($order),
+            ],
         ]);
     }
 }
