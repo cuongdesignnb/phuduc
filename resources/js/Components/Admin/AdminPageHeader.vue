@@ -8,8 +8,8 @@ defineProps({
 <template>
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-white">{{ title }}</h1>
-            <p v-if="description" class="mt-1 text-sm text-carbon-400">{{ description }}</p>
+            <h1 class="text-2xl font-bold text-admin-content">{{ title }}</h1>
+            <p v-if="description" class="mt-1 text-sm text-admin-content-muted">{{ description }}</p>
         </div>
         <slot />
     </div>

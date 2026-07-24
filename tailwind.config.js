@@ -74,6 +74,20 @@ export default {
                     DEFAULT: 'rgb(var(--ds-danger) / <alpha-value>)',
                     soft: 'rgb(var(--ds-danger-soft) / <alpha-value>)',
                 },
+                admin: {
+                    page: 'rgb(var(--ds-surface-page) / <alpha-value>)',
+                    surface: 'rgb(var(--ds-surface-card) / <alpha-value>)',
+                    'surface-muted': 'rgb(var(--ds-surface-muted) / <alpha-value>)',
+                    border: 'rgb(var(--ds-border-default) / <alpha-value>)',
+                    content: 'rgb(var(--ds-content-primary) / <alpha-value>)',
+                    'content-muted': 'rgb(var(--ds-content-muted) / <alpha-value>)',
+                    accent: 'rgb(var(--ds-brand-primary) / <alpha-value>)',
+                    'accent-hover': 'rgb(var(--ds-brand-hover) / <alpha-value>)',
+                    danger: 'rgb(var(--ds-danger) / <alpha-value>)',
+                    warning: 'rgb(var(--ds-warning) / <alpha-value>)',
+                    success: 'rgb(var(--ds-success) / <alpha-value>)',
+                    focus: 'rgb(var(--ds-focus-ring) / <alpha-value>)',
+                },
                 // Admin compatibility; new storefront code must not use this palette.
                 industrial: {
                     50: '#eef7ff',

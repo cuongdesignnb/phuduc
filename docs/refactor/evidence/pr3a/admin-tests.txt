@@ -1,4 +1,4 @@
 COMMAND: php artisan test tests/Feature/Admin --env=testing with explicit SQLite and array session/cache drivers
 RESULT: PASS
-TESTS: 29 passed
-ASSERTIONS: 129
+TESTS: 36 passed on MySQL isolated run; SQLite full suite includes the same Admin cases plus all regressions
+ASSERTIONS: 207 on MySQL isolated Admin run

@@ -1,0 +1,15 @@
+/* Semantic Admin palette. Legacy color values remain isolated in Tailwind's compatibility aliases. */
+:root {
+    --admin-page: var(--ds-surface-page);
+    --admin-surface: var(--ds-surface-card);
+    --admin-surface-muted: var(--ds-surface-muted);
+    --admin-border: var(--ds-border-default);
+    --admin-content: var(--ds-content-primary);
+    --admin-content-muted: var(--ds-content-muted);
+    --admin-accent: var(--ds-brand-primary);
+    --admin-accent-hover: var(--ds-brand-hover);
+    --admin-danger: var(--ds-danger);
+    --admin-warning: var(--ds-warning);
+    --admin-success: var(--ds-success);
+    --admin-focus: var(--ds-focus-ring);
+}

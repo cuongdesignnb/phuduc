@@ -9,3 +9,8 @@
 - Mobile drawer: open, overlay close, Escape close, initial focus, and focus return verified.
 - Account dropdown: opened successfully at desktop width.
 - Browser console: no error or warning entries after QA.
+- Semantic Admin tokens: no direct carbon/volt classes in PR3A scope.
+- Breadcrumb: visible on Dashboard, no leading separator, final item is current page.
+- Confirm dialog: initial focus, Tab and Shift+Tab containment, Escape, focus return, and processing guard verified.
+- Pagination fixture: disabled previous item, active page item, plain-text labels, and no hash navigation verified by contract tests.
+- Mobile drawer: Tab and Shift+Tab containment plus body scroll lock verified by shared composable contract and browser QA.

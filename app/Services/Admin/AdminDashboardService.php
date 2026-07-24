@@ -62,7 +62,7 @@ class AdminDashboardService
         $monthlyRevenue = collect(range(0, 5))->map(function (int $offset) use ($monthStart, $revenueRows): array {
             $month = $monthStart->addMonths($offset);
             $rows = $revenueRows->filter(fn (Order $order): bool => $order->created_at?->format('Y-m') === $month->format('Y-m'));
-            $money = $this->presentation->money($rows->sum(fn (Order $order): float => (float) $order->total_amount));
+            $money = $this->presentation->money($rows->sum(fn (Order $order): int => (int) round((float) $order->total_amount)));
 
             return [
                 'month' => $month->format('Y-m'),

@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import AdminIcon from './AdminIcon.vue';
@@ -18,20 +17,20 @@ defineExpose({
 </script>
 
 <template>
-    <header class="flex min-h-16 items-center justify-between gap-4 border-b border-white/10 bg-carbon-950/95 px-4 sm:px-6">
+    <header class="flex min-h-16 items-center justify-between gap-4 border-b border-admin-border bg-admin-page/95 px-4 sm:px-6">
         <div class="flex min-w-0 items-center gap-3">
-            <button ref="menuButton" type="button" class="rounded-lg p-2 text-carbon-300 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-volt-400 lg:hidden" aria-label="Mở menu quản trị" @click="emit('menu')">
+            <button ref="menuButton" type="button" class="rounded-lg p-2 text-admin-content-muted hover:bg-admin-surface-muted hover:text-admin-content focus:outline-none focus:ring-2 focus:ring-admin-focus lg:hidden" aria-label="Mở menu quản trị" @click="emit('menu')">
                 <AdminIcon name="menu" />
             </button>
             <div class="min-w-0">
-                <p class="truncate text-sm font-semibold text-white">{{ site.name || 'Quản trị' }}</p>
-                <p class="hidden text-xs text-carbon-500 sm:block">Khu vực quản trị</p>
+                <p class="truncate text-sm font-semibold text-admin-content">{{ site.name || 'Quản trị' }}</p>
+                <p class="hidden text-xs text-admin-content-muted sm:block">Khu vực quản trị</p>
             </div>
         </div>
         <Dropdown align="right" width="48">
             <template #trigger>
-                <button type="button" class="flex max-w-52 items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-carbon-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-volt-400" aria-label="Mở menu tài khoản">
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-volt-500/15 text-volt-300"><AdminIcon name="user" size="16" /></span>
+                <button type="button" class="flex max-w-52 items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-admin-content hover:bg-admin-surface-muted focus:outline-none focus:ring-2 focus:ring-admin-focus" aria-label="Mở menu tài khoản">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-admin-accent/15 text-admin-accent"><AdminIcon name="user" size="16" /></span>
                     <span class="hidden truncate sm:block">{{ user.name || 'Tài khoản' }}</span>
                 </button>
             </template>

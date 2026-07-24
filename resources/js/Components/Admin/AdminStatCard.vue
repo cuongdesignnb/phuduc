@@ -2,13 +2,13 @@
 defineProps({
     label: { type: String, required: true },
     value: { type: [String, Number], required: true },
-    tone: { type: String, default: 'volt' },
+    tone: { type: String, default: 'accent' },
 });
 </script>
 
 <template>
-    <article class="border border-white/10 bg-carbon-900 p-4">
-        <p class="text-sm text-carbon-400">{{ label }}</p>
-        <p :class="tone === 'amber' ? 'text-amber-300' : 'text-volt-300'" class="mt-2 break-words text-2xl font-bold">{{ value }}</p>
+    <article class="border border-admin-border bg-admin-surface p-4">
+        <p class="text-sm text-admin-content-muted">{{ label }}</p>
+        <p :class="tone === 'warning' ? 'text-admin-warning' : 'text-admin-accent'" class="mt-2 break-words text-2xl font-bold">{{ value }}</p>
     </article>
 </template>
