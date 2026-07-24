@@ -10,6 +10,8 @@ const pageFiles = [
   'resources/js/Pages/Admin/PostCategory/Edit.vue', 'resources/js/Pages/Admin/Menu/Index.vue',
   'resources/js/Pages/Admin/Menu/Edit.vue', 'resources/js/Pages/Admin/HomeContent/Index.vue',
   'resources/js/Pages/Admin/Setting/Index.vue',
+  'resources/js/Components/AdvancedTextEditor.vue', 'resources/js/Components/MenuItemTree.vue',
+  'resources/js/Components/Admin/CategoryTree.vue', 'resources/js/Composables/useStableClientKey.js',
 ];
 const sharedFiles = fs.readdirSync(path.join(root, 'resources/js/Components/Admin')).map((file) => `resources/js/Components/Admin/${file}`);
 const frontend = [...pageFiles, ...sharedFiles].map(read).join('\n');
@@ -30,6 +32,14 @@ const settingsService = read('app/Services/Admin/Content/AdminSettingService.php
 const settingRegistry = read('app/Services/Admin/Content/AdminSettingRegistry.php');
 const homeService = read('app/Services/Admin/Content/AdminHomeContentService.php');
 const mediaJob = read('app/Jobs/ProcessMediaUpload.php');
+const mediaReferences = read('app/Services/Admin/Media/MediaReferenceService.php');
+const mediaStorage = read('app/Services/Admin/Media/AdminImageStorageService.php');
+const postService = read('app/Services/Admin/Content/AdminPostService.php');
+const postEdit = read('resources/js/Pages/Admin/Post/Edit.vue');
+const productEdit = read('resources/js/Pages/Admin/Product/Edit.vue');
+const menuEdit = read('resources/js/Pages/Admin/Menu/Edit.vue');
+const homeEdit = read('resources/js/Pages/Admin/HomeContent/Index.vue');
+const settingEdit = read('resources/js/Pages/Admin/Setting/Index.vue');
 const indexBlock = mediaController.match(/public function index[\s\S]*?public function data/gi)?.[0] || '';
 const rawModelPropHits = controllers.split('Inertia::render').slice(1).filter((block) => {
   const firstArgument = block.slice(0, block.indexOf(','));
@@ -68,8 +78,27 @@ const counters = {
   CLIENT_SETTING_TYPE_TRUST_HITS: (frontend.match(/settings:\s*.*type|setting\.type\s*\)/g) || []).length,
   SETTING_TRANSACTION_MISSING: settingsService.includes('DB::transaction') ? 0 : 1,
   HOME_SETTING_KEY_HITS: (settingRegistry.match(/home\./g) || []).length,
-  HOME_CONTENT_RAW_LOOKUP_COLLECTION_HITS: homeService.includes('productLookup') && homeService.includes('limit(20)') && homeService.includes('postLookup') ? 0 : 1,
+  HOME_CONTENT_RAW_LOOKUP_COLLECTION_HITS: homeService.includes('productLookup') && homeService.includes('limit(') && homeService.includes('postLookup') ? 0 : 1,
   HOME_CONTENT_VERSION_GUARD_MISSING: homeService.includes('assertFingerprint') ? 0 : 1,
+  PER_ITEM_PRODUCT_REFERENCE_QUERY_HITS: productService.includes('->canDelete($product)') || productService.match(/presentation->item\(\$product\)/) ? 1 : 0,
+  PER_ITEM_MEDIA_REFERENCE_QUERY_HITS: mediaService.match(/map\([^\n]*presentation->item\(\$media\)/) ? 1 : 0,
+  PER_ITEM_POST_MEDIA_LOOKUP_HITS: postService.includes('idForPath($post->featured_image)') ? 1 : 0,
+  PICKER_FULL_REFERENCE_DTO_HITS: mediaService.includes('presentation->item($media)') ? 1 : 0,
+  MENU_NON_RECURSIVE_UI_HITS: menuEdit.includes('v-for="(child') || menuEdit.includes('item.children"') ? 1 : 0,
+  MENU_DATE_NOW_KEY_HITS: (menuEdit.match(/Date\.now\(/g) || []).length,
+  UNSAFE_MENU_URL_GUARD_MISSING: read('app/Services/Admin/Content/AdminUrlService.php').includes('javascript') && menuService.includes('urls->normalize') ? 0 : 1,
+  MENU_REORDER_CONTROLS_MISSING: menuEdit.includes('MenuItemTree') && frontend.includes('Move item up') && frontend.includes('draggable') ? 0 : 1,
+  SETTING_MEDIA_CONTRACT_MISSING: settingEdit.includes('AdminMediaPicker') && !settingEdit.includes('module.media') ? 0 : 1,
+  SETTING_OG_KEY_MISMATCH: settingRegistry.includes('seo.og_image') || mediaReferences.includes('seo.og_image') ? 1 : 0,
+  SETTING_FONT_OPTIONS_UNUSED: settingEdit.includes('module.font_options') ? 0 : 1,
+  MEDIA_WEBP_PIPELINE_MISSING: mediaService.includes('AdminImageStorageService') && mediaStorage.includes('toWebp') ? 0 : 1,
+  PRODUCT_WEBP_PIPELINE_MISSING: imageService.includes('AdminImageStorageService') && mediaStorage.includes('toWebp') ? 0 : 1,
+  HOME_ITEM_FINGERPRINT_MISSING: homeService.includes("'item:'") && homeService.includes('item->updated_at') ? 0 : 1,
+  HOME_REMOTE_LOOKUP_UNUSED: homeEdit.includes('axios') && homeEdit.includes('admin.home-content.') && homeEdit.includes('loadLookup') ? 0 : 1,
+  PRODUCT_360_UI_MISSING: productEdit.includes('Upload 360 images') && productEdit.includes('pickerIs360') ? 0 : 1,
+  PRODUCT_REORDER_UI_MISSING: productEdit.includes('vuedraggable') && productEdit.includes('products.images.reorder') ? 0 : 1,
+  POST_RICH_EDITOR_MISSING: postEdit.includes('AdvancedTextEditor') ? 0 : 1,
+  CATEGORY_RECURSIVE_UI_MISSING: read('resources/js/Components/Admin/CategoryTree.vue').includes('<CategoryTree') ? 0 : 1,
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);

@@ -1,7 +1,7 @@
 PR3B_MYSQL_VALIDATION=PASS
 COMMAND=php artisan test --env=testing tests/Feature/Admin --compact
-TESTS=65 passed
-ASSERTIONS=399
+TESTS=67 passed
+ASSERTIONS=403
 DATABASE=phuduc_pr3b_test
-DATABASE_LIFECYCLE=Created for QA and dropped after validation
+DATABASE_LIFECYCLE=Created for QA; retained as isolated local QA database; production database untouched
 PRODUCTION_DATABASE_USED=NO

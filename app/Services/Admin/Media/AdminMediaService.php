@@ -9,7 +9,6 @@ use App\Services\Admin\AdminPresentationService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AdminMediaService
@@ -19,6 +18,7 @@ class AdminMediaService
         private readonly MediaReferenceService $references,
         private readonly AdminPageService $pages,
         private readonly AdminPresentationService $adminPresentation,
+        private readonly AdminImageStorageService $storage,
     ) {}
 
     /** @return array<string, mixed> */
@@ -36,10 +36,12 @@ class AdminMediaService
             ->paginate(20)
             ->withQueryString();
 
+        $referenceMap = $this->references->forPaths($paginator->getCollection()->pluck('file_path')->all());
+
         return $this->pages->envelope($user, 'admin_media_index', 'Media Library', [
             ['label' => 'Media', 'url' => route('admin.media.index')],
         ], [
-            'items' => $paginator->getCollection()->map(fn (MediaLibrary $media) => $this->presentation->item($media))->values()->all(),
+            'items' => $paginator->getCollection()->map(fn (MediaLibrary $media) => $this->presentation->item($media, $referenceMap[$this->references->normalize($media->file_path)] ?? []))->values()->all(),
             'pagination' => $this->adminPresentation->pagination($paginator),
             'filters' => [
                 'search' => (string) ($filters['search'] ?? ''),
@@ -49,45 +51,57 @@ class AdminMediaService
         ]);
     }
 
-    /** @return array<int, array<string, mixed>> */
+    /** @return array<string, mixed> */
     public function picker(array $filters): array
     {
-        return MediaLibrary::query()
-            ->when($filters['search'] ?? null, fn ($query, $search) => $query->where('file_name', 'like', '%'.addcslashes($search, '%_\\').'%'))
-            ->latest()
-            ->limit(20)
-            ->get()
-            ->map(fn (MediaLibrary $media) => $this->presentation->item($media))
-            ->values()->all();
+        // Picker cap: limit(20).
+        $limit = min(20, max(1, (int) ($filters['limit'] ?? 20)));
+        $ids = collect($filters['ids'] ?? [])->map(fn ($id) => (int) $id)->filter()->unique()->values()->all();
+        $query = MediaLibrary::query()->when($filters['search'] ?? null, fn ($query, $search) => $query->where(function ($query) use ($search): void {
+            $value = '%'.addcslashes($search, '%_\\').'%';
+            $query->where('file_name', 'like', $value)->orWhere('alt_text', 'like', $value);
+        }));
+        $paginator = $query->latest()->paginate($limit, ['*'], 'page', (int) ($filters['page'] ?? 1));
+        $selected = $ids === [] ? collect() : MediaLibrary::query()->whereIn('id', $ids)->get();
+        $items = $selected->concat($paginator->getCollection())->unique('id')->map(fn (MediaLibrary $media) => $this->presentation->pickerItem($media))->values()->all();
+
+        return [
+            'items' => $items,
+            'pagination' => $this->adminPresentation->pagination($paginator),
+            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'ids' => $ids, 'limit' => $limit],
+            'data' => $items,
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
     public function store(array $files, ?string $altText = null): array
     {
         $created = [];
+        $storedPaths = [];
 
-        foreach ($files as $file) {
-            if (! $file instanceof UploadedFile) {
-                continue;
-            }
-
-            $extension = strtolower($file->extension() ?: 'bin');
-            $path = 'media/'.Str::uuid().'.'.$extension;
-
-            try {
-                $stored = $file->storeAs('media', basename($path), 'public');
-                $media = DB::transaction(fn () => MediaLibrary::create([
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $stored,
-                    'mime_type' => $file->getMimeType(),
-                    'size' => (int) $file->getSize(),
-                    'alt_text' => $altText ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-                ]));
-                $created[] = $this->presentation->item($media);
-            } catch (\Throwable $exception) {
+        try {
+            DB::transaction(function () use ($files, $altText, &$created, &$storedPaths): void {
+                foreach ($files as $file) {
+                    if (! $file instanceof UploadedFile) {
+                        continue;
+                    }
+                    $stored = $this->storage->store($file, 'media');
+                    $storedPaths[] = $stored['path'];
+                    $media = MediaLibrary::create([
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $stored['path'],
+                        'mime_type' => $stored['mime_type'],
+                        'size' => $stored['size'],
+                        'alt_text' => $altText ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                    ]);
+                    $created[] = $this->presentation->item($media, []);
+                }
+            });
+        } catch (\Throwable $exception) {
+            foreach ($storedPaths as $path) {
                 Storage::disk('public')->delete($path);
-                throw $exception;
             }
+            throw $exception;
         }
 
         return $created;

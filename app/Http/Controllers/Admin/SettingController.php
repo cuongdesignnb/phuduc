@@ -11,6 +11,15 @@ use Inertia\Response;
 
 class SettingController extends Controller
 {
-    public function index(AdminSettingService $settings): Response { return Inertia::render('Admin/Setting/Index', $settings->page(request()->user())); }
-    public function save(SaveSettingsRequest $request, AdminSettingService $settings): RedirectResponse { $settings->save($request->validated()); return back()->with('success', 'Cài đặt đã được lưu.'); }
+    public function index(AdminSettingService $settings): Response
+    {
+        return Inertia::render('Admin/Setting/Index', $settings->page(request()->user()));
+    }
+
+    public function save(SaveSettingsRequest $request, AdminSettingService $settings): RedirectResponse
+    {
+        $version = $settings->save($request->validated());
+
+        return back()->with('success', 'Settings saved.')->with('admin_version', $version);
+    }
 }

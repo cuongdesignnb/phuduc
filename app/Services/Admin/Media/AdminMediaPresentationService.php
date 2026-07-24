@@ -11,13 +11,11 @@ class AdminMediaPresentationService
     public function __construct(
         private readonly AdminPresentationService $presentation,
         private readonly MediaUrlService $mediaUrl,
-        private readonly MediaReferenceService $references,
     ) {}
 
     /** @return array<string, mixed> */
-    public function item(MediaLibrary $media): array
+    public function item(MediaLibrary $media, array $references = []): array
     {
-        $references = $this->references->references($media);
         $size = (int) $media->size;
 
         return [
@@ -37,6 +35,20 @@ class AdminMediaPresentationService
             'can_delete' => $references === [],
             'edit_url' => route('admin.media.update', $media),
             'delete_url' => route('admin.media.destroy', $media),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function pickerItem(MediaLibrary $media): array
+    {
+        return [
+            'id' => $media->id,
+            'file_name' => $media->file_name,
+            'alt_text' => $media->alt_text,
+            'mime_type' => $media->mime_type,
+            'media_type' => str_starts_with((string) $media->mime_type, 'image/') ? 'image' : 'file',
+            'url' => $this->mediaUrl->resolve($media->file_path),
+            'thumbnail_url' => str_starts_with((string) $media->mime_type, 'image/') ? $this->mediaUrl->resolve($media->file_path) : null,
         ];
     }
 

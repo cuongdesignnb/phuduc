@@ -9,8 +9,10 @@ import AdminSelect from '@/Components/Admin/AdminSelect.vue';
 import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
 import AdminTextarea from '@/Components/Admin/AdminTextarea.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import axios from 'axios';
 import draggable from 'vuedraggable';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { stableClientKey } from '@/Composables/useStableClientKey.js';
 
 const props = defineProps({ page: { type: Object, required: true } });
 const module = props.page.module;
@@ -18,13 +20,15 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 const sections = ref(clone(module.sections).map((section, sectionIndex) => ({
     ...section,
     sort_order: section.sort_order ?? sectionIndex,
-    items: (section.items || []).map((item, itemIndex) => ({ ...item, _key: item.id ? `item-${item.id}` : `new-${itemIndex}-${Date.now()}` })),
+    items: (section.items || []).map((item) => ({ ...item, _key: item.id ? `item-${item.id}` : stableClientKey('home-item') })),
 })));
 const activeKey = ref(sections.value[0]?.key || null);
 const pickerOpen = ref(false);
 const pickerTarget = ref(null);
 const productSearch = ref('');
 const postSearch = ref('');
+const productOptions = ref([]);
+const postOptions = ref([]);
 const form = useForm({ sections: [], version: module.version });
 const activeSection = computed(() => sections.value.find((section) => section.key === activeKey.value));
 const activeDefinition = computed(() => module.registry[activeKey.value] || {});
@@ -41,16 +45,16 @@ const setPath = (object, path, value) => {
 };
 const mediaLabel = (id) => id ? `Media #${id}` : 'No media selected';
 const configMediaLabel = (config, key) => mediaLabel(getPath(config, `${key}_media_id`));
-const productLabel = (id) => module.products.find((product) => product.id === id)?.name || `Product #${id}`;
+const productLabel = (id) => productOptions.value.find((product) => product.id === id)?.name || `Product #${id}`;
 const fieldLabel = (field) => ({ title: 'Title', subtitle: 'Subtitle', description: 'Description', image: 'Image', icon: 'Icon', url: 'URL', tone: 'Tone', avatar_text: 'Avatar fallback' }[field] || field);
 const sourceLabel = (value) => ({ manual: 'Manual selection', latest: 'Latest records' }[value] || value);
 const selectedIds = (key) => activeSection.value?.config?.[key] || [];
-const filteredProducts = computed(() => module.products.filter((product) => { const search = productSearch.value.trim().toLowerCase(); return !selectedIds('product_ids').includes(product.id) && (!search || `${product.name} ${product.sku || ''}`.toLowerCase().includes(search)); }));
-const filteredPosts = computed(() => module.posts.filter((post) => { const search = postSearch.value.trim().toLowerCase(); return !search || post.title.toLowerCase().includes(search); }));
+const filteredProducts = computed(() => productOptions.value.filter((product) => !selectedIds('product_ids').includes(product.id)));
+const filteredPosts = computed(() => postOptions.value);
 const addProduct = (product) => { activeSection.value.config.product_ids = [...selectedIds('product_ids'), product.id]; };
 const removeProduct = (id) => { activeSection.value.config.product_ids = selectedIds('product_ids').filter((value) => value !== id); };
 const togglePost = (id) => { const ids = selectedIds('post_ids'); activeSection.value.config.post_ids = ids.includes(id) ? ids.filter((value) => value !== id) : [...ids, id]; };
-const addItem = () => activeSection.value.items.push({ id: null, _key: `new-${Date.now()}`, title: '', subtitle: '', description: '', image: null, media_id: null, icon: '', url: '', metadata: {}, enabled: true, sort_order: activeSection.value.items.length });
+const addItem = () => activeSection.value.items.push({ id: null, _key: stableClientKey('home-item'), title: '', subtitle: '', description: '', image: null, media_id: null, icon: '', url: '', metadata: {}, enabled: true, sort_order: activeSection.value.items.length });
 const removeItem = (index) => activeSection.value.items.splice(index, 1);
 const itemValue = (item, field) => ['tone', 'avatar_text'].includes(field) ? item.metadata?.[field] : item[field];
 const setItemValue = (item, field, value) => { if (['tone', 'avatar_text'].includes(field)) { item.metadata ??= {}; item.metadata[field] = value; } else item[field] = value; };
@@ -65,8 +69,12 @@ const itemPayload = (item, definition) => {
 const save = () => {
     sections.value.forEach((section, sectionIndex) => { section.sort_order = sectionIndex; section.items.forEach((item, itemIndex) => { item.sort_order = itemIndex; }); });
     form.sections = sections.value.map((section) => ({ ...section, items: section.items.map((item) => itemPayload(item, module.registry[section.key] || {})) }));
-    form.post(route('admin.home-content.save'), { preserveScroll: true });
+    form.post(route('admin.home-content.save'), { preserveScroll: true, onSuccess: (page) => { if (page.props.page?.module?.version) form.version = page.props.page.module.version; form.defaults({ sections: form.sections, version: form.version }); form.reset(); } });
 };
+const loadLookup = async (kind, search, ids = []) => { const response = await axios.get(route(`admin.home-content.${kind}`), { params: { search: search || undefined, ids, limit: 20 } }); if (kind === 'products') productOptions.value = response.data.items || response.data.data || []; else postOptions.value = response.data.items || response.data.data || []; };
+watch(productSearch, (value) => loadLookup('products', value));
+watch(postSearch, (value) => loadLookup('posts', value));
+onMounted(() => { const productIds = [...new Set(sections.value.flatMap((section) => section.config?.product_ids || []))]; const postIds = [...new Set(sections.value.flatMap((section) => section.config?.post_ids || []))]; loadLookup('products', '', productIds); loadLookup('posts', '', postIds); });
 </script>
 
 <template>
@@ -115,6 +123,6 @@ const save = () => {
                 </AdminDataCard>
             </main>
         </div>
-        <AdminMediaPicker :open="pickerOpen" :items="module.media" @close="pickerOpen = false" @select="chooseMedia" />
+        <AdminMediaPicker :open="pickerOpen" @close="pickerOpen = false" @select="chooseMedia" />
     </AuthenticatedLayout>
 </template>

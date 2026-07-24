@@ -24,11 +24,19 @@ class MediaReferenceService
 
     public function idForPath(?string $path): ?int
     {
-        $normalized = $this->normalize($path);
+        return $this->idsForPaths([$path])[$this->normalize($path)] ?? null;
+    }
 
-        return $normalized === ''
-            ? null
-            : MediaLibrary::query()->where('file_path', $normalized)->value('id');
+    /** @param list<?string> $paths @return array<string, int> */
+    public function idsForPaths(array $paths): array
+    {
+        $normalized = collect($paths)->map(fn ($path) => $this->normalize($path))->filter()->unique()->values()->all();
+        if ($normalized === []) {
+            return [];
+        }
+
+        return MediaLibrary::query()->whereIn('file_path', $normalized)->pluck('id', 'file_path')
+            ->map(fn ($id) => (int) $id)->all();
     }
 
     /**
@@ -36,33 +44,51 @@ class MediaReferenceService
      */
     public function references(MediaLibrary $media): array
     {
-        $path = $this->normalize($media->file_path);
-        $references = [];
-        $productImages = ProductImage::query()->where('image_path', $path)->count();
-        $posts = Post::query()->where('featured_image', $path)->count();
-        $settings = Setting::query()
-            ->whereIn('key', $this->imageSettingKeys())
-            ->get(['key', 'value'])
-            ->filter(fn (Setting $setting) => $this->containsPath($setting->value, $path))
-            ->count();
-        $homeSections = HomeSection::query()->get(['key', 'settings_json'])
-            ->filter(fn (HomeSection $section) => $this->containsPath($section->settings_json, $path))
-            ->count();
-        $homeItems = HomeSectionItem::query()->where('image', $path)->count();
+        return $this->forPaths([$media->file_path])[$this->normalize($media->file_path)] ?? [];
+    }
 
-        foreach ([
-            'product_images' => $productImages,
-            'posts' => $posts,
-            'settings' => $settings,
-            'home_sections' => $homeSections,
-            'home_section_items' => $homeItems,
-        ] as $type => $count) {
-            if ($count > 0) {
-                $references[] = ['type' => $type, 'count' => $count];
+    /** @param list<?string> $paths @return array<string, list<array{type: string, count: int}>> */
+    public function forPaths(array $paths): array
+    {
+        $normalized = collect($paths)->map(fn ($path) => $this->normalize($path))->filter()->unique()->values()->all();
+        $result = array_fill_keys($normalized, []);
+        if ($normalized === []) {
+            return $result;
+        }
+
+        $counts = [];
+        foreach (ProductImage::query()->whereIn('image_path', $normalized)->selectRaw('image_path, count(*) as aggregate')->groupBy('image_path')->get() as $row) {
+            $counts[$this->normalize($row->image_path)]['product_images'] = (int) $row->aggregate;
+        }
+        foreach (Post::query()->whereIn('featured_image', $normalized)->selectRaw('featured_image, count(*) as aggregate')->groupBy('featured_image')->get() as $row) {
+            $counts[$this->normalize($row->featured_image)]['posts'] = (int) $row->aggregate;
+        }
+        foreach (HomeSectionItem::query()->whereIn('image', $normalized)->selectRaw('image, count(*) as aggregate')->groupBy('image')->get() as $row) {
+            $counts[$this->normalize($row->image)]['home_section_items'] = (int) $row->aggregate;
+        }
+        foreach (Setting::query()->whereIn('key', $this->imageSettingKeys())->get(['key', 'value']) as $setting) {
+            foreach ($normalized as $path) {
+                if ($this->containsPath($setting->value, $path)) {
+                    $counts[$path]['settings'] = ($counts[$path]['settings'] ?? 0) + 1;
+                }
+            }
+        }
+        foreach (HomeSection::query()->get(['settings_json']) as $section) {
+            foreach ($normalized as $path) {
+                if ($this->containsPath($section->settings_json, $path)) {
+                    $counts[$path]['home_sections'] = ($counts[$path]['home_sections'] ?? 0) + 1;
+                }
+            }
+        }
+        foreach ($counts as $path => $types) {
+            foreach ($types as $type => $count) {
+                if ($count > 0) {
+                    $result[$path][] = ['type' => $type, 'count' => $count];
+                }
             }
         }
 
-        return $references;
+        return $result;
     }
 
     public function canDelete(MediaLibrary $media): bool
@@ -73,7 +99,7 @@ class MediaReferenceService
     /** @return list<string> */
     private function imageSettingKeys(): array
     {
-        return ['site.logo', 'site.favicon', 'about.image', 'seo.og_image'];
+        return ['site.logo', 'site.favicon', 'about.image', 'site.og_image'];
     }
 
     private function containsPath(mixed $value, string $path): bool

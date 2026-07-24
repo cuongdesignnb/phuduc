@@ -22,7 +22,7 @@ class MediaLibraryController extends Controller
 
     public function data(MediaIndexRequest $request, AdminMediaService $media): JsonResponse
     {
-        return response()->json(['data' => $media->picker($request->validated())]);
+        return response()->json($media->picker($request->validated()));
     }
 
     public function store(StoreMediaRequest $request, AdminMediaService $media): RedirectResponse

@@ -6,6 +6,7 @@ use App\Models\MediaLibrary;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
+/** @deprecated Media is converted before the library row is created. */
 class ProcessMediaUpload implements ShouldQueue
 {
     use Queueable;
