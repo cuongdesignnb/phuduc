@@ -1,3 +1,5 @@
 RESULT=PASS
 SAME_CHECKOUT_INTENT=one order and one stock decrement
 SUCCESS_URL=opaque non-numeric public token
+SAME_SESSION_UNIQUE_CONFLICT=cart cleared and recovered public token consumed
+NEWER_INTENT_CART=protected from old duplicate finalization

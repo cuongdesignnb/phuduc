@@ -12,6 +12,8 @@ class CommerceUtilityHeaders
         return $next($request)->withHeaders([
             'Cache-Control' => 'private, no-store',
             'Pragma' => 'no-cache',
+            'Referrer-Policy' => 'no-referrer',
+            'X-Robots-Tag' => 'noindex, nofollow',
         ]);
     }
 }

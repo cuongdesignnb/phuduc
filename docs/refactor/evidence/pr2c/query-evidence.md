@@ -1,6 +1,6 @@
 # PR2C Query Evidence
 
-Date: 2026-07-23
+Date: 2026-07-24
 
 - Cart presentation exposes numeric `unit_price`, `subtotal`, `total`, `item_count`, `quantity_count`, and `max_quantity` alongside display strings.
 - Checkout success and lookup results use public order numbers/tokens and contain no raw phone, email, address, internal numeric ID, or intent token.

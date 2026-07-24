@@ -1,21 +1,122 @@
 {
-  "status": "PASS",
+  "status": "PASS_WITH_NOINDEX_EXCEPTION",
   "version": "12.8.2",
-  "command": "CHROME_PATH=Google Chrome npx --yes lighthouse@12.8.2 <route> --output=json",
-  "production_compressed_retest": "PASS",
-  "scores": {
-    "home": {"accessibility": 100, "performance": 57, "best-practices": 100, "seo": 100},
-    "products": {"accessibility": 96, "performance": 57, "best-practices": 100, "seo": 100},
-    "news": {"accessibility": 96, "performance": 58, "best-practices": 100, "seo": 100},
-    "about": {"accessibility": 95, "performance": 57, "best-practices": 100, "seo": 100},
-    "cart": {"accessibility": 95, "performance": 58, "best-practices": 100, "seo": 58},
-    "order-lookup": {"accessibility": 100, "performance": 58, "best-practices": 100, "seo": 58},
-    "warranty-lookup": {"accessibility": 100, "performance": 58, "best-practices": 100, "seo": 58},
-    "checkout": {"accessibility": 95, "performance": 58, "best-practices": 100, "seo": 58}
+  "environment": "local Docker production build",
+  "compression": false,
+  "production_host": false,
+  "method": {
+    "mobile_runs_per_route": 3,
+    "desktop_runs_per_route": 1,
+    "routes": ["cart", "checkout", "order-lookup", "warranty-lookup"],
+    "checkout_session": "synthetic active cart session",
+    "checkout_path": "/thanh-toan",
+    "checkout_redirect_count": 0,
+    "checkout_final_url": "http://localhost:8741/thanh-toan"
+  },
+  "production_compressed_retest_required": true,
+  "utility_seo_noindex_exception": true,
+  "routes": {
+    "cart": {
+      "mobile_median": {
+        "performance": 58,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 7149.7,
+        "lcp_ms": 11658.6,
+        "tbt_ms": 72.0,
+        "cls": 0.0213,
+        "speed_index_ms": 7149.7
+      },
+      "desktop": {
+        "performance": 86,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 1330.0,
+        "lcp_ms": 2015.8,
+        "tbt_ms": 0.0,
+        "cls": 0.0340,
+        "speed_index_ms": 1330.0
+      }
+    },
+    "checkout": {
+      "mobile_median": {
+        "performance": 56,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 8627.7,
+        "lcp_ms": 12708.9,
+        "tbt_ms": 69.0,
+        "cls": 0.0173,
+        "speed_index_ms": 8627.7
+      },
+      "desktop": {
+        "performance": 82,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 1569.3,
+        "lcp_ms": 2193.9,
+        "tbt_ms": 0.0,
+        "cls": 0.0111,
+        "speed_index_ms": 1569.3
+      }
+    },
+    "order-lookup": {
+      "mobile_median": {
+        "performance": 58,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 7073.1,
+        "lcp_ms": 11661.9,
+        "tbt_ms": 71.0,
+        "cls": 0.0171,
+        "speed_index_ms": 7073.1
+      },
+      "desktop": {
+        "performance": 86,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 1335.8,
+        "lcp_ms": 1987.2,
+        "tbt_ms": 0.0,
+        "cls": 0.0109,
+        "speed_index_ms": 1335.8
+      }
+    },
+    "warranty-lookup": {
+      "mobile_median": {
+        "performance": 58,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 7125.2,
+        "lcp_ms": 11706.9,
+        "tbt_ms": 61.5,
+        "cls": 0.0172,
+        "speed_index_ms": 7125.2
+      },
+      "desktop": {
+        "performance": 86,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 58,
+        "fcp_ms": 1334.5,
+        "lcp_ms": 1986.2,
+        "tbt_ms": 0.0,
+        "cls": 0.0110,
+        "speed_index_ms": 1334.5
+      }
+    }
   },
   "notes": [
-    "Utility page SEO 58 reflects intentional noindex/nofollow metadata.",
-    "Checkout Lighthouse run has no session cart and therefore redirects to the cart page.",
-    "Windows Chrome temporary-profile cleanup emitted EPERM warnings after measurements; route JSON was produced for every route."
+    "Utility page SEO 58 is the intentional noindex/nofollow exception.",
+    "Checkout remained on /thanh-toan with the synthetic cart session in all four runs.",
+    "Raw Lighthouse JSON reports remain outside the repository and are not committed.",
+    "A production-host compressed retest is still required before release sign-off."
   ]
 }

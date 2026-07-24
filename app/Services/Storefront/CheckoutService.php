@@ -108,7 +108,7 @@ class CheckoutService
             }
         }
 
-        if ($created) {
+        if ($created || $this->intents->matchesCurrent($intent)) {
             $this->sessionCart->clear();
             $this->intents->consume($intent, (string) $order->public_token);
         }

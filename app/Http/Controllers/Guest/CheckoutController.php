@@ -57,7 +57,11 @@ class CheckoutController extends Controller
         return Inertia::render('Guest/CheckoutSuccess', [
             'page' => [
                 'type' => 'checkout_success',
-                'seo' => $seo->meta(['title' => 'Đặt hàng thành công', 'robots' => 'noindex, nofollow']),
+                'seo' => $seo->meta([
+                    'title' => 'Đặt hàng thành công',
+                    'robots' => 'noindex, nofollow',
+                    'canonical' => null,
+                ]),
                 'breadcrumbs' => [
                     ['name' => 'Trang chủ', 'url' => route('home')],
                     ['name' => 'Đặt hàng thành công'],

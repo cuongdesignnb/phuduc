@@ -47,7 +47,8 @@ class CheckoutUniqueConflictRecoveryTest extends TestCase
         $this->assertSame($first->headers->get('Location'), $second->headers->get('Location'));
         $this->assertSame(1, Order::count());
         $this->assertSame(1, Order::first()->items()->count());
-        $this->assertSame(['quantity' => 1], session()->get('cart.'.$product->id));
+        $this->assertSame([], session('cart', []));
+        $this->assertSame($conflictToken, session('checkout_intent_consumed_order_token'));
     }
 
     private function rawMysqlConnection(): \PDO

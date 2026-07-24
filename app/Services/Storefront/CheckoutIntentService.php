@@ -42,6 +42,13 @@ class CheckoutIntentService
             && ! session()->has(self::CONSUMED_TOKEN_KEY);
     }
 
+    public function matchesCurrent(string $intent): bool
+    {
+        $current = $this->current();
+
+        return is_string($current) && hash_equals($current, $intent);
+    }
+
     public function consume(string $intent, string $publicToken): void
     {
         if ($this->current() === $intent) {
