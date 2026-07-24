@@ -1,121 +1,18 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import AdvancedTextEditor from '@/Components/AdvancedTextEditor.vue';
-import MediaBox from '@/Components/MediaBox.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import AdminDataCard from '@/Components/Admin/AdminDataCard.vue';
+import AdminErrorSummary from '@/Components/Admin/AdminErrorSummary.vue';
+import AdminFormField from '@/Components/Admin/AdminFormField.vue';
+import AdminMediaPicker from '@/Components/Admin/AdminMediaPicker.vue';
+import AdminPageHeader from '@/Components/Admin/AdminPageHeader.vue';
+import AdminSelect from '@/Components/Admin/AdminSelect.vue';
+import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
+import AdminTextarea from '@/Components/Admin/AdminTextarea.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-
-const props = defineProps({ post: Object, categories: Array });
-const showMediaPicker = ref(false);
-
-const fixText = (value) => {
-    if (typeof value !== 'string') return value;
-    const codes = Array.from(value).map((char) => char.charCodeAt(0));
-    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
-        || codes.some((code) => code >= 0x80 && code <= 0x9f)
-        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
-    if (!isBroken) return value;
-    try {
-        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
-        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-    } catch {
-        return value;
-    }
-};
-
-const form = useForm({
-    title: props.post?.title ? fixText(props.post.title) : '',
-    slug: props.post?.slug || '',
-    post_category_id: props.post?.post_category_id || '',
-    summary: props.post?.summary ? fixText(props.post.summary) : '',
-    content: props.post?.content ? fixText(props.post.content) : '',
-    featured_image: props.post?.featured_image || '',
-    status: props.post?.status || 'draft',
-});
-
-const save = () => {
-    if (props.post) {
-        form.put(route('admin.posts.update', props.post.id));
-    } else {
-        form.post(route('admin.posts.store'));
-    }
-};
-
-const selectFeaturedImage = (media) => {
-    form.featured_image = media.file_path;
-    showMediaPicker.value = false;
-};
+const props = defineProps({ page: { type: Object, required: true } }); const module = props.page.module; const post = module.post; const picker = ref(false);
+const form = useForm({ title: post?.title || '', slug: post?.slug || '', post_category_id: post?.post_category_id || '', summary: post?.summary || '', content: post?.content || '', status: post?.status || 'draft', featured_media_id: post?.featured_media_id || null, version: post?.version || null });
+const save = () => post ? form.put(route('admin.posts.update', post.id)) : form.post(route('admin.posts.store')); const selectMedia = (media) => { form.featured_media_id = media.id; picker.value = false; };
 </script>
 
-<template>
-    <Head :title="post ? 'Sửa bài viết' : 'Viết bài mới'" />
-    <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-2xl font-display font-bold text-white">{{ post ? 'Sửa bài viết' : 'Viết bài mới' }}</h2>
-        </template>
-        <div class="py-6">
-            <div class="mx-auto max-w-7xl px-6">
-                <form @submit.prevent="save" class="space-y-6">
-                    <div class="rounded-2xl border border-white/5 bg-carbon-900/50 backdrop-blur-sm p-6 space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-carbon-300 mb-1.5">Tiêu đề *</label>
-                                <input v-model="form.title" type="text" required class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-carbon-300 mb-1.5">Slug</label>
-                                <input v-model="form.slug" type="text" placeholder="Tự sinh" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-carbon-300 mb-1.5">Danh mục</label>
-                                <select v-model="form.post_category_id" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition">
-                                    <option value="">— Không có —</option>
-                                    <option v-for="c in categories" :key="c.id" :value="c.id">{{ $fixText(c.name) }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-carbon-300 mb-1.5">Trạng thái</label>
-                                <select v-model="form.status" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition">
-                                    <option value="draft">Nháp</option>
-                                    <option value="published">Đăng ngay</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Featured Image via MediaBox -->
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Ảnh đại diện</label>
-                            <div class="flex items-center gap-4">
-                                <img v-if="form.featured_image" :src="'/storage/' + form.featured_image" class="w-32 h-20 object-cover rounded-xl border border-white/10" />
-                                <button type="button" @click="showMediaPicker = !showMediaPicker" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-carbon-800 text-carbon-300 text-sm hover:bg-carbon-700 hover:text-white transition">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    {{ form.featured_image ? 'Đổi ảnh' : 'Chọn từ Media Library' }}
-                                </button>
-                                <button v-if="form.featured_image" type="button" @click="form.featured_image = ''" class="text-sm text-red-400 hover:text-red-300 transition-colors">Xóa</button>
-                            </div>
-                            <div v-if="showMediaPicker" class="mt-4 rounded-xl border border-white/10 bg-carbon-800/50 p-4">
-                                <MediaBox :on-select="selectFeaturedImage" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Tóm tắt</label>
-                            <textarea v-model="form.summary" rows="3" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition"></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Nội dung</label>
-                            <AdvancedTextEditor v-model="form.content" />
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-2 rounded-xl bg-volt-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-volt-600 disabled:opacity-50 transition-all shadow-lg shadow-volt-500/20">
-                            {{ post ? 'Cập nhật' : 'Đăng bài' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </AuthenticatedLayout>
-</template>
+<template><Head :title="page.meta.title" /><AuthenticatedLayout><AdminPageHeader :title="page.meta.title"><Link :href="route('admin.posts.index')" class="text-sm text-admin-content-muted hover:text-admin-content">Quay lại</Link></AdminPageHeader><div class="mt-6 space-y-6"><AdminErrorSummary :errors="form.errors" /><AdminDataCard title="Thông tin bài viết"><form class="space-y-5" @submit.prevent="save"><div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Tiêu đề" for-id="post-title" :error="form.errors.title"><AdminTextInput id="post-title" v-model="form.title" /></AdminFormField><AdminFormField label="Slug" for-id="post-slug" :error="form.errors.slug"><AdminTextInput id="post-slug" v-model="form.slug" /></AdminFormField><AdminFormField label="Danh mục" for-id="post-category" :error="form.errors.post_category_id"><AdminSelect id="post-category" v-model="form.post_category_id" :options="[{ key: '', label: 'Chưa phân loại' }, ...module.categories.map(category => ({ key: category.id, label: category.name }))]" /></AdminFormField><AdminFormField label="Trạng thái" for-id="post-status" :error="form.errors.status"><AdminSelect id="post-status" v-model="form.status" :options="module.statuses" /></AdminFormField></div><AdminFormField label="Tóm tắt" for-id="post-summary" :error="form.errors.summary"><AdminTextarea id="post-summary" v-model="form.summary" rows="4" /></AdminFormField><AdminFormField label="Nội dung" for-id="post-content" :error="form.errors.content"><AdminTextarea id="post-content" v-model="form.content" rows="14" hint="Nội dung được lưu theo Rich HTML contract hiện có." /></AdminFormField><AdminFormField label="Ảnh đại diện" :error="form.errors.featured_media_id"><div class="flex items-center gap-3"><img v-if="post?.featured_image_url" :src="post.featured_image_url" alt="" class="h-16 w-24 object-cover" /><button type="button" class="rounded-lg border border-admin-border px-4 py-2 text-sm text-admin-content" @click="picker = true">Chọn từ Media</button><span v-if="form.featured_media_id" class="text-sm text-admin-content-muted">Đã chọn Media #{{ form.featured_media_id }}</span></div></AdminFormField><div class="flex justify-end"><button type="submit" :disabled="form.processing" class="rounded-lg bg-admin-accent px-5 py-2 text-sm font-semibold text-admin-page disabled:opacity-50">{{ form.processing ? 'Đang lưu...' : 'Lưu bài viết' }}</button></div></form></AdminDataCard></div><AdminMediaPicker :open="picker" :items="module.media" @close="picker = false" @select="selectMedia" /></AuthenticatedLayout></template>

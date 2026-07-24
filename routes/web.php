@@ -71,8 +71,10 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         // Media
         Route::get('media', [MediaLibraryController::class, 'index'])->name('media.index');
+        Route::get('media/data', [MediaLibraryController::class, 'data'])->name('media.data');
         Route::post('media', [MediaLibraryController::class, 'store'])->name('media.store');
-        Route::delete('media/{id}', [MediaLibraryController::class, 'destroy'])->name('media.destroy');
+        Route::patch('media/{media}', [MediaLibraryController::class, 'update'])->name('media.update');
+        Route::delete('media/{media}', [MediaLibraryController::class, 'destroy'])->name('media.destroy');
 
         // Menus
         Route::resource('menus', MenuController::class);
@@ -106,6 +108,8 @@ Route::middleware('auth')->group(function () {
 
         // Home Content
         Route::get('home-content', [HomeContentController::class, 'index'])->name('home-content.index');
+        Route::get('home-content/products', [HomeContentController::class, 'products'])->name('home-content.products');
+        Route::get('home-content/posts', [HomeContentController::class, 'posts'])->name('home-content.posts');
         Route::post('home-content', [HomeContentController::class, 'save'])->name('home-content.save');
 
         // Settings

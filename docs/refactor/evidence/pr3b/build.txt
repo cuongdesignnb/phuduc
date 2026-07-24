@@ -1,0 +1,4 @@
+PR3B_BUILD=PASS
+COMMAND=npm run build
+VITE_MODULES=887
+OUTPUT=public/build

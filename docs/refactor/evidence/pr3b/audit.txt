@@ -1,0 +1,4 @@
+PR3B_ADMIN_CONTENT_AUDIT=PASS
+COMMAND=npm run audit:pr3b-admin-content
+ALL_REQUIRED_COUNTERS=0
+SCOPE=Product, Media, Post, PostCategory, Menu, HomeContent, Setting pages and shared Admin components

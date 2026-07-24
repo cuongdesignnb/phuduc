@@ -1,220 +1,39 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import AdvancedTextEditor from '@/Components/AdvancedTextEditor.vue';
-import MediaBox from '@/Components/MediaBox.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import AdminConfirmDialog from '@/Components/Admin/AdminConfirmDialog.vue';
+import AdminDataCard from '@/Components/Admin/AdminDataCard.vue';
+import AdminErrorSummary from '@/Components/Admin/AdminErrorSummary.vue';
+import AdminFormField from '@/Components/Admin/AdminFormField.vue';
+import AdminMediaPicker from '@/Components/Admin/AdminMediaPicker.vue';
+import AdminPageHeader from '@/Components/Admin/AdminPageHeader.vue';
+import AdminSelect from '@/Components/Admin/AdminSelect.vue';
+import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
+import AdminTextarea from '@/Components/Admin/AdminTextarea.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
-const props = defineProps({ product: Object });
-
-const fixText = (value) => {
-    if (typeof value !== 'string') return value;
-    const codes = Array.from(value).map((char) => char.charCodeAt(0));
-    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
-        || codes.some((code) => code >= 0x80 && code <= 0x9f)
-        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
-    if (!isBroken) return value;
-    try {
-        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
-        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-    } catch {
-        return value;
-    }
-};
-
-const form = useForm({
-    name: props.product?.name ? fixText(props.product.name) : '',
-    slug: props.product?.slug || '',
-    description: props.product?.description ? fixText(props.product.description) : '',
-    price: props.product?.price || 0,
-    sku: props.product?.sku || '',
-    stock: props.product?.stock || 0,
-    specifications: (props.product?.specifications || []).map(s => ({ key: fixText(s.key), value: fixText(s.value) })),
-    status: props.product?.status || 'active',
-});
-
-const images = ref(props.product?.images || []);
-const uploadingImages = ref(false);
-const uploadingImages360 = ref(false);
-const showMediaBox = ref(false);
-const mediaBoxFor = ref('normal');
-
-const specs = ref(form.specifications?.length ? form.specifications : [{ key: '', value: '' }]);
-
-const addSpec = () => specs.value.push({ key: '', value: '' });
-const removeSpec = (i) => specs.value.splice(i, 1);
-
-const save = () => {
-    form.specifications = specs.value.filter(s => s.key);
-    if (props.product) {
-        form.put(route('admin.products.update', props.product.id));
-    } else {
-        form.post(route('admin.products.store'));
-    }
-};
-
-const uploadImages = async (e, is360 = false) => {
-    if (!props.product) return;
-    const formData = new FormData();
-    for (let f of e.target.files) formData.append('images[]', f);
-    if (is360) formData.append('is_360', '1');
-    if (is360) uploadingImages360.value = true; else uploadingImages.value = true;
-    router.post(route('admin.products.images.upload', props.product.id), formData, {
-        forceFormData: true,
-        preserveScroll: true,
-        onFinish: () => { uploadingImages.value = false; uploadingImages360.value = false; },
-    });
-};
-
-const deleteImage = (imageId) => {
-    if (!confirm('Xóa ảnh này?')) return;
-    router.delete(route('admin.products.images.delete', [props.product.id, imageId]), { preserveScroll: true });
-};
-
-const normalImages = computed(() => (images.value || []).filter(i => !i.is_360));
-const images360 = computed(() => (images.value || []).filter(i => i.is_360));
-
-const openMediaBox = (type) => {
-    mediaBoxFor.value = type;
-    showMediaBox.value = true;
-};
-
-const handleMediaSelect = (media) => {
-    showMediaBox.value = false;
-    if (!props.product) return;
-    router.post(route('admin.products.images.from-media', props.product.id), {
-        media_id: media.id,
-        is_360: mediaBoxFor.value === '360' ? 1 : 0,
-    }, { preserveScroll: true });
-};
+const props = defineProps({ page: { type: Object, required: true } });
+const module = props.page.module;
+const product = module.product;
+const form = useForm({ name: product?.name || '', slug: product?.slug || '', sku: product?.sku || '', description: product?.description || '', price: product?.price ?? 0, stock: product?.stock ?? 0, status: product?.status || 'active', specifications: product?.specifications?.length ? product.specifications : [{ key: '', value: '' }], version: product?.version || null });
+const showPicker = ref(false);
+const deletingImage = ref(null);
+const uploading = ref(false);
+const addSpec = () => form.specifications.push({ key: '', value: '' });
+const removeSpec = (index) => form.specifications.splice(index, 1);
+const save = () => { product ? form.put(route('admin.products.update', product.id)) : form.post(route('admin.products.store')); };
+const uploadImages = (event, is360) => { if (!product || !event.target.files.length) return; const data = new FormData(); Array.from(event.target.files).forEach((file) => data.append('images[]', file)); if (is360) data.append('is_360', '1'); uploading.value = true; router.post(route('admin.products.images.upload', product.id), data, { forceFormData: true, preserveScroll: true, onFinish: () => { uploading.value = false; } }); };
+const selectMedia = (media) => { showPicker.value = false; if (product) router.post(route('admin.products.images.from-media', product.id), { media_id: media.id, is_360: 0 }, { preserveScroll: true }); };
+const deleteImage = () => { router.delete(route('admin.products.images.delete', [product.id, deletingImage.value.id]), { preserveScroll: true, onFinish: () => { deletingImage.value = null; } }); };
 </script>
 
 <template>
-    <Head :title="product ? 'Sửa: ' + $fixText(product.name) : 'Thêm sản phẩm mới'" />
+    <Head :title="page.meta.title" />
     <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-2xl font-display font-bold text-white">
-                {{ product ? 'Sửa sản phẩm: ' + $fixText(product.name) : 'Thêm sản phẩm mới' }}
-            </h2>
-        </template>
-
-        <div class="py-6">
-            <div class="mx-auto max-w-7xl px-6 space-y-6">
-                <!-- Basic Info -->
-                <form @submit.prevent="save" class="rounded-2xl border border-white/5 bg-carbon-900/50 backdrop-blur-sm p-6 space-y-6">
-                    <h3 class="text-lg font-display font-semibold text-white">Thông tin sản phẩm</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Tên sản phẩm *</label>
-                            <input v-model="form.name" type="text" required class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                            <p v-if="form.errors.name" class="mt-1 text-sm text-red-400">{{ form.errors.name }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Slug</label>
-                            <input v-model="form.slug" type="text" placeholder="Tự sinh nếu bỏ trống" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Giá (VNĐ)</label>
-                            <input v-model.number="form.price" type="number" step="1000" min="0" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                            <p class="text-xs text-carbon-600 mt-1">Để 0 hoặc bỏ trống = hiển thị "Liên hệ"</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">SKU</label>
-                            <input v-model="form.sku" type="text" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Số lượng trong kho</label>
-                            <input v-model.number="form.stock" type="number" min="0" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-carbon-300 mb-1.5">Trạng thái</label>
-                            <select v-model="form.status" class="w-full rounded-xl border border-white/10 bg-carbon-800 text-white py-2.5 px-4 text-sm focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20 transition">
-                                <option value="active">Đang bán</option>
-                                <option value="inactive">Ngừng bán</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div>
-                        <label class="block text-sm font-medium text-carbon-300 mb-1.5">Mô tả sản phẩm</label>
-                        <AdvancedTextEditor v-model="form.description" />
-                    </div>
-
-                    <!-- Specifications -->
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <label class="block text-sm font-medium text-carbon-300">Thông số kỹ thuật</label>
-                            <button type="button" @click="addSpec" class="text-sm text-volt-400 hover:text-volt-300 transition-colors">+ Thêm thông số</button>
-                        </div>
-                        <div v-for="(spec, i) in specs" :key="i" class="flex gap-2 mb-2">
-                            <input v-model="spec.key" type="text" placeholder="Tên thông số" class="flex-1 text-sm rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2 px-3 focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20" />
-                            <input v-model="spec.value" type="text" placeholder="Giá trị" class="flex-1 text-sm rounded-xl border border-white/10 bg-carbon-800 text-white placeholder-carbon-500 py-2 px-3 focus:border-volt-500/50 focus:ring-1 focus:ring-volt-500/20" />
-                            <button type="button" @click="removeSpec(i)" class="text-red-400 hover:text-red-300 px-2 transition-colors">✕</button>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-2 rounded-xl bg-volt-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-volt-600 disabled:opacity-50 transition-all shadow-lg shadow-volt-500/20">
-                            {{ product ? 'Cập nhật' : 'Tạo sản phẩm' }}
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Images (only after product is saved) -->
-                <div v-if="product" class="rounded-2xl border border-white/5 bg-carbon-900/50 backdrop-blur-sm p-6 space-y-6">
-                    <h3 class="text-lg font-display font-semibold text-white">Hình ảnh sản phẩm</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-carbon-300 mb-3">Ảnh thường</label>
-                        <div class="flex gap-3">
-                            <input type="file" multiple accept="image/*" @change="e => uploadImages(e, false)" class="text-sm text-carbon-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-carbon-800 file:text-carbon-300 hover:file:bg-carbon-700 file:cursor-pointer file:transition" :disabled="uploadingImages" />
-                            <button type="button" @click="openMediaBox('normal')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-carbon-800 text-carbon-300 text-sm hover:bg-carbon-700 hover:text-white transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                Media Library
-                            </button>
-                        </div>
-                        <div class="flex flex-wrap gap-3 mt-4">
-                            <div v-for="img in normalImages" :key="img.id" class="relative group">
-                                <img :src="'/storage/' + img.image_path" class="w-24 h-24 object-cover rounded-xl border border-white/10" />
-                                <button @click="deleteImage(img.id)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">✕</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-carbon-300 mb-3">Ảnh 360° (sẽ dùng cho Product Viewer)</label>
-                        <div class="flex gap-3">
-                            <input type="file" multiple accept="image/*" @change="e => uploadImages(e, true)" class="text-sm text-carbon-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-carbon-800 file:text-carbon-300 hover:file:bg-carbon-700 file:cursor-pointer file:transition" :disabled="uploadingImages360" />
-                            <button type="button" @click="openMediaBox('360')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-carbon-800 text-carbon-300 text-sm hover:bg-carbon-700 hover:text-white transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                Media Library
-                            </button>
-                        </div>
-                        <div class="flex flex-wrap gap-3 mt-4">
-                            <div v-for="img in images360" :key="img.id" class="relative group">
-                                <img :src="'/storage/' + img.image_path" class="w-24 h-24 object-cover rounded-xl border border-industrial-500/30" />
-                                <span class="absolute bottom-0 left-0 bg-industrial-500 text-white text-[10px] px-1.5 py-0.5 rounded-tr-lg rounded-bl-xl font-medium">360°</span>
-                                <button @click="deleteImage(img.id)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">✕</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MediaBox Modal -->
-        <Teleport to="body">
-            <div v-if="showMediaBox" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="showMediaBox = false">
-                <div class="bg-carbon-900 border border-white/10 p-6 rounded-2xl w-[80vw] max-w-5xl h-[75vh] overflow-y-auto shadow-2xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-display font-semibold text-white">Chọn từ Media Library</h3>
-                        <button @click="showMediaBox = false" class="rounded-lg p-1.5 text-carbon-400 hover:bg-red-500/10 hover:text-red-400 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <MediaBox @select="handleMediaSelect" />
-                </div>
-            </div>
-        </Teleport>
+        <AdminPageHeader :title="page.meta.title"><Link :href="route('admin.products.index')" class="text-sm text-admin-content-muted hover:text-admin-content">Quay lại</Link></AdminPageHeader>
+        <div class="mt-6 space-y-6"><AdminErrorSummary :errors="form.errors" /><AdminDataCard title="Thông tin sản phẩm"><form class="space-y-5" @submit.prevent="save"><div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Tên sản phẩm" for-id="product-name" :error="form.errors.name"><AdminTextInput id="product-name" v-model="form.name" /></AdminFormField><AdminFormField label="Slug" for-id="product-slug" :error="form.errors.slug" hint="Để trống để tự sinh slug duy nhất"><AdminTextInput id="product-slug" v-model="form.slug" /></AdminFormField><AdminFormField label="SKU" for-id="product-sku" :error="form.errors.sku"><AdminTextInput id="product-sku" v-model="form.sku" /></AdminFormField><AdminFormField label="Giá VND" for-id="product-price" :error="form.errors.price" hint="Giá 0 hiển thị là Liên hệ"><AdminTextInput id="product-price" v-model.number="form.price" type="number" /></AdminFormField><AdminFormField label="Tồn kho" for-id="product-stock" :error="form.errors.stock"><AdminTextInput id="product-stock" v-model.number="form.stock" type="number" /></AdminFormField><AdminFormField label="Trạng thái" for-id="product-status" :error="form.errors.status"><AdminSelect id="product-status" v-model="form.status" :options="module.statuses" /></AdminFormField></div><AdminFormField label="Mô tả" for-id="product-description" :error="form.errors.description"><AdminTextarea id="product-description" v-model="form.description" rows="8" /></AdminFormField><AdminFormField label="Thông số kỹ thuật" :error="form.errors.specifications"><div class="space-y-2"><div v-for="(spec, index) in form.specifications" :key="index" class="flex gap-2"><AdminTextInput v-model="spec.key" placeholder="Tên thông số" /><AdminTextInput v-model="spec.value" placeholder="Giá trị" /><button type="button" class="px-2 text-admin-danger" :aria-label="`Xóa thông số ${index + 1}`" @click="removeSpec(index)">×</button></div><button type="button" class="text-sm text-admin-accent" @click="addSpec">+ Thêm thông số</button></div></AdminFormField><div class="flex justify-end"><button type="submit" :disabled="form.processing" class="rounded-lg bg-admin-accent px-5 py-2 text-sm font-semibold text-admin-page disabled:opacity-50">{{ form.processing ? 'Đang lưu...' : 'Lưu sản phẩm' }}</button></div></form></AdminDataCard>
+        <AdminDataCard v-if="product" title="Hình ảnh sản phẩm"><div class="flex flex-wrap gap-3"><label class="cursor-pointer rounded-lg border border-admin-border px-4 py-2 text-sm text-admin-content hover:bg-admin-surface-muted"><input type="file" class="sr-only" multiple accept="image/jpeg,image/png,image/webp,image/gif" :disabled="uploading" @change="uploadImages($event, false)" />Tải ảnh lên</label><button type="button" class="rounded-lg border border-admin-border px-4 py-2 text-sm text-admin-content hover:bg-admin-surface-muted" @click="showPicker = true">Chọn từ Media</button></div><div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5"><div v-for="image in product.images" :key="image.id" class="relative border border-admin-border p-2"><img :src="image.url" :alt="image.file_name" class="aspect-square w-full object-cover" /><span v-if="image.is_360" class="mt-1 block text-xs text-admin-content-muted">Ảnh 360</span><button type="button" class="absolute right-1 top-1 rounded bg-admin-danger px-2 py-1 text-xs text-white" @click="deletingImage = image">Xóa</button></div></div></AdminDataCard></div>
+        <AdminMediaPicker :open="showPicker" :items="module.media" @close="showPicker = false" @select="selectMedia" />
+        <AdminConfirmDialog :open="!!deletingImage" title="Xóa ảnh sản phẩm" message="Chỉ tệp do sản phẩm sở hữu mới bị xóa. Media gốc vẫn được giữ lại." confirm-label="Xóa ảnh" danger @cancel="deletingImage = null" @confirm="deleteImage" />
     </AuthenticatedLayout>
 </template>
