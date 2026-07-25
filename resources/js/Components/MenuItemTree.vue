@@ -1,139 +1,54 @@
 <script setup>
-import { ref } from 'vue';
+import AdminEntityPicker from '@/Components/Admin/AdminEntityPicker.vue';
+import AdminSelect from '@/Components/Admin/AdminSelect.vue';
+import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
+import { stableClientKey } from '@/Composables/useStableClientKey.js';
 import draggable from 'vuedraggable';
+import { computed } from 'vue';
 
-const props = defineProps({
-    modelValue: Array,
-    depth: { type: Number, default: 0 },
-});
-
-const emit = defineEmits(['update:modelValue']);
-
-const items = ref(props.modelValue);
-
-const updateItems = () => {
-    emit('update:modelValue', items.value);
-};
-
-const editingId = ref(null);
-
-const toggleEdit = (item) => {
-    editingId.value = editingId.value === item.id ? null : item.id;
-};
-
-const removeItem = (index) => {
-    if (confirm('Xóa mục này và các mục con?')) {
-        items.value.splice(index, 1);
-        updateItems();
-    }
-};
-
-const addChild = (item) => {
-    if (!item.children) item.children = [];
-    item.children.push({
-        id: Date.now(),
-        title: 'Mục con mới',
-        url: '',
-        model_type: '',
-        model_id: null,
-        children: [],
-    });
-    updateItems();
-};
-
-const onDragEnd = () => {
-    updateItems();
-};
+const props = defineProps({ modelValue: { type: Array, default: () => [] }, targets: { type: Object, default: () => ({}) }, depth: { type: Number, default: 1 }, parentItems: { type: Array, default: null }, parentIndex: { type: Number, default: -1 }, nodeCount: { type: Number, default: 0 } });
+const emit = defineEmits(['update:modelValue', 'remove']);
+const items = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) });
+const targetOptions = Object.entries(props.targets).map(([key, value]) => ({ key, label: value.label }));
+const targetEndpoints = { product: 'admin.menu-targets.products', post: 'admin.menu-targets.posts', category: 'admin.menu-targets.categories' };
+const notify = () => emit('update:modelValue', items.value);
+const newItem = () => ({ client_key: stableClientKey('menu'), title: '', url: '', model_type: 'url', model_id: null, children: [] });
+const addChild = (item) => { if (props.depth >= 4 || props.nodeCount >= 100) return; item.children ??= []; item.children.push(newItem()); notify(); };
+const remove = (item) => emit('remove', item);
+const move = (index, amount) => { const next = index + amount; if (next < 0 || next >= items.value.length) return; [items.value[index], items.value[next]] = [items.value[next], items.value[index]]; notify(); };
+const indent = (index) => { if (index < 1) return; const [item] = items.value.splice(index, 1); items.value[index - 1].children ??= []; items.value[index - 1].children.push(item); notify(); };
+const outdent = (index) => { if (!props.parentItems || props.parentIndex < 0) return; const [item] = items.value.splice(index, 1); props.parentItems.splice(props.parentIndex + 1, 0, item); notify(); };
+const onDrag = () => notify();
+const targetEndpoint = (type) => targetEndpoints[type] || '';
+const changeTarget = (item, type) => { item.model_type = type; item.model_id = null; item.url = ''; notify(); };
+const chooseTarget = (item, id) => { item.model_id = id; item.url = ''; notify(); };
 </script>
 
 <template>
-    <draggable
-        v-model="items"
-        group="menu-items"
-        item-key="id"
-        handle=".drag-handle"
-        ghost-class="opacity-30"
-        @end="onDragEnd"
-        :class="depth > 0 ? 'ml-8 mt-2 border-l-2 border-gray-200 dark:border-gray-600 pl-4' : ''"
-    >
-        <template #item="{ element, index }">
-            <div class="mb-2">
-                <div class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-3 group">
-                    <!-- Drag handle -->
-                    <div class="drag-handle cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
-                        </svg>
+    <draggable v-model="items" item-key="client_key" handle=".menu-drag-handle" group="menu-items" class="space-y-3" @end="onDrag">
+        <template #item="{ element: item, index }">
+            <div class="border border-admin-border bg-admin-surface p-3" :class="depth > 1 ? 'ml-5' : ''">
+                <div class="grid gap-2 md:grid-cols-[auto_1fr_1fr_1fr_auto] md:items-center">
+                    <button type="button" class="menu-drag-handle cursor-grab px-2 text-admin-content-muted" aria-label="Kéo mục menu">::</button>
+                    <AdminTextInput v-model="item.title" placeholder="Tên mục" />
+                    <AdminSelect :model-value="item.model_type" :options="targetOptions" @update:model-value="changeTarget(item, $event)" />
+                    <AdminTextInput v-if="item.model_type === 'url'" v-model="item.url" placeholder="URL an toàn" />
+                    <AdminEntityPicker v-else :model-value="item.model_id" :endpoint="targetEndpoint(item.model_type)" placeholder="Tìm đối tượng" @update:model-value="chooseTarget(item, $event)" />
+                    <div class="flex flex-wrap gap-2 text-xs text-admin-content-muted">
+                        <button type="button" title="Đưa lên" aria-label="Đưa mục lên" :disabled="index === 0" @click="move(index, -1)">↑</button>
+                        <button type="button" title="Đưa xuống" aria-label="Đưa mục xuống" :disabled="index === items.length - 1" @click="move(index, 1)">↓</button>
+                        <button type="button" title="Thụt vào" aria-label="Thụt mục vào" :disabled="index === 0" @click="indent(index)">→</button>
+                        <button type="button" title="Thụt ra" aria-label="Thụt mục ra" :disabled="!props.parentItems || props.parentIndex < 0" @click="outdent(index)">←</button>
+                        <button type="button" class="text-admin-accent" @click="addChild(item)">Thêm mục con</button>
+                        <button type="button" class="text-admin-danger" @click="remove(item)">Xóa</button>
                     </div>
-
-                    <!-- Title -->
-                    <span class="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200">
-                        {{ element.title }}
-                        <span v-if="element.url" class="ml-2 text-xs text-gray-400">{{ element.url }}</span>
-                    </span>
-
-                    <!-- Action buttons -->
-                    <button
-                        @click="addChild(element)"
-                        class="text-xs text-blue-500 hover:text-blue-700 opacity-0 group-hover:opacity-100 transition"
-                        title="Thêm con"
-                    >
-                        + Con
-                    </button>
-                    <button
-                        @click="toggleEdit(element)"
-                        class="text-xs text-industrial-500 hover:text-industrial-700 opacity-0 group-hover:opacity-100 transition"
-                    >
-                        Sửa
-                    </button>
-                    <button
-                        @click="removeItem(index)"
-                        class="text-xs text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition"
-                    >
-                        Xóa
-                    </button>
                 </div>
-
-                <!-- Inline edit form -->
-                <div v-if="editingId === element.id" class="mt-2 ml-7 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg space-y-2">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Tiêu đề</label>
-                            <input
-                                v-model="element.title"
-                                type="text"
-                                class="w-full text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-industrial-500 focus:ring-industrial-500"
-                                @input="updateItems"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL</label>
-                            <input
-                                v-model="element.url"
-                                type="text"
-                                placeholder="/san-pham, https://..."
-                                class="w-full text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-industrial-500 focus:ring-industrial-500"
-                                @input="updateItems"
-                            />
-                        </div>
-                    </div>
-                    <button @click="editingId = null" class="text-xs text-gray-500 hover:text-gray-700">Đóng</button>
-                </div>
-
-                <!-- Recursive children -->
-                <MenuItemTree
-                    v-if="element.children && element.children.length"
-                    v-model="element.children"
-                    :depth="depth + 1"
-                    @update:modelValue="updateItems"
-                />
+                <MenuItemTree v-if="item.children?.length" v-model="item.children" :targets="targets" :depth="depth + 1" :node-count="nodeCount" :parent-items="items" :parent-index="index" @remove="remove" />
             </div>
         </template>
     </draggable>
 </template>
 
 <script>
-export default {
-    name: 'MenuItemTree',
-};
+export default { name: 'MenuItemTree' };
 </script>

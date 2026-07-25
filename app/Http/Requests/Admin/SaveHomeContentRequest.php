@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Rules\MediaAssetRule;
 use App\Support\Homepage\HomeSectionRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,7 @@ class SaveHomeContentRequest extends FormRequest
         $definitions = HomeSectionRegistry::definitions();
         $rules = [
             'sections' => ['required', 'array', 'max:'.count($definitions)],
+            'version' => ['required', 'string', 'max:100'],
             'sections.*.key' => ['required', 'string', 'distinct', Rule::in(array_keys($definitions))],
             'sections.*.type' => ['required', 'string'],
             'sections.*.enabled' => ['required', 'boolean'],
@@ -36,12 +38,16 @@ class SaveHomeContentRequest extends FormRequest
             'sections.*.heading.subtitle' => ['nullable', 'string', 'max:300'],
             'sections.*.heading.description' => ['nullable', 'string', 'max:3000'],
             'sections.*.config' => ['present', 'array'],
+            'sections.*.config.image_media_id' => ['nullable', 'integer', MediaAssetRule::image()],
+            'sections.*.config.product_ids' => ['sometimes', 'array', 'max:12'],
+            'sections.*.config.post_ids' => ['sometimes', 'array', 'max:12'],
             'sections.*.items' => ['present', 'array'],
             'sections.*.items.*.id' => ['nullable', 'integer'],
             'sections.*.items.*.title' => ['nullable', 'string', 'max:255'],
             'sections.*.items.*.subtitle' => ['nullable', 'string', 'max:255'],
             'sections.*.items.*.description' => ['nullable', 'string', 'max:3000'],
             'sections.*.items.*.image' => ['nullable', 'string', 'max:500'],
+            'sections.*.items.*.media_id' => ['nullable', 'integer', MediaAssetRule::image()],
             'sections.*.items.*.icon' => ['nullable', 'string', 'max:100'],
             'sections.*.items.*.url' => ['nullable', 'string', 'max:500'],
             'sections.*.items.*.metadata' => ['present', 'array'],
@@ -110,7 +116,7 @@ class SaveHomeContentRequest extends FormRequest
                     $validator->errors()->add("sections.$sectionIndex.variant", 'Variant không được hỗ trợ.');
                 }
 
-                $unknownConfig = array_diff(array_keys($section['config'] ?? []), $definition['config_keys']);
+                $unknownConfig = array_diff(array_keys($section['config'] ?? []), array_merge($definition['config_keys'], ['image_media_id', 'image_is_legacy']));
                 if ($unknownConfig !== []) {
                     $validator->errors()->add("sections.$sectionIndex.config", 'Config chứa field không được registry cho phép.');
                 }
@@ -118,20 +124,22 @@ class SaveHomeContentRequest extends FormRequest
                     $validator->errors()->add("sections.$sectionIndex.items", 'Section này không hỗ trợ item thủ công.');
                 }
 
+                $config = $section['config'] ?? [];
                 $allowedBusinessFields = array_intersect($definition['item_fields'], self::BUSINESS_ITEM_FIELDS);
-                $allowedItemKeys = array_merge(self::COMMON_ITEM_FIELDS, $allowedBusinessFields);
+                $allowedItemKeys = array_merge(self::COMMON_ITEM_FIELDS, ['media_id'], $allowedBusinessFields);
                 $allowedMetadata = array_intersect($definition['item_fields'], self::METADATA_ITEM_FIELDS);
                 foreach ($section['items'] ?? [] as $itemIndex => $item) {
                     if (array_diff(array_keys($item), $allowedItemKeys) !== []) {
                         $validator->errors()->add(
                             "sections.$sectionIndex.items.$itemIndex",
-                            'Item contains a field that is not allowed for this section.'
+                            'Item chứa trường không được section này cho phép.'
                         );
                     }
 
                     if (array_diff(array_keys($item['metadata'] ?? []), $allowedMetadata) !== []) {
                         $validator->errors()->add("sections.$sectionIndex.items.$itemIndex.metadata", 'Metadata chứa field không được section này cho phép.');
                     }
+
                 }
             }
         }];

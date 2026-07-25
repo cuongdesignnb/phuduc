@@ -3,100 +3,57 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveMenuItemsRequest;
+use App\Http\Requests\Admin\StoreMenuRequest;
+use App\Http\Requests\Admin\UpdateMenuRequest;
 use App\Models\Menu;
-use App\Models\MenuItem;
-use Illuminate\Http\Request;
+use App\Services\Admin\Content\AdminMenuService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MenuController extends Controller
 {
-    public function index()
+    public function index(AdminMenuService $menus): Response
     {
-        $menus = Menu::withCount('allItems')->latest()->get();
-        return Inertia::render('Admin/Menu/Index', [
-            'menus' => $menus,
-        ]);
+        return Inertia::render('Admin/Menu/Index', $menus->index(request()->user()));
     }
 
-    public function create()
+    public function create(AdminMenuService $menus): Response
     {
-        return Inertia::render('Admin/Menu/Edit', [
-            'menu' => null,
-        ]);
+        return Inertia::render('Admin/Menu/Edit', $menus->editPage(request()->user(), null));
     }
 
-    public function store(Request $request)
+    public function store(StoreMenuRequest $request, AdminMenuService $menus): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255|unique:menus,location',
-        ]);
-
-        $menu = Menu::create($request->only('name', 'location'));
+        $menu = $menus->store($request->validated());
 
         return redirect()->route('admin.menus.edit', $menu)->with('success', 'Menu đã được tạo.');
     }
 
-    public function edit(Menu $menu)
+    public function edit(Menu $menu, AdminMenuService $menus): Response
     {
-        $menu->load(['items.allChildren']);
-
-        return Inertia::render('Admin/Menu/Edit', [
-            'menu' => $menu,
-        ]);
+        return Inertia::render('Admin/Menu/Edit', $menus->editPage(request()->user(), $menu));
     }
 
-    public function update(Request $request, Menu $menu)
+    public function update(UpdateMenuRequest $request, Menu $menu, AdminMenuService $menus): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255|unique:menus,location,' . $menu->id,
-        ]);
-
-        $menu->update($request->only('name', 'location'));
+        $menus->update($menu, $request->validated());
 
         return redirect()->route('admin.menus.edit', $menu)->with('success', 'Menu đã được cập nhật.');
     }
 
-    public function destroy(Menu $menu)
+    public function destroy(Menu $menu, AdminMenuService $menus): RedirectResponse
     {
-        $menu->delete();
+        $menus->destroy($menu);
+
         return redirect()->route('admin.menus.index')->with('success', 'Menu đã được xóa.');
     }
 
-    public function saveItems(Request $request, Menu $menu)
+    public function saveItems(SaveMenuItemsRequest $request, Menu $menu, AdminMenuService $menus): RedirectResponse
     {
-        $request->validate([
-            'items' => 'present|array',
-            'items.*.title' => 'required|string|max:255',
-            'items.*.url' => 'nullable|string|max:255',
-            'items.*.model_type' => 'nullable|string|max:255',
-            'items.*.model_id' => 'nullable|integer',
-            'items.*.children' => 'nullable|array',
-        ]);
+        $version = $menus->saveItems($menu, $request->validated('items'), $request->validated('version'));
 
-        $menu->allItems()->delete();
-
-        $this->saveMenuItems($menu, $request->input('items'), null);
-
-        return back()->with('success', 'Menu items đã được lưu.');
-    }
-
-    private function saveMenuItems(Menu $menu, array $items, ?int $parentId, int &$order = 0): void
-    {
-        foreach ($items as $item) {
-            $menuItem = $menu->allItems()->create([
-                'parent_id' => $parentId,
-                'title' => $item['title'],
-                'url' => $item['url'] ?? null,
-                'model_type' => $item['model_type'] ?? null,
-                'model_id' => $item['model_id'] ?? null,
-                'sort_order' => $order++,
-            ]);
-
-            if (!empty($item['children'])) {
-                $this->saveMenuItems($menu, $item['children'], $menuItem->id, $order);
-            }
-        }
+        return back()->with('success', 'Cấu trúc menu đã được lưu.')->with('admin_version', $version);
     }
 }

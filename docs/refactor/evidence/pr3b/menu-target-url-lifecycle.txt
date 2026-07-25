@@ -1,0 +1,5 @@
+MENU_TARGET_URL_LIFECYCLE=PASS
+TARGET_TYPES=url,product,post,category
+RESOLUTION=neutral MenuTargetResolver resolves current product/post/category slugs at render time
+MISSING_TARGET=structured warning is logged and the missing item is omitted from storefront navigation
+TEST=MenuTargetSlugRefreshTest

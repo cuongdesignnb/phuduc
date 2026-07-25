@@ -1,0 +1,6 @@
+STORAGE_INTEGRITY=PASS
+PRODUCT_MEDIA=owned_copy_only
+SOURCE_MEDIA=preserved
+MEDIA_DELETE=blocked_when_referenced
+MEDIA_PATHS=uuid_or_server_owned
+PRODUCTION_DATABASE_USED=NO

@@ -3,50 +3,46 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\MediaIndexRequest;
+use App\Http\Requests\Admin\StoreMediaRequest;
+use App\Http\Requests\Admin\UpdateMediaRequest;
 use App\Models\MediaLibrary;
-use App\Jobs\ProcessMediaUpload;
-use Illuminate\Support\Facades\Storage;
+use App\Services\Admin\Media\AdminMediaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MediaLibraryController extends Controller
 {
-    public function index(Request $request)
+    public function index(MediaIndexRequest $request, AdminMediaService $media): Response
     {
-        $medias = MediaLibrary::latest()->paginate(20);
-        return response()->json($medias);
+        return Inertia::render('Admin/Media/Index', $media->page($request->user(), $request->validated()));
     }
 
-    public function store(Request $request)
+    public function data(MediaIndexRequest $request, AdminMediaService $media): JsonResponse
     {
-        $request->validate([
-            'file' => 'required|file|max:10240', // 10MB max
-            'alt_text' => 'nullable|string'
-        ]);
-
-        $file = $request->file('file');
-        $path = $file->store('media', 'public');
-
-        $media = MediaLibrary::create([
-            'file_name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
-            'alt_text' => $request->alt_text ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-        ]);
-
-        if (strpos($media->mime_type, 'image/') === 0 && $media->mime_type !== 'image/webp') {
-            ProcessMediaUpload::dispatch($media);
-        }
-
-        return response()->json(['message' => 'Upload successful', 'data' => $media], 201);
+        return response()->json($media->picker($request->validated()));
     }
 
-    public function destroy($id)
+    public function store(StoreMediaRequest $request, AdminMediaService $media): RedirectResponse
     {
-        $media = MediaLibrary::findOrFail($id);
-        Storage::disk('public')->delete($media->file_path);
-        $media->delete();
+        $media->store($request->file('files', []), $request->validated('alt_text'));
 
-        return response()->json(['message' => 'Deleted successfully']);
+        return back()->with('success', 'Tệp đã được tải lên.');
+    }
+
+    public function update(UpdateMediaRequest $request, MediaLibrary $media, AdminMediaService $service): RedirectResponse
+    {
+        $service->update($media, (string) $request->validated('alt_text', ''));
+
+        return back()->with('success', 'Thông tin Media đã được cập nhật.');
+    }
+
+    public function destroy(MediaLibrary $media, AdminMediaService $service): RedirectResponse
+    {
+        $service->destroy($media);
+
+        return redirect()->route('admin.media.index')->with('success', 'Media đã được xóa.');
     }
 }

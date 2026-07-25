@@ -1,0 +1,5 @@
+SETTINGS_CONTRACT=PASS
+CANONICAL_OG_IMAGE_KEY=site.og_image
+IMAGE_FIELDS=image-only media guard and clear action
+FONT_OPTIONS=server-owned allowlist
+VIETNAMESE_LABELS=PASS

@@ -8,6 +8,7 @@
         "audit:pr2b-evidence": "node scripts/audit-pr2b-evidence.mjs",
         "audit:pr2c-commerce": "node scripts/audit-pr2c-commerce.mjs",
         "audit:pr3a-admin": "node scripts/audit-pr3a-admin.mjs",
+        "audit:pr3b-admin-content": "node scripts/audit-pr3b-admin-content.mjs",
         "build": "vite build",
         "dev": "vite"
     },

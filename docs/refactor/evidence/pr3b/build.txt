@@ -1,0 +1,3 @@
+BUILD=PASS
+COMMAND=npm run build
+VITE_MODULES=910
