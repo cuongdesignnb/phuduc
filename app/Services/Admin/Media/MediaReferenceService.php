@@ -8,10 +8,13 @@ use App\Models\MediaLibrary;
 use App\Models\Post;
 use App\Models\ProductImage;
 use App\Models\Setting;
+use App\Services\Media\RichContentMediaReferenceService;
 use Illuminate\Support\Str;
 
 class MediaReferenceService
 {
+    public function __construct(private readonly RichContentMediaReferenceService $richContentReferences) {}
+
     public function normalize(?string $path): string
     {
         return ltrim(Str::replaceFirst('/storage/', '', (string) $path), '/');
@@ -44,11 +47,11 @@ class MediaReferenceService
      */
     public function references(MediaLibrary $media): array
     {
-        return $this->forPaths([$media->file_path])[$this->normalize($media->file_path)] ?? [];
+        return $this->forPaths([$media->file_path], true)[$this->normalize($media->file_path)] ?? [];
     }
 
     /** @param list<?string> $paths @return array<string, list<array{type: string, count: int}>> */
-    public function forPaths(array $paths): array
+    public function forPaths(array $paths, bool $includeRichContent = false): array
     {
         $normalized = collect($paths)->map(fn ($path) => $this->normalize($path))->filter()->unique()->values()->all();
         $result = array_fill_keys($normalized, []);
@@ -77,6 +80,13 @@ class MediaReferenceService
             foreach ($normalized as $path) {
                 if ($this->containsPath($section->settings_json, $path)) {
                     $counts[$path]['home_sections'] = ($counts[$path]['home_sections'] ?? 0) + 1;
+                }
+            }
+        }
+        if ($includeRichContent) {
+            foreach ($this->richContentReferences->forPaths($paths) as $path => $references) {
+                foreach ($references as $reference) {
+                    $counts[$path][$reference['type']] = ($counts[$path][$reference['type']] ?? 0) + $reference['count'];
                 }
             }
         }

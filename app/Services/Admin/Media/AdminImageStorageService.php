@@ -42,7 +42,7 @@ class AdminImageStorageService
         $extension = strtolower(pathinfo($media->file_path, PATHINFO_EXTENSION) ?: 'bin');
         $path = trim($directory, '/').'/'.Str::uuid().'.'.$extension;
         if (! Storage::disk('public')->copy($media->file_path, $path)) {
-            throw new \RuntimeException('Media copy failed.');
+            throw new \RuntimeException('Không thể sao chép Media.');
         }
 
         return $path;

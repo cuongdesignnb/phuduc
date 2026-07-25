@@ -76,7 +76,7 @@ class ProductImageService
         $submitted = $ids;
         sort($submitted);
         if ($owned !== $submitted) {
-            throw ValidationException::withMessages(['order' => 'Image order must contain only images from this product.']);
+            throw ValidationException::withMessages(['order' => 'Thứ tự ảnh chỉ được chứa ảnh của sản phẩm này.']);
         }
 
         DB::transaction(function () use ($ids): void {

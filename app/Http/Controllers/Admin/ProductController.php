@@ -65,7 +65,7 @@ class ProductController extends Controller
     {
         $products->attach($product, (int) $request->validated('media_id'), $request->boolean('is_360'));
 
-        return back()->with('success', 'Ảnh đã được sao chép từ Media Library.');
+        return back()->with('success', 'Ảnh đã được sao chép từ Thư viện Media.');
     }
 
     public function deleteImage(Product $product, ProductImage $image, AdminProductService $products): RedirectResponse

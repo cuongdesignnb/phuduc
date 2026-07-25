@@ -1,0 +1,5 @@
+DELETE_INTEGRITY=PASS
+CATEGORY_DELETE=children, posts and menu references block deletion; DTO exposes menu_references_count and can_delete
+PRODUCT_DELETE=ProductImage rows are explicitly deleted; only products/{product_id}/ files are removed
+LEGACY_MEDIA=shared or legacy product image paths remain on disk
+TEST=CategoryMenuReferenceGuardTest, ProductLegacyMediaDeletionTest

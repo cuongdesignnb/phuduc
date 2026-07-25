@@ -4,16 +4,16 @@ import AdminSelect from '@/Components/Admin/AdminSelect.vue';
 import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
 import { stableClientKey } from '@/Composables/useStableClientKey.js';
 import draggable from 'vuedraggable';
-import { ref } from 'vue';
+import { computed } from 'vue';
 
-const props = defineProps({ modelValue: { type: Array, default: () => [] }, targets: { type: Object, default: () => ({}) }, depth: { type: Number, default: 1 }, parentItems: { type: Array, default: null }, parentIndex: { type: Number, default: -1 } });
+const props = defineProps({ modelValue: { type: Array, default: () => [] }, targets: { type: Object, default: () => ({}) }, depth: { type: Number, default: 1 }, parentItems: { type: Array, default: null }, parentIndex: { type: Number, default: -1 }, nodeCount: { type: Number, default: 0 } });
 const emit = defineEmits(['update:modelValue', 'remove']);
-const items = ref(props.modelValue);
+const items = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) });
 const targetOptions = Object.entries(props.targets).map(([key, value]) => ({ key, label: value.label }));
 const targetEndpoints = { product: 'admin.menu-targets.products', post: 'admin.menu-targets.posts', category: 'admin.menu-targets.categories' };
 const notify = () => emit('update:modelValue', items.value);
 const newItem = () => ({ client_key: stableClientKey('menu'), title: '', url: '', model_type: 'url', model_id: null, children: [] });
-const addChild = (item) => { item.children ??= []; item.children.push(newItem()); notify(); };
+const addChild = (item) => { if (props.depth >= 4 || props.nodeCount >= 100) return; item.children ??= []; item.children.push(newItem()); notify(); };
 const remove = (item) => emit('remove', item);
 const move = (index, amount) => { const next = index + amount; if (next < 0 || next >= items.value.length) return; [items.value[index], items.value[next]] = [items.value[next], items.value[index]]; notify(); };
 const indent = (index) => { if (index < 1) return; const [item] = items.value.splice(index, 1); items.value[index - 1].children ??= []; items.value[index - 1].children.push(item); notify(); };
@@ -43,7 +43,7 @@ const chooseTarget = (item, id) => { item.model_id = id; item.url = ''; notify()
                         <button type="button" class="text-admin-danger" @click="remove(item)">Xóa</button>
                     </div>
                 </div>
-                <MenuItemTree v-if="item.children?.length" v-model="item.children" :targets="targets" :depth="depth + 1" :parent-items="items" :parent-index="index" @remove="remove" />
+                <MenuItemTree v-if="item.children?.length" v-model="item.children" :targets="targets" :depth="depth + 1" :node-count="nodeCount" :parent-items="items" :parent-index="index" @remove="remove" />
             </div>
         </template>
     </draggable>

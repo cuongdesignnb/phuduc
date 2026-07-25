@@ -6,6 +6,7 @@ use App\Models\MediaLibrary;
 use App\Models\User;
 use App\Services\Admin\AdminPageService;
 use App\Services\Admin\AdminPresentationService;
+use App\Support\Media\ImageMimeTypes;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,16 +31,16 @@ class AdminMediaService
                     ->orWhere('alt_text', 'like', '%'.addcslashes($search, '%_\\').'%');
             }))
             ->when($filters['media_type'] ?? null, fn ($query, $type) => $type === 'image'
-                ? $query->where('mime_type', 'like', 'image/%')
-                : $query->where('mime_type', 'not like', 'image/%'))
+                ? $query->whereIn('mime_type', ImageMimeTypes::ALLOWLIST)
+                : $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST))
             ->latest()
             ->paginate(20)
             ->withQueryString();
 
         $referenceMap = $this->references->forPaths($paginator->getCollection()->pluck('file_path')->all());
 
-        return $this->pages->envelope($user, 'admin_media_index', 'Media Library', [
-            ['label' => 'Media', 'url' => route('admin.media.index')],
+        return $this->pages->envelope($user, 'admin_media_index', 'Thư viện Media', [
+            ['label' => 'Thư viện Media', 'url' => route('admin.media.index')],
         ], [
             'items' => $paginator->getCollection()->map(fn (MediaLibrary $media) => $this->presentation->item($media, $referenceMap[$this->references->normalize($media->file_path)] ?? []))->values()->all(),
             'pagination' => $this->adminPresentation->pagination($paginator),
@@ -61,10 +62,10 @@ class AdminMediaService
             $value = '%'.addcslashes($search, '%_\\').'%';
             $query->where('file_name', 'like', $value)->orWhere('alt_text', 'like', $value);
         }))->when($filters['media_type'] ?? null, fn ($query, $type) => $type === 'image'
-            ? $query->where('mime_type', 'like', 'image/%')
-            : $query->where('mime_type', 'not like', 'image/%'));
+            ? $query->whereIn('mime_type', ImageMimeTypes::ALLOWLIST)
+            : $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST));
         $paginator = $query->latest()->paginate($limit, ['*'], 'page', (int) ($filters['page'] ?? 1));
-        $selected = $ids === [] ? collect() : MediaLibrary::query()->whereIn('id', $ids)->get();
+        $selected = $ids === [] ? collect() : MediaLibrary::query()->whereIn('id', $ids)->when(($filters['media_type'] ?? null) === 'image', fn ($query) => $query->whereIn('mime_type', ImageMimeTypes::ALLOWLIST))->when(($filters['media_type'] ?? null) === 'file', fn ($query) => $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST))->get();
         $items = $selected->concat($paginator->getCollection())->unique('id')->map(fn (MediaLibrary $media) => $this->presentation->pickerItem($media))->values()->all();
 
         return [

@@ -38,6 +38,16 @@ const mediaStorage = read('app/Services/Admin/Media/AdminImageStorageService.php
 const postService = read('app/Services/Admin/Content/AdminPostService.php');
 const mediaAssetRule = read('app/Rules/MediaAssetRule.php');
 const mediaAssetService = read('app/Services/Admin/Media/MediaAssetService.php');
+const imageMimeTypes = read('app/Support/Media/ImageMimeTypes.php');
+const menuTreeValidator = read('app/Services/Admin/Content/MenuTreeValidator.php');
+const menuTargetResolver = read('app/Services/Navigation/MenuTargetResolver.php');
+const richContentReferences = read('app/Services/Media/RichContentMediaReferenceService.php');
+const vietnameseBackend = [
+  ...controllers.split('\n'),
+  ...[mediaService, productService, categoryService, menuService, settingsService, homeService, postService, menuRegistry].flatMap((source) => source.split('\n')),
+].join('\n');
+const backendLabelLines = vietnameseBackend.split('\n').filter((line) => /(?:label|title|description|success|breadcrumb|with\()/.test(line) && /['"]/.test(line));
+const englishLabelPattern = /(?:Danh muc tin|Homepage content|Settings saved|Settings|Posts|Edit post|Add post|Draft|Published|Menu created|Menu updated|Menu deleted|Menu items saved|Website)/g;
 const menuTargetService = read('app/Services/Admin/Content/AdminMenuTargetService.php');
 const menuTargetController = read('app/Http/Controllers/Admin/MenuTargetController.php');
 const menuUpdateRequest = read('app/Http/Requests/Admin/UpdateMenuRequest.php');
@@ -107,7 +117,7 @@ const counters = {
   POST_RICH_EDITOR_MISSING: postEdit.includes('AdvancedTextEditor') ? 0 : 1,
   CATEGORY_RECURSIVE_UI_MISSING: read('resources/js/Components/Admin/CategoryTree.vue').includes('<CategoryTree') ? 0 : 1,
   IMAGE_PICKER_MEDIA_TYPE_MISSING: frontend.includes('mediaType') && ['Product/Edit.vue', 'Post/Edit.vue', 'HomeContent/Index.vue', 'Setting/Index.vue'].every((file) => read(`resources/js/Pages/Admin/${file}`).includes('media-type="image"')) ? 0 : 1,
-  PRODUCT_MEDIA_IMAGE_GUARD_MISSING: mediaAssetRule.includes("mime_type', 'like', 'image/%'") && read('app/Http/Requests/Admin/AttachProductMediaRequest.php').includes('MediaAssetRule::image') && imageService.includes('requireImage') ? 0 : 1,
+  PRODUCT_MEDIA_IMAGE_GUARD_MISSING: imageMimeTypes.includes("'image/jpeg'") && imageMimeTypes.includes("'image/png'") && imageMimeTypes.includes("'image/webp'") && imageMimeTypes.includes("'image/gif'") && !mediaAssetRule.includes("'like', 'image/%'") && read('app/Http/Requests/Admin/AttachProductMediaRequest.php').includes('MediaAssetRule::image') && imageService.includes('requireImage') ? 0 : 1,
   POST_MEDIA_IMAGE_GUARD_MISSING: read('app/Http/Requests/Admin/StorePostRequest.php').includes('MediaAssetRule::image') && postService.includes('requireImage') ? 0 : 1,
   SETTING_MEDIA_IMAGE_GUARD_MISSING: read('app/Http/Requests/Admin/SaveSettingsRequest.php').includes('MediaAssetRule::image') && settingsService.includes('requireImage') ? 0 : 1,
   HOME_MEDIA_IMAGE_GUARD_MISSING: read('app/Http/Requests/Admin/SaveHomeContentRequest.php').includes('MediaAssetRule::image') && homeService.includes('requireImage') ? 0 : 1,
@@ -119,7 +129,17 @@ const counters = {
   PRODUCT_IMAGE_STATE_SYNC_MISSING: productEdit.includes('syncImages') && productEdit.includes('onSuccess: syncFromPage') ? 0 : 1,
   PRODUCT_KEYBOARD_REORDER_MISSING: productEdit.includes('moveImage') && productEdit.includes('aria-label="Đưa ảnh sang trái"') ? 0 : 1,
   IMAGE_CLEAR_ACTION_MISSING: postEdit.includes('clearMedia') && settingEdit.includes('clearMedia') && homeEdit.includes('clearItemMedia') && homeEdit.includes('clearConfigMedia') ? 0 : 1,
-  UNINTENDED_ENGLISH_ADMIN_LABEL_HITS: (frontend.match(/(?:Choose media|Search media|Save settings|Save content|Save product|Save post|Delete product image|Add item|Remove item|Item label|Safe URL|Back|Loading\.\.\.|No media found|Previous|Next)/g) || []).length,
+  MENU_TREE_VALIDATOR_MISSING: menuTreeValidator.includes('depth > 4') && menuTreeValidator.includes('100') && menuTreeValidator.includes('client_key') ? 0 : 1,
+  MENU_SERVER_SYNC_MISSING: menuEdit.includes('applyServerMenu') && menuEdit.includes('clone(serverMenu.items') && menuEdit.includes('itemForm.defaults') ? 0 : 1,
+  MENU_TARGET_RESOLVER_MISSING: menuTargetResolver.includes("route('products.show'") && menuTargetResolver.includes("route('news.show'") && menuTargetResolver.includes('Log::warning') ? 0 : 1,
+  CATEGORY_MENU_REFERENCE_DTO_MISSING: categoryService.includes('menu_references_count') && categoryService.includes('model_type', 'category') ? 0 : 1,
+  PRODUCT_LEGACY_DELETE_SCOPE_MISSING: productService.includes("str_starts_with((string) $path, 'products/'.\$product->id.'/')") && productService.includes('ProductImage::query()->where') ? 0 : 1,
+  RICH_CONTENT_REFERENCE_GUARD_MISSING: richContentReferences.includes('DOMDocument') && mediaReferences.includes('includeRichContent') && richContentReferences.includes('post_content') && richContentReferences.includes('product_description') ? 0 : 1,
+  HOME_RAW_IMAGE_PATH_GUARD_MISSING: read('app/Http/Requests/Admin/SaveHomeContentRequest.php').includes('image_media_id') && homeService.includes('Ảnh trang chủ phải được chọn') ? 0 : 1,
+  PRODUCT_RICH_EDITOR_CONTRACT_MISSING: productEdit.includes('AdvancedTextEditor') && productEdit.includes('product-description') ? 0 : 1,
+  MISSING_VIETNAMESE_DIACRITIC_LABEL_HITS: backendLabelLines.reduce((total, line) => total + (line.match(englishLabelPattern) || []).length, 0),
+  MOJIBAKE_HITS: (vietnameseBackend.match(/(?:Ã.|Â.|áº.|á».|Ä.|Æ.|â€|�)/g) || []).length,
+  UNINTENDED_ENGLISH_ADMIN_LABEL_HITS: (frontend.match(/(?:Choose media|Search media|Save settings|Save content|Save product|Save post|Delete product image|Add item|Remove item|Item label|Safe URL|Back|Loading\.\.\.|No media found|Previous|Next)/g) || []).length + backendLabelLines.reduce((total, line) => total + (line.match(/(?:Media Library|Homepage content|Settings saved|Menu created|Menu updated|Menu deleted|Menu items saved|Posts|Edit post|Add post|Draft|Published|Product changed|Product has references|Post was updated|Post is referenced|Setting is not registered|Image must be selected|Website)/g) || []).length, 0),
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);

@@ -30,9 +30,9 @@ class AdminSettingService
             return [...$definition, 'value' => $value, 'media_id' => $definition['type'] === 'image' ? ($mediaIds[$this->mediaReferences->normalize($value)] ?? null) : null, 'updated_at' => $setting?->updated_at?->toISOString()];
         })->groupBy('group')->map(fn (Collection $settings) => $settings->values()->all())->all();
 
-        return $this->pages->envelope($user, 'admin_settings_index', 'Settings', [['label' => 'Settings', 'url' => route('admin.settings.index')]], [
+        return $this->pages->envelope($user, 'admin_settings_index', 'Cài đặt', [['label' => 'Cài đặt', 'url' => route('admin.settings.index')]], [
             'groups' => $groups,
-            'group_labels' => ['site' => 'Website', 'about' => 'Giới thiệu', 'seo' => 'SEO', 'appearance' => 'Giao diện'],
+            'group_labels' => ['site' => 'Trang web', 'about' => 'Giới thiệu', 'seo' => 'SEO', 'appearance' => 'Giao diện'],
             'version' => $this->version($stored),
             'font_options' => ThemeTokenService::fontOptions(),
         ]);
@@ -44,7 +44,7 @@ class AdminSettingService
         foreach ($payload['settings'] as $item) {
             $definition = $registry[$item['key']] ?? null;
             if (! $definition) {
-                throw ValidationException::withMessages(['settings' => 'Setting is not registered.']);
+                throw ValidationException::withMessages(['settings' => 'Cài đặt chưa được đăng ký trong registry.']);
             }
             $value = $definition['type'] === 'image' && array_key_exists('media_id', $item) ? (string) ($item['media_id'] ? $this->assets->requireImage((int) $item['media_id'])->file_path : '') : (string) ($item['value'] ?? '');
             $this->validate($definition, $value);
@@ -52,7 +52,7 @@ class AdminSettingService
 
         return DB::transaction(function () use ($payload, $registry): string {
             $stored = Setting::query()->whereIn('key', array_keys($registry))->lockForUpdate()->get();
-            $this->concurrency->assertFingerprint($payload['version'] ?? null, $this->version($stored), 'Settings changed in another session. Reload and try again.');
+            $this->concurrency->assertFingerprint($payload['version'] ?? null, $this->version($stored), 'Cài đặt đã thay đổi ở phiên khác. Vui lòng tải lại.');
             foreach ($payload['settings'] as $item) {
                 $definition = $registry[$item['key']];
                 $value = $definition['type'] === 'image' && array_key_exists('media_id', $item) ? ($item['media_id'] ? $this->assets->requireImage((int) $item['media_id'])->file_path : null) : ($item['value'] ?? '');
@@ -80,7 +80,7 @@ class AdminSettingService
             throw ValidationException::withMessages(['settings' => 'Font is not allowed.']);
         }
         if ($definition['type'] === 'image' && $value !== '' && ! $this->mediaReferences->idForPath($value)) {
-            throw ValidationException::withMessages(['settings' => 'Image must be selected from Media Library.']);
+            throw ValidationException::withMessages(['settings' => 'Ảnh phải được chọn từ Thư viện Media.']);
         }
         if ($definition['key'] === 'site.email' && $value !== '' && ! filter_var($value, FILTER_VALIDATE_EMAIL)) {
             throw ValidationException::withMessages(['settings' => 'Email is invalid.']);

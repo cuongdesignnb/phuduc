@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin\Content;
 
+use App\Models\MenuItem;
 use App\Models\PostCategory;
 use App\Models\User;
 use App\Services\Admin\AdminPageService;
@@ -14,8 +15,9 @@ class AdminPostCategoryService
 
     public function index(User $user): array
     {
+        $menuReferences = MenuItem::query()->where('model_type', 'category')->selectRaw('model_id, count(*) as aggregate')->groupBy('model_id')->pluck('aggregate', 'model_id');
         $categories = PostCategory::query()->withCount(['posts', 'children'])->orderBy('name')->get();
-        $nodes = $categories->mapWithKeys(fn (PostCategory $category) => [$category->id => $this->item($category) + ['children' => []]])->all();
+        $nodes = $categories->mapWithKeys(fn (PostCategory $category) => [$category->id => $this->item($category, (int) ($menuReferences[$category->id] ?? 0)) + ['children' => []]])->all();
         foreach ($categories as $category) {
             if ($category->parent_id && isset($nodes[$category->parent_id])) {
                 $nodes[$category->parent_id]['children'][] = &$nodes[$category->id];
@@ -23,16 +25,16 @@ class AdminPostCategoryService
         }
         $roots = array_values(array_filter($nodes, fn (array $node) => $node['parent_id'] === null));
 
-        return $this->pages->envelope($user, 'admin_post_categories_index', 'Danh muc tin', [['label' => 'Danh muc tin', 'url' => route('admin.post-categories.index')]], ['items' => $roots]);
+        return $this->pages->envelope($user, 'admin_post_categories_index', 'Danh mục tin', [['label' => 'Danh mục tin', 'url' => route('admin.post-categories.index')]], ['items' => $roots]);
     }
 
     public function editPage(User $user, ?PostCategory $category): array
     {
         $excluded = $category ? collect($this->descendantIds($category))->push($category->id)->all() : [];
         $parents = PostCategory::query()->when($excluded !== [], fn ($query) => $query->whereNotIn('id', $excluded))->orderBy('name')->get(['id', 'name', 'parent_id'])->map(fn (PostCategory $parent) => ['id' => $parent->id, 'name' => $parent->name, 'parent_id' => $parent->parent_id])->all();
-        $label = $category ? 'Edit category' : 'Add category';
+        $label = $category ? 'Sửa danh mục' : 'Thêm danh mục';
 
-        return $this->pages->envelope($user, 'admin_post_categories_edit', $label, [['label' => 'Danh muc tin', 'url' => route('admin.post-categories.index')], ['label' => $label, 'url' => $category ? route('admin.post-categories.edit', $category) : null]], ['category' => $category ? $this->item($category) : null, 'parents' => $parents]);
+        return $this->pages->envelope($user, 'admin_post_categories_edit', $label, [['label' => 'Danh mục tin', 'url' => route('admin.post-categories.index')], ['label' => $label, 'url' => $category ? route('admin.post-categories.edit', $category) : null]], ['category' => $category ? $this->item($category) : null, 'parents' => $parents]);
     }
 
     public function store(array $data): PostCategory
@@ -54,15 +56,16 @@ class AdminPostCategoryService
 
     public function destroy(PostCategory $category): void
     {
-        if ($category->children()->exists() || $category->posts()->exists()) {
-            throw ValidationException::withMessages(['category' => 'Category still has children or posts and cannot be deleted.']);
+        $menuReferences = MenuItem::query()->where('model_type', 'category')->where('model_id', $category->id)->count();
+        if ($category->children()->exists() || $category->posts()->exists() || $menuReferences > 0) {
+            throw ValidationException::withMessages(['category' => $menuReferences > 0 ? 'Danh mục đang được sử dụng trong menu và chưa thể xóa.' : 'Danh mục còn mục con hoặc bài viết và chưa thể xóa.']);
         }
         $category->delete();
     }
 
-    private function item(PostCategory $category): array
+    private function item(PostCategory $category, int $menuReferences = 0): array
     {
-        return ['id' => $category->id, 'parent_id' => $category->parent_id, 'name' => $category->name, 'slug' => $category->slug, 'description' => $category->description, 'posts_count' => (int) ($category->posts_count ?? 0), 'children_count' => (int) ($category->children_count ?? 0), 'can_delete' => (int) ($category->posts_count ?? 0) === 0 && (int) ($category->children_count ?? 0) === 0, 'edit_url' => route('admin.post-categories.edit', $category), 'delete_url' => route('admin.post-categories.destroy', $category)];
+        return ['id' => $category->id, 'parent_id' => $category->parent_id, 'name' => $category->name, 'slug' => $category->slug, 'description' => $category->description, 'posts_count' => (int) ($category->posts_count ?? 0), 'children_count' => (int) ($category->children_count ?? 0), 'menu_references_count' => $menuReferences, 'can_delete' => (int) ($category->posts_count ?? 0) === 0 && (int) ($category->children_count ?? 0) === 0 && $menuReferences === 0, 'edit_url' => route('admin.post-categories.edit', $category), 'delete_url' => route('admin.post-categories.destroy', $category)];
     }
 
     private function descendantIds(PostCategory $category): array
@@ -86,17 +89,17 @@ class AdminPostCategoryService
             return;
         }
         if ($category && $parentId === $category->id) {
-            throw ValidationException::withMessages(['parent_id' => 'A category cannot be its own parent.']);
+            throw ValidationException::withMessages(['parent_id' => 'Danh mục không thể là danh mục cha của chính nó.']);
         }
         $seen = [];
         $current = PostCategory::find($parentId);
         while ($current) {
             if (in_array($current->id, $seen, true)) {
-                throw ValidationException::withMessages(['parent_id' => 'Category tree contains a cycle.']);
+                throw ValidationException::withMessages(['parent_id' => 'Cây danh mục đang chứa vòng lặp.']);
             }
             $seen[] = $current->id;
             if ($category && $current->id === $category->id) {
-                throw ValidationException::withMessages(['parent_id' => 'A descendant cannot become its parent.']);
+                throw ValidationException::withMessages(['parent_id' => 'Danh mục con không thể trở thành danh mục cha.']);
             }
             $current = $current->parent;
         }

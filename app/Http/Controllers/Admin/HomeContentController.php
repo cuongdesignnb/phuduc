@@ -32,7 +32,7 @@ class HomeContentController extends Controller
     {
         $version = $home->save($request->validated());
 
-        return back()->with('success', 'Homepage content saved.')->with('admin_version', $version);
+        return back()->with('success', 'Nội dung trang chủ đã được lưu.')->with('admin_version', $version);
     }
 
     /** @deprecated Compatibility shim for the pre-service test helper. */

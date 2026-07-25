@@ -20,6 +20,6 @@ class SettingController extends Controller
     {
         $version = $settings->save($request->validated());
 
-        return back()->with('success', 'Settings saved.')->with('admin_version', $version);
+        return back()->with('success', 'Cài đặt đã được lưu.')->with('admin_version', $version);
     }
 }

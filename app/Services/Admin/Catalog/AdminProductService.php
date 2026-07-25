@@ -4,6 +4,7 @@ namespace App\Services\Admin\Catalog;
 
 use App\Models\MediaLibrary;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\User;
 use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Admin\AdminPageService;
@@ -52,7 +53,7 @@ class AdminProductService
     {
         return DB::transaction(function () use ($product, $data): Product {
             $locked = Product::query()->lockForUpdate()->findOrFail($product->id);
-            $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Product changed in another session. Reload and try again.');
+            $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Sản phẩm đã được cập nhật ở phiên khác. Vui lòng tải lại.');
             $payload = $data;
             $payload['slug'] = $payload['slug'] ?: $this->uniqueSlug($payload['name'], $locked->id);
             $payload['price'] = (int) ($payload['price'] ?? 0);
@@ -69,10 +70,13 @@ class AdminProductService
     {
         $references = $this->references->references($product);
         if ($references !== []) {
-            throw ValidationException::withMessages(['product' => 'Product has references and cannot be deleted.', 'references' => $references]);
+            throw ValidationException::withMessages(['product' => 'Sản phẩm đang được sử dụng và chưa thể xóa.', 'references' => $references]);
         }
-        $paths = $product->images()->pluck('image_path')->all();
-        DB::transaction(fn () => $product->delete());
+        $paths = $product->images()->pluck('image_path')->filter(fn ($path) => str_starts_with((string) $path, 'products/'.$product->id.'/'))->values()->all();
+        DB::transaction(function () use ($product): void {
+            ProductImage::query()->where('product_id', $product->id)->delete();
+            $product->delete();
+        });
         DB::afterCommit(function () use ($paths): void {
             foreach ($paths as $path) {
                 Storage::disk('public')->delete($path);
@@ -109,7 +113,7 @@ class AdminProductService
             $slug = $base.'-'.($suffix++);
         }
 
-return $slug;
+        return $slug;
     }
 
     private function specifications(array $specifications): array

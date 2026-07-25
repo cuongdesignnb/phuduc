@@ -1,0 +1,5 @@
+MENU_ID_STABILITY=PASS
+VALIDATION=integer IDs only; non-null IDs and client keys are distinct
+REPEATED_SAVE=existing menu item ID is reused after the second save
+SERVER_REFRESH=local tree is replaced by the saved server tree and both form versions are synchronized
+TEST=MenuRecursiveValidationTest, MenuRepeatedSaveIdentityTest

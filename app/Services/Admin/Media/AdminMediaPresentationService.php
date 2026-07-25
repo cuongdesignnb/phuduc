@@ -5,6 +5,7 @@ namespace App\Services\Admin\Media;
 use App\Models\MediaLibrary;
 use App\Services\Admin\AdminPresentationService;
 use App\Services\Storefront\MediaUrlService;
+use App\Support\Media\ImageMimeTypes;
 
 class AdminMediaPresentationService
 {
@@ -23,11 +24,11 @@ class AdminMediaPresentationService
             'file_name' => $media->file_name,
             'alt_text' => $media->alt_text,
             'mime_type' => $media->mime_type,
-            'media_type' => str_starts_with((string) $media->mime_type, 'image/') ? 'image' : 'file',
+            'media_type' => ImageMimeTypes::isAllowed($media->mime_type) ? 'image' : 'file',
             'size' => $size,
             'size_display' => $this->size($size),
             'url' => $this->mediaUrl->resolve($media->file_path),
-            'thumbnail_url' => str_starts_with((string) $media->mime_type, 'image/') ? $this->mediaUrl->resolve($media->file_path) : null,
+            'thumbnail_url' => ImageMimeTypes::isAllowed($media->mime_type) ? $this->mediaUrl->resolve($media->file_path) : null,
             'created_at_display' => $this->presentation->date($media->created_at),
             'updated_at_display' => $this->presentation->date($media->updated_at),
             'references_count' => array_sum(array_column($references, 'count')),
@@ -46,9 +47,9 @@ class AdminMediaPresentationService
             'file_name' => $media->file_name,
             'alt_text' => $media->alt_text,
             'mime_type' => $media->mime_type,
-            'media_type' => str_starts_with((string) $media->mime_type, 'image/') ? 'image' : 'file',
+            'media_type' => ImageMimeTypes::isAllowed($media->mime_type) ? 'image' : 'file',
             'url' => $this->mediaUrl->resolve($media->file_path),
-            'thumbnail_url' => str_starts_with((string) $media->mime_type, 'image/') ? $this->mediaUrl->resolve($media->file_path) : null,
+            'thumbnail_url' => ImageMimeTypes::isAllowed($media->mime_type) ? $this->mediaUrl->resolve($media->file_path) : null,
         ];
     }
 

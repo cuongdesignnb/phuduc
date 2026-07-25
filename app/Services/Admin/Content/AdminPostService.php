@@ -37,7 +37,7 @@ class AdminPostService
             ->latest()->paginate(15)->withQueryString();
         $mediaIds = $this->mediaReferences->idsForPaths($paginator->getCollection()->pluck('featured_image')->all());
 
-        return $this->pages->envelope($user, 'admin_posts_index', 'Posts', [['label' => 'Posts', 'url' => route('admin.posts.index')]], [
+        return $this->pages->envelope($user, 'admin_posts_index', 'Bài viết', [['label' => 'Bài viết', 'url' => route('admin.posts.index')]], [
             'items' => $paginator->getCollection()->map(fn (Post $post) => $this->presentation->item($post, $mediaIds[$this->mediaReferences->normalize($post->featured_image)] ?? null))->values()->all(),
             'pagination' => $this->adminPresentation->pagination($paginator),
             'filters' => ['search' => $filters['search'] ?? '', 'status' => $filters['status'] ?? ''],
@@ -46,15 +46,15 @@ class AdminPostService
 
     public function editPage(User $user, ?Post $post, array $categories): array
     {
-        $label = $post ? 'Edit post' : 'Add post';
+        $label = $post ? 'Sửa bài viết' : 'Thêm bài viết';
 
         return $this->pages->envelope($user, 'admin_posts_edit', $label, [
-            ['label' => 'Posts', 'url' => route('admin.posts.index')],
+            ['label' => 'Bài viết', 'url' => route('admin.posts.index')],
             ['label' => $label, 'url' => $post ? route('admin.posts.edit', $post) : null],
         ], [
             'post' => $post ? $this->presentation->edit($post) : null,
             'categories' => $categories,
-            'statuses' => [['key' => 'draft', 'label' => 'Draft'], ['key' => 'published', 'label' => 'Published']],
+            'statuses' => [['key' => 'draft', 'label' => 'Bản nháp'], ['key' => 'published', 'label' => 'Đã đăng']],
         ]);
     }
 
@@ -71,7 +71,7 @@ class AdminPostService
     {
         return DB::transaction(function () use ($post, $data): Post {
             $locked = Post::query()->lockForUpdate()->findOrFail($post->id);
-            $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Post was updated in another session. Reload and try again.');
+            $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Bài viết đã được cập nhật ở phiên khác. Vui lòng tải lại.');
             $data['slug'] = $data['slug'] ?: $this->uniqueSlug($data['title'], $locked->id);
             $data['featured_image'] = $this->path($data['featured_media_id'] ?? null);
             unset($data['featured_media_id'], $data['version']);
@@ -93,7 +93,7 @@ class AdminPostService
             $refs[] = ['type' => 'menu_items', 'count' => $menu];
         }
         if ($refs) {
-            throw ValidationException::withMessages(['post' => 'Post is referenced and cannot be deleted.', 'references' => $refs]);
+            throw ValidationException::withMessages(['post' => 'Bài viết đang được sử dụng và chưa thể xóa.', 'references' => $refs]);
         }
         $post->delete();
     }

@@ -15,5 +15,6 @@
 - Menu workflow: product/post/category target lookup, existing ID hydration, URL target clearing, recursive four-level tree, drag reorder, keyboard moves, descendant confirmation, safe HTTP/HTTPS/mailto/tel validation and stale-version rejection.
 - Homepage workflow: deterministic section/item fingerprint, remote product/post lookup, image ID hydration, image clear action and save refresh.
 - Settings workflow: Vietnamese registry labels/descriptions/defaults, canonical `site.og_image`, font options, image-only picker, clear action, max-length and concurrency validation.
-- Contract QA: SQLite `245 passed, 1 skipped`, isolated MySQL admin suite `74 passed`, Vite production build `910 modules`, Pint and expanded PR3B audit passed.
+- Data-integrity QA: recursive menu validation rejects depth over 4 and node counts over 100, repeated saves preserve IDs, target URLs follow current slugs, category deletion exposes menu references, owned product files are scoped, exact image MIME allowlist rejects SVG/PDF/video, home images require media IDs, and rich-content image references block deletion.
+- Contract QA: SQLite `259 passed, 1 skipped, 2125 assertions`, isolated MySQL admin suite `88 passed, 547 assertions`, Vite production build `910 modules`, Pint and expanded PR3B audit passed.
 - Docker was shut down after QA; no production deployment, merge or PR3C work was performed.

@@ -124,6 +124,11 @@ class SaveHomeContentRequest extends FormRequest
                     $validator->errors()->add("sections.$sectionIndex.items", 'Section này không hỗ trợ item thủ công.');
                 }
 
+                $config = $section['config'] ?? [];
+                if (array_key_exists('image', $config) && filled($config['image']) && empty($config['image_media_id'])) {
+                    $validator->errors()->add("sections.$sectionIndex.config.image", 'Ảnh phải được chọn từ Media bằng ID.');
+                }
+
                 $allowedBusinessFields = array_intersect($definition['item_fields'], self::BUSINESS_ITEM_FIELDS);
                 $allowedItemKeys = array_merge(self::COMMON_ITEM_FIELDS, ['media_id'], $allowedBusinessFields);
                 $allowedMetadata = array_intersect($definition['item_fields'], self::METADATA_ITEM_FIELDS);
@@ -137,6 +142,10 @@ class SaveHomeContentRequest extends FormRequest
 
                     if (array_diff(array_keys($item['metadata'] ?? []), $allowedMetadata) !== []) {
                         $validator->errors()->add("sections.$sectionIndex.items.$itemIndex.metadata", 'Metadata chứa field không được section này cho phép.');
+                    }
+
+                    if (array_key_exists('image', $item) && filled($item['image']) && empty($item['media_id'])) {
+                        $validator->errors()->add("sections.$sectionIndex.items.$itemIndex.image", 'Ảnh phải được chọn từ Media bằng ID.');
                     }
                 }
             }

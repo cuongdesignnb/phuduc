@@ -1,4 +1,5 @@
 SQLITE_FULL_SUITE=PASS
-TESTS=245 passed, 1 skipped
-ASSERTIONS=2018
+TESTS=259 passed, 1 skipped
+ASSERTIONS=2125
 COMMAND=php artisan test --env=testing with SQLite memory database
+NEW_DATA_INTEGRITY_TESTS=10 test classes, 14 tests

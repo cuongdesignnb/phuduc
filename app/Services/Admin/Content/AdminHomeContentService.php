@@ -42,7 +42,7 @@ class AdminHomeContentService
             return ['id' => $section?->id, 'key' => $key, 'type' => $section?->type ?: $definition['type'], 'enabled' => $section?->is_enabled ?? true, 'sort_order' => $section?->sort_order ?? 999, 'variant' => $section?->variant ?: $definition['allowed_variants'][0], 'heading' => ['eyebrow' => $section?->settings_json['eyebrow'] ?? null, 'title' => $section?->title ?? $definition['label'], 'subtitle' => $section?->subtitle, 'description' => $section?->description], 'config' => $config, 'items' => $section?->items->map(fn (HomeSectionItem $item) => ['id' => $item->id, 'title' => $item->title, 'subtitle' => $item->subtitle, 'description' => $item->description, 'image' => $item->image, 'media_id' => $mediaIds[$this->mediaReferences->normalize($item->image)] ?? null, 'icon' => $item->icon, 'url' => $item->url, 'metadata' => $item->metadata_json ?? [], 'enabled' => $item->is_active, 'sort_order' => $item->sort_order])->values()->all() ?? []];
         })->sortBy('sort_order')->values()->all();
 
-        return $this->pages->envelope($user, 'admin_home_content_index', 'Homepage content', [['label' => 'Homepage content', 'url' => route('admin.home-content.index')]], ['sections' => $items, 'registry' => $definitions, 'version' => $this->version($sections, $sections->flatMap->items)]);
+        return $this->pages->envelope($user, 'admin_home_content_index', 'Nội dung trang chủ', [['label' => 'Nội dung trang chủ', 'url' => route('admin.home-content.index')]], ['sections' => $items, 'registry' => $definitions, 'version' => $this->version($sections, $sections->flatMap->items)]);
     }
 
     public function productLookup(array $filters): array
@@ -74,7 +74,7 @@ class AdminHomeContentService
         return DB::transaction(function () use ($payload): string {
             $currentSections = HomeSection::query()->orderBy('id')->lockForUpdate()->get();
             $currentItems = $currentSections->isEmpty() ? collect() : HomeSectionItem::query()->whereIn('home_section_id', $currentSections->pluck('id'))->orderBy('id')->lockForUpdate()->get();
-            $this->concurrency->assertFingerprint($payload['version'] ?? null, $this->version($currentSections, $currentItems), 'Homepage content changed in another session. Reload and try again.');
+            $this->concurrency->assertFingerprint($payload['version'] ?? null, $this->version($currentSections, $currentItems), 'Nội dung trang chủ đã thay đổi ở phiên khác. Vui lòng tải lại.');
             foreach ($payload['sections'] as $sectionData) {
                 $this->saveSection($sectionData);
             }
@@ -90,9 +90,12 @@ class AdminHomeContentService
     {
         $definition = HomeSectionRegistry::get($data['key']);
         if (! $definition) {
-            throw ValidationException::withMessages(['sections' => 'Section is not registered.']);
+            throw ValidationException::withMessages(['sections' => 'Section chưa được đăng ký trong registry.']);
         }
         $config = $data['config'] ?? [];
+        if (array_key_exists('image', $config) && filled($config['image']) && empty($config['image_media_id'])) {
+            throw ValidationException::withMessages(['sections' => 'Ảnh trang chủ phải được chọn từ Media bằng ID.']);
+        }
         if (array_key_exists('image_media_id', $config)) {
             $config['image'] = $config['image_media_id'] ? $this->assets->requireImage((int) $config['image_media_id'])->file_path : null;
             unset($config['image_media_id']);
@@ -100,20 +103,23 @@ class AdminHomeContentService
         $section = HomeSection::query()->firstOrNew(['key' => $data['key']]);
         $section->fill(['type' => $definition['type'], 'title' => $data['heading']['title'] ?? null, 'subtitle' => $data['heading']['subtitle'] ?? null, 'description' => $data['heading']['description'] ?? null, 'variant' => $data['variant'], 'is_enabled' => $data['enabled'], 'sort_order' => $data['sort_order'], 'settings_json' => array_intersect_key($config, array_flip($definition['config_keys']))])->save();
         if ($definition['supports_items']) {
-            $this->syncItemsForCompatibility($section, $data['items'] ?? [], $definition['item_fields']);
+            $this->syncItemsForCompatibility($section, $data['items'] ?? [], $definition['item_fields'], true);
         }
     }
 
-    public function syncItemsForCompatibility(HomeSection $section, array $items, array $allowedFields): void
+    public function syncItemsForCompatibility(HomeSection $section, array $items, array $allowedFields, bool $strictMedia = false): void
     {
         $submittedIds = collect($items)->pluck('id')->filter()->map(fn ($id) => (int) $id)->values();
         if ($submittedIds->isNotEmpty() && HomeSectionItem::query()->where('home_section_id', $section->id)->whereIn('id', $submittedIds)->count() !== $submittedIds->unique()->count()) {
-            throw ValidationException::withMessages(['sections' => 'Submitted item does not belong to this section.']);
+            throw ValidationException::withMessages(['sections' => 'Item được gửi không thuộc section này.']);
         }
         $business = array_values(array_intersect($allowedFields, self::BUSINESS_FIELDS));
         $metadata = array_values(array_intersect($allowedFields, self::METADATA_FIELDS));
         $kept = [];
         foreach ($items as $data) {
+            if ($strictMedia && array_key_exists('image', $data) && filled($data['image']) && empty($data['media_id'])) {
+                throw ValidationException::withMessages(['sections' => 'Ảnh mục trang chủ phải được chọn từ Media bằng ID.']);
+            }
             if (array_key_exists('media_id', $data)) {
                 $data['image'] = $data['media_id'] ? $this->assets->requireImage((int) $data['media_id'])->file_path : null;
             }

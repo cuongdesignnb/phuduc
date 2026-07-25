@@ -28,7 +28,7 @@ class MenuController extends Controller
     {
         $menu = $menus->store($request->validated());
 
-        return redirect()->route('admin.menus.edit', $menu)->with('success', 'Menu created.');
+        return redirect()->route('admin.menus.edit', $menu)->with('success', 'Menu đã được tạo.');
     }
 
     public function edit(Menu $menu, AdminMenuService $menus): Response
@@ -40,20 +40,20 @@ class MenuController extends Controller
     {
         $menus->update($menu, $request->validated());
 
-        return redirect()->route('admin.menus.edit', $menu)->with('success', 'Menu updated.');
+        return redirect()->route('admin.menus.edit', $menu)->with('success', 'Menu đã được cập nhật.');
     }
 
     public function destroy(Menu $menu, AdminMenuService $menus): RedirectResponse
     {
         $menus->destroy($menu);
 
-        return redirect()->route('admin.menus.index')->with('success', 'Menu deleted.');
+        return redirect()->route('admin.menus.index')->with('success', 'Menu đã được xóa.');
     }
 
     public function saveItems(SaveMenuItemsRequest $request, Menu $menu, AdminMenuService $menus): RedirectResponse
     {
         $version = $menus->saveItems($menu, $request->validated('items'), $request->validated('version'));
 
-        return back()->with('success', 'Menu items saved.')->with('admin_version', $version);
+        return back()->with('success', 'Cấu trúc menu đã được lưu.')->with('admin_version', $version);
     }
 }

@@ -1,0 +1,5 @@
+RICH_CONTENT_MEDIA_REFERENCES=PASS
+PARSER=DOMDocument extracts embedded img src paths from Post.content and Product.description
+DELETE_GUARD=referenced rich-content media cannot be deleted
+REFERENCE_TYPES=post_content,product_description
+TEST=RichContentMediaReferenceTest

@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\Media\ImageMimeTypes;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreMediaRequest extends FormRequest
 {
-    public function authorize(): bool { return (bool) $this->user()?->is_admin; }
+    public function authorize(): bool
+    {
+        return (bool) $this->user()?->is_admin;
+    }
 
     protected function prepareForValidation(): void
     {
@@ -20,7 +23,7 @@ class StoreMediaRequest extends FormRequest
     {
         return [
             'files' => ['required', 'array', 'max:20'],
-            'files.*' => ['required', 'file', 'max:10240', 'mimetypes:image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,application/pdf'],
+            'files.*' => ['required', 'file', 'max:10240', 'mimetypes:'.implode(',', [...ImageMimeTypes::ALLOWLIST, 'video/mp4', 'video/webm', 'application/pdf'])],
             'alt_text' => ['nullable', 'string', 'max:255'],
         ];
     }

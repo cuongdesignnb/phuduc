@@ -1,0 +1,5 @@
+MEDIA_TYPE_SAFETY=PASS
+IMAGE_MIME_ALLOWLIST=image/jpeg,image/png,image/webp,image/gif
+REJECTED_IMAGE_TYPES=image/svg+xml,application/pdf,video/mp4
+PICKER=selected SVG records are excluded from image-only picker hydration
+TEST=MediaExactMimeAllowlistTest
