@@ -16,7 +16,7 @@ class SaveMenuItemsRequest extends FormRequest
     {
         return [
             'items' => ['present', 'array'],
-            'version' => ['nullable', 'string', 'max:100'],
+            'version' => ['required', 'string', 'max:100'],
         ];
     }
 

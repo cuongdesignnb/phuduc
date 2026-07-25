@@ -1,5 +1,5 @@
 SQLITE_FULL_SUITE=PASS
-TESTS=259 passed, 1 skipped
-ASSERTIONS=2125
-COMMAND=php artisan test --env=testing with SQLite memory database
-NEW_DATA_INTEGRITY_TESTS=10 test classes, 14 tests
+TESTS=273 passed, 1 skipped
+ASSERTIONS=2196
+COMMAND=docker compose exec app php artisan test with isolated SQLite database
+NEW_CONTRACT_TESTS=ConcurrencyRequiredTest, StorefrontNavigationQueryScalingTest, HomeContentLegacyImageCompatibilityTest, AdminVietnameseContractTest

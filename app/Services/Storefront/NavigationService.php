@@ -5,6 +5,7 @@ namespace App\Services\Storefront;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Services\Navigation\MenuTargetResolver;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
 class NavigationService
@@ -31,22 +32,28 @@ class NavigationService
 
         $menus = Menu::query()
             ->whereIn('location', ['header', 'footer'])
-            ->with(['items.allChildren' => fn ($query) => $query->orderBy('sort_order')])
+            ->with(['allItems' => fn ($query) => $query->orderBy('sort_order')])
             ->get()
             ->keyBy('location');
 
-        return $this->navigation = [
-            'header' => $menus->get('header')?->items->map(fn (MenuItem $item) => $this->present($item))->filter()->values()->all() ?? [],
-            'footer' => $menus->get('footer')?->items->map(fn (MenuItem $item) => $this->present($item))->filter()->values()->all() ?? [],
-        ];
+        $roots = collect(['header', 'footer'])->mapWithKeys(function (string $location) use ($menus): array {
+            $items = $menus->get($location)?->allItems ?? collect();
+
+            return [$location => $this->tree($items)];
+        });
+        $allItems = $roots->flatMap(fn ($items) => $this->flatten($items));
+        $targetMap = $this->targets->resolveForItems($allItems);
+
+        return $this->navigation = $roots->map(fn ($items) => $items->map(fn (MenuItem $item) => $this->present($item, $targetMap))->filter()->values()->all())->all();
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function present(MenuItem $item): ?array
+    private function present(MenuItem $item, array $targetMap): ?array
     {
-        $url = $this->targets->resolve((string) ($item->model_type ?: 'url'), $item->model_id ? (int) $item->model_id : null, $item->url);
+        $type = (string) ($item->model_type ?: 'url');
+        $url = $type === 'url' ? (filled($item->url) ? $item->url : null) : ($targetMap["{$type}:{$item->model_id}"] ?? null);
         if ($url === null) {
             return null;
         }
@@ -55,7 +62,31 @@ class NavigationService
             'id' => $item->id,
             'label' => $item->title,
             'url' => $url,
-            'children' => $item->allChildren->map(fn (MenuItem $child) => $this->present($child))->filter()->values()->all(),
+            'children' => $item->allChildren->map(fn (MenuItem $child) => $this->present($child, $targetMap))->filter()->values()->all(),
         ];
+    }
+
+    private function flatten(iterable $items): array
+    {
+        $result = [];
+        foreach ($items as $item) {
+            $result[] = $item;
+            $result = [...$result, ...$this->flatten($item->allChildren)];
+        }
+
+        return $result;
+    }
+
+    /** @return Collection<int, MenuItem> */
+    private function tree(Collection $items): Collection
+    {
+        $children = $items->groupBy(fn (MenuItem $item) => (string) ($item->parent_id ?? 'root'));
+        $build = function (MenuItem $item) use (&$build, $children): MenuItem {
+            $item->setRelation('allChildren', $children->get((string) $item->id, collect())->map($build)->values());
+
+            return $item;
+        };
+
+        return $children->get('root', collect())->map($build)->values();
     }
 }

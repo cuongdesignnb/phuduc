@@ -1,4 +1,5 @@
 PR3B_PINT=PASS
 COMMAND=php vendor/bin/pint --test <changed PHP scope>
-FILES=21
-STYLE_ISSUES_FIXED=9
+FILES=18
+STYLE_ISSUES_FIXED=6
+FULL_REPOSITORY_NOTE=Baseline full-repository Pint still reports 52 pre-existing issues outside the changed scope

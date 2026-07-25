@@ -8,6 +8,8 @@ use App\Models\HomeSectionItem;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\Admin\Content\AdminHomeContentService;
+use App\Services\Admin\Content\AdminSettingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use ReflectionMethod;
 use Tests\TestCase;
@@ -22,6 +24,7 @@ class HomeContentSaveTest extends TestCase
         $product = Product::create(['name' => 'Selected', 'slug' => 'selected', 'status' => 'active', 'price' => 1, 'stock' => 1]);
 
         $response = $this->actingAs($admin)->post(route('admin.home-content.save'), [
+            'version' => $this->homeVersion($admin),
             'sections' => [
                 $this->sectionPayload('featured_products', 'product_collection', 'marketplace_grid', 20, [
                     'source' => 'manual', 'limit' => 4, 'product_ids' => [$product->id],
@@ -54,6 +57,7 @@ class HomeContentSaveTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->postJson(route('admin.home-content.save'), [
+            'version' => $this->homeVersion($admin),
             'sections' => [
                 $this->sectionPayload('benefit_strip', 'item_collection', 'icon_strip', 10, [], [
                     [...$this->itemPayload('Hijacked', 0), 'id' => $item->id],
@@ -73,7 +77,7 @@ class HomeContentSaveTest extends TestCase
             'source' => 'manual', 'limit' => 99, 'product_ids' => [999999],
         ]);
 
-        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['version' => $this->homeVersion($admin), 'sections' => [$payload]])
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
                 'sections.0.type',
@@ -102,7 +106,7 @@ class HomeContentSaveTest extends TestCase
             ),
         ]);
 
-        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['version' => $this->homeVersion($admin), 'sections' => [$payload]])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('sections.0.items.0.metadata');
 
@@ -120,7 +124,7 @@ class HomeContentSaveTest extends TestCase
             ),
         ]);
 
-        $this->actingAs($admin)->post(route('admin.home-content.save'), ['sections' => [$payload]])
+        $this->actingAs($admin)->post(route('admin.home-content.save'), ['version' => $this->homeVersion($admin), 'sections' => [$payload]])
             ->assertSessionHasNoErrors()
             ->assertRedirect();
 
@@ -137,7 +141,7 @@ class HomeContentSaveTest extends TestCase
             ),
         ]);
 
-        $this->actingAs($admin)->post(route('admin.home-content.save'), ['sections' => [$payload]])
+        $this->actingAs($admin)->post(route('admin.home-content.save'), ['version' => $this->homeVersion($admin), 'sections' => [$payload]])
             ->assertSessionHasNoErrors()
             ->assertRedirect();
 
@@ -151,7 +155,7 @@ class HomeContentSaveTest extends TestCase
             [...$this->itemPayload('Benefit', 0), 'unexpected' => 'malicious'],
         ]);
 
-        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['version' => $this->homeVersion($admin), 'sections' => [$payload]])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('sections.0.items.0');
 
@@ -186,6 +190,7 @@ class HomeContentSaveTest extends TestCase
         Setting::set('home.hero_title', 'Legacy title');
 
         $this->actingAs($admin)->postJson(route('admin.settings.save'), [
+            'version' => $this->settingsVersion($admin),
             'settings' => [[
                 'key' => 'home.hero_title',
                 'value' => 'Bypass title',
@@ -216,6 +221,16 @@ class HomeContentSaveTest extends TestCase
             'config' => $config,
             'items' => $items,
         ];
+    }
+
+    private function homeVersion(User $admin): string
+    {
+        return app(AdminHomeContentService::class)->page($admin)['page']['module']['version'];
+    }
+
+    private function settingsVersion(User $admin): string
+    {
+        return app(AdminSettingService::class)->page($admin)['page']['module']['version'];
     }
 
     private function itemPayload(string $title, int $order): array
@@ -252,7 +267,7 @@ class HomeContentSaveTest extends TestCase
             $field => $value,
         ]], 'Changed section');
 
-        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['sections' => [$payload]])
+        $this->actingAs($admin)->postJson(route('admin.home-content.save'), ['version' => $this->homeVersion($admin), 'sections' => [$payload]])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('sections.0.items.0');
 

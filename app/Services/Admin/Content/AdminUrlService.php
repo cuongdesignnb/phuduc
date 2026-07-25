@@ -13,11 +13,11 @@ class AdminUrlService
             return null;
         }
         if (preg_match('/[\x00-\x1F\x7F]/', $url) || preg_match('/^(?:javascript|data|vbscript|file):/i', $url) || str_starts_with($url, '//')) {
-            throw ValidationException::withMessages(['items' => 'Menu URL is not safe.']);
+            throw ValidationException::withMessages(['items' => 'URL menu không an toàn.']);
         }
         if ($url[0] === '#') {
             if (preg_match('/^#[A-Za-z][A-Za-z0-9_-]*$/', $url) !== 1) {
-                throw ValidationException::withMessages(['items' => 'Menu anchor is not valid.']);
+                throw ValidationException::withMessages(['items' => 'Mỏ neo menu không hợp lệ.']);
             }
 
             return $url;
@@ -38,6 +38,6 @@ class AdminUrlService
             return $url;
         }
 
-        throw ValidationException::withMessages(['items' => 'Menu URL is not valid.']);
+        throw ValidationException::withMessages(['items' => 'URL menu không hợp lệ.']);
     }
 }

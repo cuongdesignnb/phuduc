@@ -37,9 +37,14 @@ class AdminHomeContentService
             $config = array_replace_recursive($definition['defaults'], $section?->settings_json ?? []);
             if (! empty($config['image'])) {
                 $config['image_media_id'] = $mediaIds[$this->mediaReferences->normalize($config['image'])] ?? null;
+                $config['image_is_legacy'] = $config['image_media_id'] === null;
             }
 
-            return ['id' => $section?->id, 'key' => $key, 'type' => $section?->type ?: $definition['type'], 'enabled' => $section?->is_enabled ?? true, 'sort_order' => $section?->sort_order ?? 999, 'variant' => $section?->variant ?: $definition['allowed_variants'][0], 'heading' => ['eyebrow' => $section?->settings_json['eyebrow'] ?? null, 'title' => $section?->title ?? $definition['label'], 'subtitle' => $section?->subtitle, 'description' => $section?->description], 'config' => $config, 'items' => $section?->items->map(fn (HomeSectionItem $item) => ['id' => $item->id, 'title' => $item->title, 'subtitle' => $item->subtitle, 'description' => $item->description, 'image' => $item->image, 'media_id' => $mediaIds[$this->mediaReferences->normalize($item->image)] ?? null, 'icon' => $item->icon, 'url' => $item->url, 'metadata' => $item->metadata_json ?? [], 'enabled' => $item->is_active, 'sort_order' => $item->sort_order])->values()->all() ?? []];
+            return ['id' => $section?->id, 'key' => $key, 'type' => $section?->type ?: $definition['type'], 'enabled' => $section?->is_enabled ?? true, 'sort_order' => $section?->sort_order ?? 999, 'variant' => $section?->variant ?: $definition['allowed_variants'][0], 'heading' => ['eyebrow' => $section?->settings_json['eyebrow'] ?? null, 'title' => $section?->title ?? $definition['label'], 'subtitle' => $section?->subtitle, 'description' => $section?->description], 'config' => $config, 'items' => $section?->items->map(function (HomeSectionItem $item) use ($mediaIds): array {
+                $mediaId = $mediaIds[$this->mediaReferences->normalize($item->image)] ?? null;
+
+                return ['id' => $item->id, 'title' => $item->title, 'subtitle' => $item->subtitle, 'description' => $item->description, 'image' => $item->image, 'media_id' => $mediaId, 'image_is_legacy' => filled($item->image) && $mediaId === null, 'icon' => $item->icon, 'url' => $item->url, 'metadata' => $item->metadata_json ?? [], 'enabled' => $item->is_active, 'sort_order' => $item->sort_order];
+            })->values()->all() ?? []];
         })->sortBy('sort_order')->values()->all();
 
         return $this->pages->envelope($user, 'admin_home_content_index', 'Nội dung trang chủ', [['label' => 'Nội dung trang chủ', 'url' => route('admin.home-content.index')]], ['sections' => $items, 'registry' => $definitions, 'version' => $this->version($sections, $sections->flatMap->items)]);
@@ -92,15 +97,19 @@ class AdminHomeContentService
         if (! $definition) {
             throw ValidationException::withMessages(['sections' => 'Section chưa được đăng ký trong registry.']);
         }
-        $config = $data['config'] ?? [];
-        if (array_key_exists('image', $config) && filled($config['image']) && empty($config['image_media_id'])) {
+        $section = HomeSection::query()->firstOrNew(['key' => $data['key']]);
+        $config = array_replace($section->settings_json ?? [], $data['config'] ?? []);
+        if (array_key_exists('image', $config) && filled($config['image']) && empty($config['image_media_id']) && ! $this->isUnchangedLegacyPath($section->settings_json['image'] ?? null, $config['image'])) {
             throw ValidationException::withMessages(['sections' => 'Ảnh trang chủ phải được chọn từ Media bằng ID.']);
         }
         if (array_key_exists('image_media_id', $config)) {
-            $config['image'] = $config['image_media_id'] ? $this->assets->requireImage((int) $config['image_media_id'])->file_path : null;
+            if ($config['image_media_id']) {
+                $config['image'] = $this->assets->requireImage((int) $config['image_media_id'])->file_path;
+            } elseif (! $this->isUnchangedLegacyPath($section->settings_json['image'] ?? null, $config['image'] ?? null)) {
+                $config['image'] = null;
+            }
             unset($config['image_media_id']);
         }
-        $section = HomeSection::query()->firstOrNew(['key' => $data['key']]);
         $section->fill(['type' => $definition['type'], 'title' => $data['heading']['title'] ?? null, 'subtitle' => $data['heading']['subtitle'] ?? null, 'description' => $data['heading']['description'] ?? null, 'variant' => $data['variant'], 'is_enabled' => $data['enabled'], 'sort_order' => $data['sort_order'], 'settings_json' => array_intersect_key($config, array_flip($definition['config_keys']))])->save();
         if ($definition['supports_items']) {
             $this->syncItemsForCompatibility($section, $data['items'] ?? [], $definition['item_fields'], true);
@@ -117,13 +126,17 @@ class AdminHomeContentService
         $metadata = array_values(array_intersect($allowedFields, self::METADATA_FIELDS));
         $kept = [];
         foreach ($items as $data) {
-            if ($strictMedia && array_key_exists('image', $data) && filled($data['image']) && empty($data['media_id'])) {
+            $item = filled($data['id'] ?? null) ? HomeSectionItem::query()->where('home_section_id', $section->id)->findOrFail($data['id']) : new HomeSectionItem;
+            if ($strictMedia && array_key_exists('image', $data) && filled($data['image']) && empty($data['media_id']) && ! $this->isUnchangedLegacyPath($item->image, $data['image'])) {
                 throw ValidationException::withMessages(['sections' => 'Ảnh mục trang chủ phải được chọn từ Media bằng ID.']);
             }
             if (array_key_exists('media_id', $data)) {
-                $data['image'] = $data['media_id'] ? $this->assets->requireImage((int) $data['media_id'])->file_path : null;
+                if ($data['media_id']) {
+                    $data['image'] = $this->assets->requireImage((int) $data['media_id'])->file_path;
+                } elseif (! $this->isUnchangedLegacyPath($item->image, $data['image'] ?? null)) {
+                    $data['image'] = null;
+                }
             }
-            $item = filled($data['id'] ?? null) ? HomeSectionItem::query()->where('home_section_id', $section->id)->findOrFail($data['id']) : new HomeSectionItem;
             $item->fill(['home_section_id' => $section->id, 'section_key' => $section->key, ...Arr::only($data, $business), 'metadata_json' => Arr::only($data['metadata'] ?? [], $metadata), 'is_active' => $data['enabled'], 'sort_order' => $data['sort_order']])->save();
             $kept[] = $item->id;
         }
@@ -148,5 +161,10 @@ class AdminHomeContentService
     private function limit(array $filters): int
     {
         return min(20, max(1, (int) ($filters['limit'] ?? 20)));
+    }
+
+    private function isUnchangedLegacyPath(?string $current, ?string $submitted): bool
+    {
+        return filled($current) && $current === $submitted && $this->mediaReferences->idForPath($current) === null;
     }
 }

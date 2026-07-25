@@ -71,22 +71,22 @@ class AdminSettingService
     private function validate(array $definition, string $value): void
     {
         if ($definition['max'] !== null && mb_strlen($value) > $definition['max']) {
-            throw ValidationException::withMessages(['settings' => $definition['label'].' exceeds its maximum length.']);
+            throw ValidationException::withMessages(['settings' => $definition['label'].' vượt quá độ dài tối đa cho phép.']);
         }
         if ($definition['type'] === 'color' && $value !== '' && ! preg_match('/^#[0-9a-fA-F]{6}$/', $value)) {
-            throw ValidationException::withMessages(['settings' => 'Color must be a valid hex value.']);
+            throw ValidationException::withMessages(['settings' => 'Màu phải là mã hex hợp lệ.']);
         }
         if ($definition['type'] === 'font' && $value !== '' && ! array_key_exists($value, ThemeTokenService::FONT_OPTIONS)) {
-            throw ValidationException::withMessages(['settings' => 'Font is not allowed.']);
+            throw ValidationException::withMessages(['settings' => 'Font đã chọn không được hỗ trợ.']);
         }
         if ($definition['type'] === 'image' && $value !== '' && ! $this->mediaReferences->idForPath($value)) {
             throw ValidationException::withMessages(['settings' => 'Ảnh phải được chọn từ Thư viện Media.']);
         }
         if ($definition['key'] === 'site.email' && $value !== '' && ! filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw ValidationException::withMessages(['settings' => 'Email is invalid.']);
+            throw ValidationException::withMessages(['settings' => 'Email không hợp lệ.']);
         }
         if (in_array($definition['key'], ['site.facebook', 'site.youtube', 'site.zalo', 'site.map_embed'], true) && $value !== '' && ! filter_var($value, FILTER_VALIDATE_URL)) {
-            throw ValidationException::withMessages(['settings' => 'URL is invalid.']);
+            throw ValidationException::withMessages(['settings' => 'URL không hợp lệ.']);
         }
     }
 }

@@ -1,6 +1,9 @@
 VIETNAMESE_CONTRACT=PASS
 UNINTENDED_ENGLISH_ADMIN_LABEL_HITS=0
+UNINTENDED_ENGLISH_ADMIN_MESSAGE_HITS=0
 MISSING_VIETNAMESE_DIACRITIC_LABEL_HITS=0
 MOJIBAKE_HITS=0
+AUDIT_SCOPE=all Admin Pages, Admin Components, Admin Services, Admin Controllers, Admin Form Requests
 PRODUCT_EDITOR=AdvancedTextEditor with image-only Media picker
 TEST=AdminVietnameseContractTest, ProductRichEditorContractTest
+OPTIONS_STATUS_SUCCESS_VALIDATION=PASS

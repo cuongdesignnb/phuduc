@@ -1,7 +1,10 @@
 CONCURRENCY=PASS
+VERSION_RULE=required|string|max:100
+REQUIRED_MUTATION_VERSION_BYPASS=NO
 MENU_DETAILS=lockForUpdate_and_assertVersion
 MENU_STRUCTURE=lockForUpdate_and_assertVersion
 HOME_CONTENT=deterministic_section_item_fingerprint
 SETTINGS=deterministic_setting_fingerprint
 POST=lockForUpdate_and_assertVersion
 STALE_SESSION_REJECTION=PASS
+TEST=ConcurrencyRequiredTest (6 missing-version behavioral cases)

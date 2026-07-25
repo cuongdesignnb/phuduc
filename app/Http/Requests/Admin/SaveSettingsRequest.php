@@ -14,6 +14,6 @@ class SaveSettingsRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['settings' => ['required', 'array', 'max:100'], 'settings.*.key' => ['required', 'string', 'max:100'], 'settings.*.value' => ['nullable', 'string'], 'settings.*.media_id' => ['nullable', 'integer', MediaAssetRule::image()], 'version' => ['nullable', 'string', 'max:100']];
+        return ['settings' => ['required', 'array', 'max:100'], 'settings.*.key' => ['required', 'string', 'max:100'], 'settings.*.value' => ['nullable', 'string'], 'settings.*.media_id' => ['nullable', 'integer', MediaAssetRule::image()], 'version' => ['required', 'string', 'max:100']];
     }
 }

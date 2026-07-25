@@ -11,7 +11,7 @@ class UpdateProductRequest extends StoreProductRequest
         $product = $this->route('product');
         $rules = parent::rules();
         $rules['slug'] = ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('products', 'slug')->ignore($product?->id)];
-        $rules['version'] = ['nullable', 'string', 'max:100'];
+        $rules['version'] = ['required', 'string', 'max:100'];
 
         return $rules;
     }

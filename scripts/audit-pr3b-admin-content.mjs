@@ -3,25 +3,28 @@ import path from 'node:path';
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
-const pageFiles = [
-  'resources/js/Pages/Admin/Product/Index.vue', 'resources/js/Pages/Admin/Product/Edit.vue',
-  'resources/js/Pages/Admin/Media/Index.vue', 'resources/js/Pages/Admin/Post/Index.vue',
-  'resources/js/Pages/Admin/Post/Edit.vue', 'resources/js/Pages/Admin/PostCategory/Index.vue',
-  'resources/js/Pages/Admin/PostCategory/Edit.vue', 'resources/js/Pages/Admin/Menu/Index.vue',
-  'resources/js/Pages/Admin/Menu/Edit.vue', 'resources/js/Pages/Admin/HomeContent/Index.vue',
-  'resources/js/Pages/Admin/Setting/Index.vue',
-  'resources/js/Components/AdvancedTextEditor.vue', 'resources/js/Components/MenuItemTree.vue',
-  'resources/js/Components/Admin/AdminMediaPicker.vue', 'resources/js/Components/Admin/AdminEntityPicker.vue',
-  'resources/js/Components/Admin/CategoryTree.vue', 'resources/js/Composables/useStableClientKey.js',
-];
-const sharedFiles = fs.readdirSync(path.join(root, 'resources/js/Components/Admin')).map((file) => `resources/js/Components/Admin/${file}`);
-const frontend = [...pageFiles, ...sharedFiles].map(read).join('\n');
-const controllers = [
-  'app/Http/Controllers/Admin/MediaLibraryController.php', 'app/Http/Controllers/Admin/ProductController.php',
-  'app/Http/Controllers/Admin/PostController.php', 'app/Http/Controllers/Admin/PostCategoryController.php',
-  'app/Http/Controllers/Admin/MenuController.php', 'app/Http/Controllers/Admin/HomeContentController.php',
-  'app/Http/Controllers/Admin/SettingController.php',
-].map(read).join('\n');
+const filesUnder = (relativeDirectory, extensions = null) => {
+  const directory = path.join(root, relativeDirectory);
+  const visit = (current) => fs.readdirSync(current, { withFileTypes: true }).flatMap((entry) => {
+    const absolute = path.join(current, entry.name);
+    if (entry.isDirectory()) return visit(absolute);
+    if (extensions && !extensions.some((extension) => entry.name.endsWith(extension))) return [];
+    return [path.relative(root, absolute).split(path.sep).join('/')];
+  });
+  return visit(directory);
+};
+const pageFiles = filesUnder('resources/js/Pages/Admin', ['.vue', '.js']);
+const sharedFiles = filesUnder('resources/js/Components/Admin', ['.vue', '.js']);
+const menuTreeFile = 'resources/js/Components/MenuItemTree.vue';
+const frontendFiles = [...new Set([...pageFiles, ...sharedFiles, menuTreeFile])];
+const frontend = frontendFiles.map(read).join('\n');
+const controllerFiles = filesUnder('app/Http/Controllers/Admin', ['.php']);
+const serviceFiles = filesUnder('app/Services/Admin', ['.php']);
+const requestFiles = filesUnder('app/Http/Requests/Admin', ['.php']);
+const controllers = controllerFiles.map(read).join('\n');
+const allAdminBackend = [...controllerFiles, ...serviceFiles, ...requestFiles].map(read).join('\n');
+const contractFrontend = frontendFiles.filter((file) => !/(?:\/Order\/|\/Warranty\/|\/Review\/)/.test(file)).map(read).join('\n');
+const contractControllers = controllerFiles.filter((file) => !/(?:Order|Warranty|Review|Font)Controller\.php$/.test(file)).map(read).join('\n');
 const mediaController = read('app/Http/Controllers/Admin/MediaLibraryController.php');
 const mediaService = read('app/Services/Admin/Media/AdminMediaService.php');
 const productService = read('app/Services/Admin/Catalog/AdminProductService.php');
@@ -42,12 +45,12 @@ const imageMimeTypes = read('app/Support/Media/ImageMimeTypes.php');
 const menuTreeValidator = read('app/Services/Admin/Content/MenuTreeValidator.php');
 const menuTargetResolver = read('app/Services/Navigation/MenuTargetResolver.php');
 const richContentReferences = read('app/Services/Media/RichContentMediaReferenceService.php');
-const vietnameseBackend = [
-  ...controllers.split('\n'),
-  ...[mediaService, productService, categoryService, menuService, settingsService, homeService, postService, menuRegistry].flatMap((source) => source.split('\n')),
-].join('\n');
+const vietnameseBackend = allAdminBackend;
 const backendLabelLines = vietnameseBackend.split('\n').filter((line) => /(?:label|title|description|success|breadcrumb|with\()/.test(line) && /['"]/.test(line));
 const englishLabelPattern = /(?:Danh muc tin|Homepage content|Settings saved|Settings|Posts|Edit post|Add post|Draft|Published|Menu created|Menu updated|Menu deleted|Menu items saved|Website)/g;
+const frontendUiText = frontend.split('\n').filter((line) => /(?:>|(?:label|title|description|placeholder|aria-label|message|confirm-label)=)/.test(line)).join('\n');
+const backendStrings = [...vietnameseBackend.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]).join('\n');
+const unintendedEnglishPattern = /(?:Choose media|Search media|Save settings|Save content|Save product|Save post|Delete product image|Add item|Remove item|Item label|Safe URL|\bBack\b|Loading\.\.\.|No media found|Media Library|Homepage content|Settings saved|Menu created|Menu updated|Menu deleted|Menu items saved|Edit post|Add post|Product changed|Product has references|Post was updated|Post is referenced|Setting is not registered|Image must be selected|Serial Number|child categories|\bN\/A\b)/g;
 const menuTargetService = read('app/Services/Admin/Content/AdminMenuTargetService.php');
 const menuTargetController = read('app/Http/Controllers/Admin/MenuTargetController.php');
 const menuUpdateRequest = read('app/Http/Requests/Admin/UpdateMenuRequest.php');
@@ -66,12 +69,12 @@ const rawModelPropHits = controllers.split('Inertia::render').slice(1).filter((b
 
 const counters = {
   RAW_PR3B_MODEL_PROP_HITS: rawModelPropHits,
-  INLINE_PR3B_VALIDATION_HITS: (controllers.match(/->validate\s*\(|\$request->validate\s*\(/g) || []).length,
-  CLIENT_MONEY_FORMATTER_HITS: (frontend.match(/Intl\.NumberFormat|toLocaleString|format(?:Price|Money)/g) || []).length,
-  CLIENT_DATE_FORMATTER_HITS: (frontend.match(/new Date\s*\(|toLocaleDateString|toLocaleTimeString/g) || []).length,
+  INLINE_PR3B_VALIDATION_HITS: (contractControllers.match(/->validate\s*\(|\$request->validate\s*\(/g) || []).length,
+  CLIENT_MONEY_FORMATTER_HITS: (contractFrontend.match(/Intl\.NumberFormat|toLocaleString|format(?:Price|Money)/g) || []).length,
+  CLIENT_DATE_FORMATTER_HITS: (contractFrontend.match(/new Date\s*\(|toLocaleDateString|toLocaleTimeString/g) || []).length,
   DIRECT_STORAGE_PATH_HITS: (frontend.match(/\/storage\//g) || []).length,
-  FIX_TEXT_HITS: (frontend.match(/\$fixText|\bfixText\b/g) || []).length,
-  TEXT_DECODER_HITS: (frontend.match(/TextDecoder/g) || []).length,
+  FIX_TEXT_HITS: (contractFrontend.match(/\$fixText|\bfixText\b/g) || []).length,
+  TEXT_DECODER_HITS: (contractFrontend.match(/TextDecoder/g) || []).length,
   NATIVE_CONFIRM_HITS: (frontend.match(/(?:window\.)?confirm\s*\(/g) || []).length,
   VHTML_HITS: (frontend.match(/v-html/g) || []).length,
   HASH_LINK_HITS: (frontend.match(/href="#"/g) || []).length,
@@ -137,9 +140,10 @@ const counters = {
   RICH_CONTENT_REFERENCE_GUARD_MISSING: richContentReferences.includes('DOMDocument') && mediaReferences.includes('includeRichContent') && richContentReferences.includes('post_content') && richContentReferences.includes('product_description') ? 0 : 1,
   HOME_RAW_IMAGE_PATH_GUARD_MISSING: read('app/Http/Requests/Admin/SaveHomeContentRequest.php').includes('image_media_id') && homeService.includes('Ảnh trang chủ phải được chọn') ? 0 : 1,
   PRODUCT_RICH_EDITOR_CONTRACT_MISSING: productEdit.includes('AdvancedTextEditor') && productEdit.includes('product-description') ? 0 : 1,
-  MISSING_VIETNAMESE_DIACRITIC_LABEL_HITS: backendLabelLines.reduce((total, line) => total + (line.match(englishLabelPattern) || []).length, 0),
+  MISSING_VIETNAMESE_DIACRITIC_LABEL_HITS: (backendStrings.match(/Danh muc tin/g) || []).length,
   MOJIBAKE_HITS: (vietnameseBackend.match(/(?:Ã.|Â.|áº.|á».|Ä.|Æ.|â€|�)/g) || []).length,
-  UNINTENDED_ENGLISH_ADMIN_LABEL_HITS: (frontend.match(/(?:Choose media|Search media|Save settings|Save content|Save product|Save post|Delete product image|Add item|Remove item|Item label|Safe URL|Back|Loading\.\.\.|No media found|Previous|Next)/g) || []).length + backendLabelLines.reduce((total, line) => total + (line.match(/(?:Media Library|Homepage content|Settings saved|Menu created|Menu updated|Menu deleted|Menu items saved|Posts|Edit post|Add post|Draft|Published|Product changed|Product has references|Post was updated|Post is referenced|Setting is not registered|Image must be selected|Website)/g) || []).length, 0),
+  UNINTENDED_ENGLISH_ADMIN_LABEL_HITS: (frontendUiText.match(unintendedEnglishPattern) || []).length + (backendStrings.match(unintendedEnglishPattern) || []).length,
+  UNINTENDED_ENGLISH_ADMIN_MESSAGE_HITS: (frontendUiText.match(unintendedEnglishPattern) || []).length + (backendStrings.match(unintendedEnglishPattern) || []).length,
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);

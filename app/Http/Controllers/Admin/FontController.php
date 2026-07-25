@@ -21,7 +21,7 @@ class FontController extends Controller
         $ext = $file->getClientOriginalExtension();
 
         // Store font file
-        $path = $file->storeAs('fonts', time() . '_' . $originalName, 'public');
+        $path = $file->storeAs('fonts', time().'_'.$originalName, 'public');
 
         // Save to settings
         $key = "font.custom_{$request->target}";
@@ -59,6 +59,6 @@ class FontController extends Controller
         Setting::where('key', $key)->delete();
         Setting::where('key', $nameKey)->delete();
 
-        return response()->json(['message' => 'Font deleted']);
+        return response()->json(['message' => 'Font đã được xóa']);
     }
 }

@@ -11,7 +11,8 @@ class UpdatePostRequest extends StorePostRequest
         $post = $this->route('post');
         $rules = parent::rules();
         $rules['slug'] = ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('posts', 'slug')->ignore($post?->id)];
-        $rules['version'] = ['nullable', 'string', 'max:100'];
+        $rules['version'] = ['required', 'string', 'max:100'];
+
         return $rules;
     }
 }
