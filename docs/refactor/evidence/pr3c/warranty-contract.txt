@@ -1,0 +1,2 @@
+Warranty Admin index/edit use canonical page.module DTOs.
+DTO includes canonical serial, product/customer snapshot, source, order link, dates, stored/effective status, version and actions.

@@ -1,0 +1,2 @@
+Public order lookup exposes order number, status/date, item snapshots and totals only.
+Shipping address, email, full phone, notes, history, public_token and checkout_intent are absent from the public DTO.

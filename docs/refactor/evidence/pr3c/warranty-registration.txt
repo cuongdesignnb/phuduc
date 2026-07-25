@@ -1,0 +1,3 @@
+Order mode validates order-item ownership and snapshots product/customer fields from the selected order.
+Manual mode requires product, customer name and normalized Vietnamese phone.
+Remote order picker is bounded to 20; no fixed first-100 order load remains.

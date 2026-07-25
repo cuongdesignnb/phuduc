@@ -1,0 +1,2 @@
+Product approvedReviews relation remains the single storefront visibility source.
+Product detail counts, averages, structured data and review list use approved reviews only.

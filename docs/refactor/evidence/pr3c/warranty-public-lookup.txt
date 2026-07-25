@@ -1,0 +1,3 @@
+Public lookup supports manual warranties and legacy linked warranties.
+It normalizes serial and phone, checks snapshot phone first, then legacy order phone, before presenting any result.
+Failure remains generic and no customer phone or void reason is returned.

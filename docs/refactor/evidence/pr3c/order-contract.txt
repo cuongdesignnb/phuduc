@@ -1,0 +1,4 @@
+Admin order index and detail use page.module DTO envelopes.
+Index selects explicit fields and counts items/warranties without loading all order items.
+Detail preserves immutable OrderItem snapshots and exposes current product URL separately.
+Public tokens and checkout intents are absent from both Admin DTOs and public lookup DTOs.

@@ -1,0 +1,3 @@
+Checkout remains the only stock decrement path.
+Pending/processing cancellation locks order items and products in sorted ID order and increments each resolvable product once.
+Missing product links are logged as unresolved lines; repeated cancellation and terminal states do not restore again.

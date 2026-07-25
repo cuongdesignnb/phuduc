@@ -1,0 +1,3 @@
+Command: isolated SQLite in-memory Laravel test suite.
+Result: 288 passed, 1 skipped, 2328 assertions.
+Baseline: 279 passed, 1 skipped, 2256 assertions.

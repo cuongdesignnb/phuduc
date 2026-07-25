@@ -1,0 +1,2 @@
+SQLite AdminOperationsQueryCountTest: ORDER_INDEX_Q1=1, ORDER_INDEX_Q30=2.
+Bound: Q30 <= Q1 + 2, PASS.

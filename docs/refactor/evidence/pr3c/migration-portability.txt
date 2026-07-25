@@ -1,0 +1,3 @@
+SQLite temporary file: migrate, rollback --step=2, migrate: PASS.
+MySQL temporary database: migrate, rollback --step=2, migrate: PASS.
+Verified PR3C order history and warranty extension migrations; temporary stores removed.

@@ -1,0 +1,2 @@
+SQLite AdminOperationsQueryCountTest: WARRANTY_INDEX_Q1=1, WARRANTY_INDEX_Q30=3.
+Bound: Q30 <= Q1 + 2, PASS. Order hydration is bounded.

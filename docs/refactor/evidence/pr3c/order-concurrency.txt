@@ -1,0 +1,3 @@
+Order status mutation requires the current updated-at version.
+Stale versions return the Vietnamese reload message and do not change status or stock.
+SQLite feature coverage passes stale and repeated cancellation cases.

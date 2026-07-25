@@ -1,0 +1,3 @@
+Order detail computes the sum of immutable item totals and compares it with stored total_amount.
+The DTO returns numeric totals, server-formatted displays, is_equal and a visible warning on mismatch.
+No historical total is auto-corrected when the detail page opens.
