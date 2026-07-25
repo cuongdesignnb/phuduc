@@ -3,40 +3,33 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DeleteReviewRequest;
+use App\Http\Requests\Admin\ReviewIndexRequest;
+use App\Http\Requests\Admin\UpdateReviewStatusRequest;
 use App\Models\Review;
-use Illuminate\Http\Request;
+use App\Services\Admin\Operations\AdminReviewService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ReviewController extends Controller
 {
-    public function index(Request $request)
+    public function index(ReviewIndexRequest $request, AdminReviewService $reviews): Response
     {
-        $reviews = Review::with('product:id,name')
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
-
-        return Inertia::render('Admin/Review/Index', [
-            'reviews' => $reviews,
-            'filters' => $request->only('status'),
-        ]);
+        return Inertia::render('Admin/Review/Index', $reviews->index($request->user(), $request->validated()));
     }
 
-    public function updateStatus(Request $request, Review $review)
+    public function updateStatus(UpdateReviewStatusRequest $request, Review $review, AdminReviewService $reviews): RedirectResponse
     {
-        $request->validate([
-            'status' => 'required|in:pending,approved,rejected',
-        ]);
-
-        $review->update(['status' => $request->status]);
+        $reviews->updateStatus($review, $request->user(), $request->validated());
 
         return back()->with('success', 'Trạng thái đánh giá đã được cập nhật.');
     }
 
-    public function destroy(Review $review)
+    public function destroy(DeleteReviewRequest $request, Review $review, AdminReviewService $reviews): RedirectResponse
     {
-        $review->delete();
+        $reviews->delete($review, $request->validated());
+
         return back()->with('success', 'Đánh giá đã được xóa.');
     }
 }

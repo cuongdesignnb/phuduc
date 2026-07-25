@@ -28,6 +28,11 @@ class Order extends Model
         return $this->hasMany(Warranty::class);
     }
 
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class)->oldest('created_at')->oldest('id');
+    }
+
     public static function generateOrderNumber(): string
     {
         return 'ORD-'.strtoupper(uniqid());

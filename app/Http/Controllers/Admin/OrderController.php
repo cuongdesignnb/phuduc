@@ -3,45 +3,29 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\OrderIndexRequest;
+use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Models\Order;
-use Illuminate\Http\Request;
+use App\Services\Admin\Operations\AdminOrderService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+    public function index(OrderIndexRequest $request, AdminOrderService $orders): Response
     {
-        $orders = Order::with('items')
-            ->when($request->search, fn($q, $s) => $q->where('order_number', 'like', "%{$s}%")
-                ->orWhere('customer_name', 'like', "%{$s}%")
-                ->orWhere('customer_phone', 'like', "%{$s}%"))
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
-
-        return Inertia::render('Admin/Order/Index', [
-            'orders' => $orders,
-            'filters' => $request->only('search', 'status'),
-        ]);
+        return Inertia::render('Admin/Order/Index', $orders->index($request->user(), $request->validated()));
     }
 
-    public function show(Order $order)
+    public function show(Order $order, AdminOrderService $orders): Response
     {
-        $order->load(['items', 'warranties']);
-
-        return Inertia::render('Admin/Order/Show', [
-            'order' => $order,
-        ]);
+        return Inertia::render('Admin/Order/Show', $orders->detail(request()->user(), $order));
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(UpdateOrderStatusRequest $request, Order $order, AdminOrderService $orders): RedirectResponse
     {
-        $request->validate([
-            'status' => 'required|in:pending,processing,shipping,completed,cancelled',
-        ]);
-
-        $order->update(['status' => $request->status]);
+        $orders->updateStatus($order, $request->user(), $request->validated());
 
         return back()->with('success', 'Trạng thái đơn hàng đã được cập nhật.');
     }

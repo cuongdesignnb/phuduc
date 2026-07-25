@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Storefront\WarrantyLookupRequest;
-use App\Models\Warranty;
+use App\Services\Admin\Operations\WarrantyLookupService;
 use App\Services\Storefront\StorefrontSeoService;
 use App\Services\Storefront\WarrantyPresentationService;
 use Inertia\Inertia;
@@ -15,40 +15,23 @@ class WarrantyLookupController extends Controller
 
     public function index(StorefrontSeoService $seo)
     {
-        return Inertia::render('Guest/WarrantyLookup', [
-            'page' => [
-                'type' => 'warranty_lookup',
-                'seo' => $seo->meta(['title' => 'Tra cứu bảo hành', 'robots' => 'noindex, nofollow']),
-                'breadcrumbs' => [
-                    ['name' => 'Trang chủ', 'url' => route('home')],
-                    ['name' => 'Tra cứu bảo hành'],
-                ],
-                'lookup' => ['searched' => false, 'result' => null, 'message' => null],
-            ],
-        ]);
+        return Inertia::render('Guest/WarrantyLookup', ['page' => $this->page($seo, ['searched' => false, 'result' => null, 'message' => null])]);
     }
 
-    public function lookup(WarrantyLookupRequest $request, WarrantyPresentationService $warranties, StorefrontSeoService $seo)
+    public function lookup(WarrantyLookupRequest $request, WarrantyLookupService $lookup, WarrantyPresentationService $presentation, StorefrontSeoService $seo)
     {
-        $warranty = Warranty::query()
-            ->where('serial_number', $request->string('serial_number'))
-            ->whereHas('order', fn ($query) => $query->where('customer_phone', $request->string('customer_phone')))
-            ->first();
+        $warranty = $lookup->find($request->string('serial_number')->toString(), $request->string('customer_phone')->toString());
 
-        return Inertia::render('Guest/WarrantyLookup', [
-            'page' => [
-                'type' => 'warranty_lookup',
-                'seo' => $seo->meta(['title' => 'Tra cứu bảo hành', 'robots' => 'noindex, nofollow']),
-                'breadcrumbs' => [
-                    ['name' => 'Trang chủ', 'url' => route('home')],
-                    ['name' => 'Tra cứu bảo hành'],
-                ],
-                'lookup' => [
-                    'searched' => true,
-                    'result' => $warranty ? $warranties->present($warranty) : null,
-                    'message' => $warranty ? null : self::FAILURE,
-                ],
-            ],
-        ]);
+        return Inertia::render('Guest/WarrantyLookup', ['page' => $this->page($seo, ['searched' => true, 'result' => $warranty ? $presentation->present($warranty) : null, 'message' => $warranty ? null : self::FAILURE])]);
+    }
+
+    private function page(StorefrontSeoService $seo, array $lookup): array
+    {
+        return [
+            'type' => 'warranty_lookup',
+            'seo' => $seo->meta(['title' => 'Tra cứu bảo hành', 'robots' => 'noindex, nofollow']),
+            'breadcrumbs' => [['name' => 'Trang chủ', 'url' => route('home')], ['name' => 'Tra cứu bảo hành']],
+            'lookup' => $lookup,
+        ];
     }
 }

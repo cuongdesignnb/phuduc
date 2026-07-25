@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
 use App\Models\Warranty;
+use App\Services\Admin\Operations\OrderStatusRegistry;
+use App\Services\Admin\Operations\WarrantyStatusService;
 use Carbon\CarbonImmutable;
 
 class AdminDashboardService
@@ -16,6 +18,8 @@ class AdminDashboardService
         private readonly AdminNavigationService $navigation,
         private readonly AdminPermissionService $permissions,
         private readonly AdminPresentationService $presentation,
+        private readonly OrderStatusRegistry $orderStatuses,
+        private readonly WarrantyStatusService $warrantyStatuses,
     ) {}
 
     /**
@@ -40,7 +44,7 @@ class AdminDashboardService
             ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as pending_reviews', ['pending'])
             ->first();
         $publishedPosts = Post::query()->where('status', 'published')->count();
-        $activeWarranties = Warranty::query()->where('status', 'active')->count();
+        $activeWarranties = $this->warrantyStatuses->activeForDashboard(Warranty::query())->count();
 
         $ordersByStatus = Order::query()
             ->select('status')
@@ -50,7 +54,7 @@ class AdminDashboardService
             ->get()
             ->map(fn (Order $order): array => [
                 'key' => $order->status,
-                'label' => $this->presentation->statusLabel($order->status),
+                'label' => $this->orderStatuses->label($order->status),
                 'count' => (int) $order->count,
             ])->values()->all();
 

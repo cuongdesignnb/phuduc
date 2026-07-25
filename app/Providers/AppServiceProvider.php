@@ -46,6 +46,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('commerce-cart', fn (Request $request) => Limit::perMinute(60)->by($commerceSessionKey($request)));
         RateLimiter::for('commerce-checkout', fn (Request $request) => Limit::perMinute(10)->by($commerceSessionKey($request)));
+        RateLimiter::for('commerce-reviews', fn (Request $request) => [
+            Limit::perMinutes(10, 5)->by($commerceSessionKey($request)),
+            Limit::perDay(20)->by('ip:'.$request->ip()),
+        ]);
         RateLimiter::for('commerce-order-lookup', fn (Request $request) => Limit::perMinute(10)
             ->by('ip:'.$request->ip()));
         RateLimiter::for('commerce-warranty-lookup', fn (Request $request) => Limit::perMinute(10)

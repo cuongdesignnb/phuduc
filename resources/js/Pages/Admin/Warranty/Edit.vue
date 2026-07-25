@@ -1,92 +1,19 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import AdminDataCard from '@/Components/Admin/AdminDataCard.vue';
+import AdminEntityPicker from '@/Components/Admin/AdminEntityPicker.vue';
+import AdminFormField from '@/Components/Admin/AdminFormField.vue';
+import AdminPageHeader from '@/Components/Admin/AdminPageHeader.vue';
+import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import axios from 'axios';
 
-const props = defineProps({ warranty: Object, orders: Array });
-
-const fixText = (value) => {
-    if (typeof value !== 'string') return value;
-    const codes = Array.from(value).map((char) => char.charCodeAt(0));
-    const isBroken = codes.some((code) => [0xc2, 0xc3, 0xc4, 0xc6, 0xca, 0xfffd].includes(code))
-        || codes.some((code) => code >= 0x80 && code <= 0x9f)
-        || codes.some((code, index) => code === 0xe1 && [0xba, 0xbb].includes(codes[index + 1]));
-    if (!isBroken) return value;
-    try {
-        const bytes = Uint8Array.from(Array.from(value), (char) => char.charCodeAt(0) & 255);
-        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-    } catch {
-        return value;
-    }
-};
-
-const form = useForm({
-    serial_number: props.warranty?.serial_number || '',
-    product_name: props.warranty?.product_name ? fixText(props.warranty.product_name) : '',
-    order_id: props.warranty?.order_id || '',
-    activation_date: props.warranty?.activation_date || '',
-    expiration_date: props.warranty?.expiration_date || '',
-    status: props.warranty?.status || 'active',
-});
-
-const save = () => {
-    if (props.warranty) {
-        form.put(route('admin.warranties.update', props.warranty.id));
-    } else {
-        form.post(route('admin.warranties.store'));
-    }
-};
+const props = defineProps({ page: { type: Object, required: true } }); const module = props.page.module; const existing = module.warranty; const mode = ref(existing?.order_id ? 'order' : 'manual'); const items = ref(module.order_items || []);
+const form = useForm({ mode: mode.value, order_id: existing?.order_id || null, order_item_id: existing?.order_item_id || null, serial_number: existing?.serial || '', product_name: existing?.product_name || '', customer_name: existing?.customer_name || '', customer_phone: existing?.customer_phone || '', activation_date: existing?.activation_date || '', expiration_date: existing?.expiration_date || '', version: existing?.version || '' });
+watch(mode, (value) => { form.mode = value; if (value === 'manual') { form.order_id = null; form.order_item_id = null; items.value = []; } });
+watch(() => form.order_id, async (value) => { if (!value || mode.value !== 'order') return; const response = await axios.get(route('admin.warranty-lookups.order-items', value)); items.value = response.data.data || []; });
+const save = () => existing ? form.put(route('admin.warranties.update', existing.id)) : form.post(route('admin.warranties.store'));
 </script>
 
-<template>
-    <Head :title="warranty ? 'Sửa Bảo hành' : 'Tạo Bảo hành'" />
-    <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-2xl font-display font-bold text-white">{{ warranty ? 'Sửa Bảo hành' : 'Tạo Bảo hành mới' }}</h2>
-        </template>
-        <div class="py-6">
-            <div class="mx-auto max-w-3xl px-6">
-                <form @submit.prevent="save" class="rounded-2xl border border-white/5 bg-admin-surface/50 backdrop-blur-sm p-6 space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-admin-content mb-1.5">Số serial *</label>
-                            <input v-model="form.serial_number" type="text" required class="w-full rounded-xl border border-white/10 bg-admin-surface-muted text-white py-2.5 px-4 text-sm focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20 transition" />
-                            <p v-if="form.errors.serial_number" class="mt-1 text-sm text-red-400">{{ form.errors.serial_number }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-admin-content mb-1.5">Tên sản phẩm *</label>
-                            <input v-model="form.product_name" type="text" required class="w-full rounded-xl border border-white/10 bg-admin-surface-muted text-white py-2.5 px-4 text-sm focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20 transition" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-admin-content mb-1.5">Đơn hàng</label>
-                            <select v-model="form.order_id" class="w-full rounded-xl border border-white/10 bg-admin-surface-muted text-white py-2.5 px-4 text-sm focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20 transition">
-                                <option value="">— Không liên kết —</option>
-                                <option v-for="o in orders" :key="o.id" :value="o.id">{{ o.order_number }} — {{ $fixText(o.customer_name) }}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-admin-content mb-1.5">Trạng thái</label>
-                            <select v-model="form.status" class="w-full rounded-xl border border-white/10 bg-admin-surface-muted text-white py-2.5 px-4 text-sm focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20 transition">
-                                <option value="active">Còn hạn</option>
-                                <option value="expired">Hết hạn</option>
-                                <option value="voided">Đã hủy</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-admin-content mb-1.5">Ngày kích hoạt</label>
-                            <input v-model="form.activation_date" type="date" class="w-full rounded-xl border border-white/10 bg-admin-surface-muted text-white py-2.5 px-4 text-sm focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20 transition" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-admin-content mb-1.5">Ngày hết hạn</label>
-                            <input v-model="form.expiration_date" type="date" class="w-full rounded-xl border border-white/10 bg-admin-surface-muted text-white py-2.5 px-4 text-sm focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20 transition" />
-                        </div>
-                    </div>
-                    <div class="flex justify-end pt-2">
-                        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-2 rounded-xl bg-admin-accent px-6 py-2.5 text-sm font-semibold text-white hover:bg-admin-accent-hover disabled:opacity-50 transition-all shadow-lg shadow-admin-accent/20">
-                            {{ warranty ? 'Cập nhật' : 'Tạo bảo hành' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </AuthenticatedLayout>
-</template>
+<template><Head :title="page.meta.title" /><AuthenticatedLayout><AdminPageHeader :title="page.meta.title" description="Đăng ký bảo hành theo snapshot đơn hàng hoặc hàng bán ngoài website" /><AdminDataCard title="Thông tin bảo hành" class="mt-6"><form class="space-y-5" @submit.prevent="save"><div class="flex flex-wrap gap-4" role="radiogroup" aria-label="Nguồn bảo hành"><label class="flex items-center gap-2 text-sm text-admin-content"><input v-model="mode" type="radio" value="order" /> Theo đơn hàng</label><label class="flex items-center gap-2 text-sm text-admin-content"><input v-model="mode" type="radio" value="manual" /> Thủ công</label></div><div v-if="mode === 'order'" class="grid gap-4 md:grid-cols-2"><AdminFormField label="Đơn hàng" for-id="order-id" :error="form.errors.order_id"><AdminEntityPicker v-model="form.order_id" endpoint="admin.warranty-lookups.orders" placeholder="Tìm mã đơn hoặc khách hàng" /></AdminFormField><AdminFormField label="Sản phẩm trong đơn" for-id="order-item-id" :error="form.errors.order_item_id"><select id="order-item-id" v-model="form.order_item_id" class="w-full border border-admin-border bg-admin-page px-3 py-2 text-sm text-admin-content"><option :value="null">Chọn dòng hàng</option><option v-for="item in items" :key="item.id" :value="item.id">{{ item.product_name }} · SL {{ item.quantity }}</option></select></AdminFormField></div><div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Serial" for-id="serial" :error="form.errors.serial_number"><AdminTextInput id="serial" v-model="form.serial_number" required /></AdminFormField><AdminFormField label="Tên sản phẩm" for-id="product-name" :error="form.errors.product_name"><AdminTextInput id="product-name" v-model="form.product_name" :disabled="mode === 'order'" required /></AdminFormField><AdminFormField label="Tên khách hàng" for-id="customer-name" :error="form.errors.customer_name"><AdminTextInput id="customer-name" v-model="form.customer_name" :disabled="mode === 'order'" required /></AdminFormField><AdminFormField label="Số điện thoại" for-id="customer-phone" :error="form.errors.customer_phone"><AdminTextInput id="customer-phone" v-model="form.customer_phone" :disabled="mode === 'order'" required /></AdminFormField><AdminFormField label="Ngày kích hoạt" for-id="activation-date" :error="form.errors.activation_date"><AdminTextInput id="activation-date" v-model="form.activation_date" type="date" /></AdminFormField><AdminFormField label="Ngày hết hạn" for-id="expiration-date" :error="form.errors.expiration_date"><AdminTextInput id="expiration-date" v-model="form.expiration_date" type="date" /></AdminFormField></div><p v-if="existing && !existing.customer.phone_masked" class="border border-admin-accent/40 px-3 py-2 text-sm text-admin-content-muted">Bảo hành legacy chưa có snapshot khách hàng. Hãy lưu lại để chuẩn hóa dữ liệu trước khi dùng lookup công khai.</p><p v-if="form.errors.version" class="text-sm text-admin-danger" role="alert">{{ form.errors.version }}</p><button type="submit" :disabled="form.processing" class="rounded-lg bg-admin-accent px-4 py-2 text-sm font-semibold text-admin-page disabled:opacity-50">{{ existing ? 'Cập nhật bảo hành' : 'Tạo bảo hành' }}</button></form></AdminDataCard></AuthenticatedLayout></template>

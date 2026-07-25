@@ -49,7 +49,7 @@ Route::middleware('commerce.utility')->group(function () {
 });
 
 // Guest Reviews
-Route::post('/danh-gia', [GuestReviewController::class, 'store'])->name('reviews.store');
+Route::post('/danh-gia', [GuestReviewController::class, 'store'])->middleware('throttle:commerce-reviews')->name('reviews.store');
 
 // News
 Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
@@ -102,7 +102,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
         // Warranties
-        Route::resource('warranties', WarrantyController::class)->except(['show']);
+        Route::get('warranty-lookups/orders', [WarrantyController::class, 'orders'])->name('warranty-lookups.orders');
+        Route::get('warranty-lookups/orders/{order}/items', [WarrantyController::class, 'orderItems'])->name('warranty-lookups.order-items');
+        Route::resource('warranties', WarrantyController::class)->except(['show', 'destroy']);
+        Route::patch('warranties/{warranty}/void', [WarrantyController::class, 'void'])->name('warranties.void');
 
         // Post Categories
         Route::resource('post-categories', PostCategoryController::class)->except(['show']);
