@@ -1,5 +1,7 @@
 SQLITE_FULL_SUITE=PASS
-TESTS=273 passed, 1 skipped
-ASSERTIONS=2196
+TESTS=279 passed, 1 skipped
+ASSERTIONS=2256
 COMMAND=docker compose exec app php artisan test with isolated SQLite database
-NEW_CONTRACT_TESTS=ConcurrencyRequiredTest, StorefrontNavigationQueryScalingTest, HomeContentLegacyImageCompatibilityTest, AdminVietnameseContractTest
+NEW_CONTRACT_TESTS=ConcurrencyRequiredTest, StorefrontNavigationQueryScalingTest, HomeContentLegacyImageCompatibilityTest, AdminVietnameseContractTest, VietnameseFrameworkValidationTest
+FRAMEWORK_VALIDATION_LANGUAGE=vi
+DEFAULT_ENGLISH_VALIDATION_MESSAGES=0

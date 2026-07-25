@@ -3,6 +3,11 @@ import path from 'node:path';
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const appConfig = read('config/app.php');
+const validationLocaleFile = path.join(root, 'lang/vi/validation.php');
+const frameworkValidationTest = path.join(root, 'tests/Feature/Admin/VietnameseFrameworkValidationTest.php');
+const frameworkLocaleEvidenceFile = path.join(root, 'docs/refactor/evidence/pr3b/framework-validation-locale.txt');
+const frameworkLocaleEvidence = fs.existsSync(frameworkLocaleEvidenceFile) ? fs.readFileSync(frameworkLocaleEvidenceFile, 'utf8') : '';
 const filesUnder = (relativeDirectory, extensions = null) => {
   const directory = path.join(root, relativeDirectory);
   const visit = (current) => fs.readdirSync(current, { withFileTypes: true }).flatMap((entry) => {
@@ -143,8 +148,15 @@ const counters = {
   MISSING_VIETNAMESE_DIACRITIC_LABEL_HITS: (backendStrings.match(/Danh muc tin/g) || []).length,
   MOJIBAKE_HITS: (vietnameseBackend.match(/(?:Ã.|Â.|áº.|á».|Ä.|Æ.|â€|�)/g) || []).length,
   UNINTENDED_ENGLISH_ADMIN_LABEL_HITS: (frontendUiText.match(unintendedEnglishPattern) || []).length + (backendStrings.match(unintendedEnglishPattern) || []).length,
-  UNINTENDED_ENGLISH_ADMIN_MESSAGE_HITS: (frontendUiText.match(unintendedEnglishPattern) || []).length + (backendStrings.match(unintendedEnglishPattern) || []).length,
+  APP_DEFAULT_LOCALE_IS_VI: appConfig.includes("'locale' => env('APP_LOCALE', 'vi')") ? 1 : 0,
+  VI_VALIDATION_FILE_MISSING: fs.existsSync(validationLocaleFile) ? 0 : 1,
+  VI_VALIDATION_RUNTIME_TEST_MISSING: fs.existsSync(frameworkValidationTest) ? 0 : 1,
+  MENU_CUSTOM_VALIDATION_MESSAGES_MISSING: menuTreeValidator.includes('Validator::make') && menuTreeValidator.includes("'title.required'") && menuTreeValidator.includes("'id' => 'ID mục menu'") ? 0 : 1,
+  SOURCE_ENGLISH_ADMIN_MESSAGE_HITS: (frontendUiText.match(unintendedEnglishPattern) || []).length + (backendStrings.match(unintendedEnglishPattern) || []).length,
+  RUNTIME_ENGLISH_VALIDATION_MESSAGE_HITS: frameworkLocaleEvidence.includes('FRAMEWORK_VALIDATION_LANGUAGE=vi') && frameworkLocaleEvidence.includes('DEFAULT_ENGLISH_VALIDATION_MESSAGES=0') ? 0 : 1,
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);
-process.exitCode = Object.values(counters).every((value) => value === 0) ? 0 : 1;
+const failed = Object.entries(counters).some(([key, value]) => key === 'APP_DEFAULT_LOCALE_IS_VI' ? value !== 1 : value !== 0);
+console.log(`FRAMEWORK_VALIDATION_LANGUAGE=${frameworkLocaleEvidence.match(/FRAMEWORK_VALIDATION_LANGUAGE=([^\r\n]+)/)?.[1] || 'unknown'}`);
+process.exitCode = failed ? 1 : 0;

@@ -50,15 +50,44 @@ final class MenuTreeValidator
                 $errors->errors()->add($nodePath, 'Mục menu chứa trường không được phép.');
             }
 
-            $fieldValidator = Validator::make($item, [
-                'id' => ['nullable', 'integer'],
-                'client_key' => ['required', 'string', 'max:100'],
-                'title' => ['required', 'string', 'max:255'],
-                'url' => ['nullable', 'string', 'max:500'],
-                'model_type' => ['required', 'string'],
-                'model_id' => ['nullable', 'integer', 'min:1'],
-                'children' => ['required', 'array'],
-            ]);
+            $fieldValidator = Validator::make(
+                $item,
+                [
+                    'id' => ['nullable', 'integer'],
+                    'client_key' => ['required', 'string', 'max:100'],
+                    'title' => ['required', 'string', 'max:255'],
+                    'url' => ['nullable', 'string', 'max:500'],
+                    'model_type' => ['required', 'string'],
+                    'model_id' => ['nullable', 'integer', 'min:1'],
+                    'children' => ['required', 'array'],
+                ],
+                [
+                    'id.integer' => ':attribute phải là số nguyên.',
+                    'client_key.required' => 'Mục menu thiếu khóa tạm.',
+                    'client_key.string' => ':attribute phải là chuỗi.',
+                    'client_key.max' => ':attribute không được vượt quá :max ký tự.',
+                    'title.required' => 'Tên mục menu là bắt buộc.',
+                    'title.string' => 'Tên mục menu phải là chuỗi.',
+                    'title.max' => 'Tên mục menu không được vượt quá :max ký tự.',
+                    'url.string' => ':attribute phải là chuỗi.',
+                    'url.max' => ':attribute không được vượt quá :max ký tự.',
+                    'model_type.required' => 'Loại đích menu là bắt buộc.',
+                    'model_type.string' => ':attribute phải là chuỗi.',
+                    'model_id.integer' => 'ID đích menu phải là số nguyên.',
+                    'model_id.min' => 'ID đích menu phải lớn hơn hoặc bằng :min.',
+                    'children.required' => 'Danh sách mục con là bắt buộc.',
+                    'children.array' => 'Danh sách mục con không hợp lệ.',
+                ],
+                [
+                    'id' => 'ID mục menu',
+                    'client_key' => 'khóa tạm mục menu',
+                    'title' => 'tên mục menu',
+                    'url' => 'URL menu',
+                    'model_type' => 'loại đích menu',
+                    'model_id' => 'ID đích menu',
+                    'children' => 'danh sách mục con',
+                ],
+            );
             foreach ($fieldValidator->errors()->messages() as $field => $messages) {
                 foreach ($messages as $message) {
                     $errors->errors()->add($nodePath.'.'.$field, $message);
