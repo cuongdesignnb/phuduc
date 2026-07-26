@@ -50,11 +50,23 @@ createInertiaApp({
 
         // Listen to Inertia navigate events to show flash toasts
         const toast = useToast();
-        router.on('navigate', (event) => {
-            const flash = event.detail.page.props?.flash;
+        let lastFlashKey = null;
+        const showFlash = (flash) => {
+            if (!flash || Object.keys(flash).length === 0) return;
+            const key = JSON.stringify(flash);
+            if (key === lastFlashKey) return;
+            lastFlashKey = key;
+            setTimeout(() => {
+                if (lastFlashKey === key) lastFlashKey = null;
+            }, 100);
             if (flash?.success) toast.success(app.config.globalProperties.$fixText(flash.success));
+            if (flash?.warning) toast.warning(app.config.globalProperties.$fixText(flash.warning));
             if (flash?.error) toast.error(app.config.globalProperties.$fixText(flash.error));
-        });
+        };
+        const pageFlash = (page) => ({ ...page.flash, ...page.props?.flash });
+        router.on('success', (event) => showFlash(pageFlash(event.detail.page)));
+        router.on('navigate', (event) => showFlash(pageFlash(event.detail.page)));
+        router.on('flash', (event) => showFlash(event.detail.flash));
 
         return vueApp;
     },

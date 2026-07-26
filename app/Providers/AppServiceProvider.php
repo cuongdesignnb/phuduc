@@ -61,10 +61,11 @@ class AppServiceProvider extends ServiceProvider
 
         Inertia::share([
             'cart_count' => fn () => app(CartSessionService::class)->count(),
-            'flash' => fn () => [
+            'flash' => Inertia::always(fn () => array_filter([
                 'success' => session('success'),
+                'warning' => session('warning'),
                 'error' => session('error'),
-            ],
+            ], static fn ($value): bool => $value !== null)),
             'fontSettings' => fn () => app(SiteConfigurationService::class)->get()['fonts'],
             'primaryColor' => fn () => app(SiteConfigurationService::class)->get()['primary_color'],
         ]);

@@ -25,7 +25,7 @@ class OrderStatusTransitionService
             $this->registry->assertTransition($from, $to);
 
             if ($from === $to) {
-                return ['order' => $locked->load(['items', 'warranties', 'statusHistories']), 'unresolved_stock_lines' => []];
+                return ['order' => $locked->load(['items', 'warranties', 'statusHistories']), 'unresolved_stock_lines' => [], 'changed' => false];
             }
 
             $unresolved = [];
@@ -41,7 +41,7 @@ class OrderStatusTransitionService
                 'reason' => $data['reason'] ?? null,
             ]);
 
-            return ['order' => $locked->refresh()->load(['items', 'warranties', 'statusHistories']), 'unresolved_stock_lines' => $unresolved];
+            return ['order' => $locked->refresh()->load(['items', 'warranties', 'statusHistories']), 'unresolved_stock_lines' => $unresolved, 'changed' => true];
         });
     }
 }

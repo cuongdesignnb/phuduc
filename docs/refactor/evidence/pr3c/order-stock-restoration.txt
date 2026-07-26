@@ -4,3 +4,6 @@ Missing product links are logged as unresolved lines; repeated cancellation and 
 Cancellation returns unresolved stock lines to the controller.
 When a snapshot line has no current Product, cancellation still commits and flashes a Vietnamese manual stock review warning.
 Resolved lines restore by quantity; unresolved lines are not fabricated or exposed with internal exception details.
+TRUE FINAL flash evidence: resolved cancellation has flash.success and no flash.warning; unresolved cancellation has flash.warning with the exact line count and no flash.success.
+AppServiceProvider shares flash.warning as an always-included Inertia prop; resources/js/app.js handles warning via useToast().warning.
+Inertia feature contract: PASS.

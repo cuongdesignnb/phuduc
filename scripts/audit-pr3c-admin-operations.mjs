@@ -22,6 +22,9 @@ const operationRequests = [...filesUnder('app/Http/Requests/Admin', '.php'), 'ap
 const operationPages = ['resources/js/Pages/Admin/Order/Index.vue', 'resources/js/Pages/Admin/Order/Show.vue', 'resources/js/Pages/Admin/Review/Index.vue', 'resources/js/Pages/Admin/Warranty/Index.vue', 'resources/js/Pages/Admin/Warranty/Edit.vue'].map(read).join('\n');
 const routes = read('routes/web.php');
 const provider = read('app/Providers/AppServiceProvider.php');
+const appSource = read('resources/js/app.js');
+const concurrencyTest = read('tests/Feature/Admin/OrderCancellationMySqlConcurrencyTest.php');
+const operationsQueryTest = read('tests/Feature/Admin/AdminOperationsQueryCountTest.php');
 const product = read('app/Models/Product.php');
 const productDetail = read('app/Services/Storefront/ProductDetailService.php');
 const warrantyController = read('app/Http/Controllers/Guest/WarrantyLookupController.php');
@@ -67,6 +70,11 @@ const counters = {
     RUNTIME_ENGLISH_VALIDATION_MESSAGE_HITS: exists('lang/vi/validation.php') ? 0 : 1,
     STALE_INERTIA_MODULE_CAPTURE_HITS: (operationPages.match(/const\s+(?:module|order|existing|options)\s*=\s*(?:props\.page\.module|module\.warranty|module\.order|order\.allowed_next_statuses)/g) || []).length,
     ORDER_SUCCESS_VERSION_SYNC_MISSING: operationPages.includes('form.defaults({ status: \'\', reason: \'\', version: next.version })') && operationPages.includes('onSuccess: applyServerOrder') ? 0 : 1,
+    WARRANTY_FORM_SUCCESS_SYNC_MISSING: operationPages.includes('onSuccess: applyServerWarranty') && operationPages.includes('form.defaults({') ? 0 : 1,
+    WARRANTY_FORM_VERSION_REFRESH_MISSING: operationPages.includes('form.version = next.version') && operationPages.includes('version: next.version') ? 0 : 1,
+    FLASH_WARNING_SHARE_MISSING: provider.includes("'warning' => session('warning')") ? 0 : 1,
+    FLASH_WARNING_TOAST_MISSING: appSource.includes('toast.warning') ? 0 : 1,
+    SUCCESS_AND_WARNING_SIMULTANEOUS_HITS: operationControllers.includes("$response->with('warning'") ? 1 : 0,
     REVIEW_REACTIVE_MODULE_MISSING: read('resources/js/Pages/Admin/Review/Index.vue').includes("computed(() => props.page.module)") ? 0 : 1,
     WARRANTY_REACTIVE_MODULE_MISSING: read('resources/js/Pages/Admin/Warranty/Index.vue').includes("computed(() => props.page.module)") && read('resources/js/Pages/Admin/Warranty/Edit.vue').includes("computed(() => props.page.module)") ? 0 : 1,
     WARRANTY_ORDER_CHANGE_ITEM_CLEAR_MISSING: read('resources/js/Pages/Admin/Warranty/Edit.vue').includes('form.order_item_id = null') && read('resources/js/Pages/Admin/Warranty/Edit.vue').includes('items.value = []') ? 0 : 1,
@@ -82,6 +90,14 @@ const counters = {
     WARRANTY_VOID_TEST_MISSING: testSources.includes('voided_warranty_is_terminal') ? 0 : 1,
     WARRANTY_EFFECTIVE_STATUS_TEST_MISSING: testSources.includes('effective status') || testSources.includes('effective_status') ? 0 : 1,
     QUERY_Q1_FIXTURE_MISSING: read('tests/Feature/Admin/AdminOperationsQueryCountTest.php').includes('Q1_RECORD_COUNT=1') && read('tests/Feature/Admin/AdminOperationsQueryCountTest.php').includes("assertDatabaseCount('orders', 30)") ? 0 : 1,
+    CONCURRENT_TEST_REFRESH_DATABASE_HITS: concurrencyTest.includes('RefreshDatabase') ? 1 : 0,
+    CONCURRENT_READY_TEMP_FILE_HITS: concurrencyTest.includes('tempnam(') ? 1 : 0,
+    CONCURRENT_TWO_WORKER_BARRIER_MISSING: concurrencyTest.includes("$paths['ready_a']") && concurrencyTest.includes("$paths['ready_b']") && concurrencyTest.includes("$paths['start']") ? 0 : 1,
+    CONCURRENT_FIXTURE_VISIBILITY_ASSERTION_MISSING: concurrencyTest.includes('fixture_visible') && concurrencyTest.includes('assertTrue($result[\'fixture_visible\']') ? 0 : 1,
+    CONCURRENT_MODEL_NOT_FOUND_ACCEPTED_HITS: concurrencyTest.includes("assertNotSame('success'") || concurrencyTest.includes('ModelNotFoundException') ? 1 : 0,
+    CANCELLATION_ROLLBACK_TEST_MISSING: concurrencyTest.includes('test_cancellation_rolls_back_stock_when_history_insert_fails') && concurrencyTest.includes('assertSame(4, (int) $product->refresh()->stock)') ? 0 : 1,
+    QUERY_OPERATION_DETAIL_COVERAGE_MISSING: operationsQueryTest.includes('ORDER_DETAIL_Q1') && operationsQueryTest.includes('WARRANTY_ORDER_LOOKUP_Q1') && operationsQueryTest.includes('WARRANTY_ITEM_LOOKUP_Q51') && operationsQueryTest.includes('DASHBOARD_Q30') ? 0 : 1,
+    QUERY_PUBLIC_LOOKUP_COVERAGE_MISSING: operationsQueryTest.includes('PUBLIC_ORDER_LOOKUP_Q1') && operationsQueryTest.includes('PUBLIC_WARRANTY_LOOKUP') && operationsQueryTest.includes('PRODUCT_REVIEW_Q30') ? 0 : 1,
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);

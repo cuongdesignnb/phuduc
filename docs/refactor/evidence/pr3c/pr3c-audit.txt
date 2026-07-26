@@ -2,3 +2,4 @@ audit:pr3c-admin-operations: PASS.
 All negative counters are 0.
 Positive counters: ORDER_STATUS_REGISTRY_PRESENT=1, CANCELLATION_STOCK_RESTORE_PRESENT=1, REVIEW_RATE_LIMIT_PRESENT=1, WARRANTY_EFFECTIVE_STATUS_PRESENT=1.
 Final closure counters: stale Inertia state, ownership rule, item truncation, voided guard, moderation history, unresolved propagation, serial DB guard, real concurrency, rate-limit behavior, warranty void/effective tests and Q1 fixture are all 0 missing/hit.
+TRUE FINAL counters: WARRANTY_FORM_SUCCESS_SYNC_MISSING=0, WARRANTY_FORM_VERSION_REFRESH_MISSING=0, FLASH_WARNING_SHARE_MISSING=0, FLASH_WARNING_TOAST_MISSING=0, SUCCESS_AND_WARNING_SIMULTANEOUS_HITS=0, concurrency barrier/fixture visibility/rollback counters=0, query operation/public lookup coverage counters=0.

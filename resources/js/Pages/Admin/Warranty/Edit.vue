@@ -9,11 +9,90 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import axios from 'axios';
 
-const props = defineProps({ page: { type: Object, required: true } }); const module = computed(() => props.page.module); const existing = computed(() => module.value.warranty); const mode = ref(existing.value?.order_id ? 'order' : 'manual'); const items = ref(module.value.order_items || []);
-const form = useForm({ mode: mode.value, order_id: existing.value?.order_id || null, order_item_id: existing.value?.order_item_id || null, serial_number: existing.value?.serial || '', product_name: existing.value?.product_name || '', customer_name: existing.value?.customer_name || '', customer_phone: existing.value?.customer_phone || '', activation_date: existing.value?.activation_date || '', expiration_date: existing.value?.expiration_date || '', version: existing.value?.version || '' });
-watch(mode, (value) => { form.mode = value; if (value === 'manual') { form.order_id = null; form.order_item_id = null; items.value = []; } });
-watch(() => form.order_id, async (value) => { form.order_item_id = null; items.value = []; if (!value || mode.value !== 'order') return; const response = await axios.get(route('admin.warranty-lookups.order-items', value)); items.value = response.data.data || []; });
-const save = () => existing.value ? form.put(route('admin.warranties.update', existing.value.id)) : form.post(route('admin.warranties.store'));
+const props = defineProps({ page: { type: Object, required: true } });
+const module = computed(() => props.page.module);
+const existing = computed(() => module.value.warranty);
+const mode = ref(existing.value?.order_id ? 'order' : 'manual');
+const items = ref(module.value.order_items || []);
+const form = useForm({
+    mode: mode.value,
+    order_id: existing.value?.order_id || null,
+    order_item_id: existing.value?.order_item_id || null,
+    serial_number: existing.value?.serial || '',
+    product_name: existing.value?.product_name || '',
+    customer_name: existing.value?.customer_name || '',
+    customer_phone: existing.value?.customer_phone || '',
+    activation_date: existing.value?.activation_date || '',
+    expiration_date: existing.value?.expiration_date || '',
+    version: existing.value?.version || '',
+});
+let orderItemsRequest = 0;
+
+const applyServerWarranty = (page) => {
+    const next = page?.props?.page?.module?.warranty;
+    const nextItems = page?.props?.page?.module?.order_items || [];
+
+    if (!next) return;
+
+    orderItemsRequest += 1;
+    mode.value = next.order_id ? 'order' : 'manual';
+    items.value = nextItems;
+    form.mode = mode.value;
+    form.order_id = next.order_id || null;
+    form.order_item_id = next.order_item_id || null;
+    form.serial_number = next.serial || '';
+    form.product_name = next.product_name || '';
+    form.customer_name = next.customer_name || '';
+    form.customer_phone = next.customer_phone || '';
+    form.activation_date = next.activation_date || '';
+    form.expiration_date = next.expiration_date || '';
+    form.version = next.version;
+    form.clearErrors();
+    form.defaults({
+        mode: form.mode,
+        order_id: form.order_id,
+        order_item_id: form.order_item_id,
+        serial_number: form.serial_number,
+        product_name: form.product_name,
+        customer_name: form.customer_name,
+        customer_phone: form.customer_phone,
+        activation_date: form.activation_date,
+        expiration_date: form.expiration_date,
+        version: next.version,
+    });
+};
+
+watch(mode, (value) => {
+    form.mode = value;
+    if (value === 'manual') {
+        form.order_id = null;
+        form.order_item_id = null;
+        items.value = [];
+    }
+});
+
+watch(() => form.order_id, async (value) => {
+    const requestId = ++orderItemsRequest;
+    form.order_item_id = null;
+    items.value = [];
+    if (!value || mode.value !== 'order') return;
+    const response = await axios.get(route('admin.warranty-lookups.order-items', value));
+    if (requestId === orderItemsRequest && value === form.order_id && mode.value === 'order') {
+        items.value = response.data.data || [];
+    }
+});
+
+const save = () => {
+    const options = { preserveScroll: true, onSuccess: applyServerWarranty };
+
+    if (existing.value) {
+        form.put(route('admin.warranties.update', existing.value.id), options);
+
+        return;
+    }
+
+    form.post(route('admin.warranties.store'), options);
+};
 </script>
 
 <template><Head :title="page.meta.title" /><AuthenticatedLayout><AdminPageHeader :title="page.meta.title" description="Đăng ký bảo hành theo snapshot đơn hàng hoặc hàng bán ngoài website" /><AdminDataCard title="Thông tin bảo hành" class="mt-6"><form v-if="!existing || existing.stored_status !== 'voided'" class="space-y-5" @submit.prevent="save"><div class="flex flex-wrap gap-4" role="radiogroup" aria-label="Nguồn bảo hành"><label class="flex items-center gap-2 text-sm text-admin-content"><input v-model="mode" type="radio" value="order" /> Theo đơn hàng</label><label class="flex items-center gap-2 text-sm text-admin-content"><input v-model="mode" type="radio" value="manual" /> Thủ công</label></div><div v-if="mode === 'order'" class="grid gap-4 md:grid-cols-2"><AdminFormField label="Đơn hàng" for-id="order-id" :error="form.errors.order_id"><AdminEntityPicker v-model="form.order_id" endpoint="admin.warranty-lookups.orders" placeholder="Tìm mã đơn hoặc khách hàng" /></AdminFormField><AdminFormField label="Sản phẩm trong đơn" for-id="order-item-id" :error="form.errors.order_item_id"><select id="order-item-id" v-model="form.order_item_id" class="w-full border border-admin-border bg-admin-page px-3 py-2 text-sm text-admin-content"><option :value="null">Chọn dòng hàng</option><option v-for="item in items" :key="item.id" :value="item.id">{{ item.product_name }} · SL {{ item.quantity }}</option></select></AdminFormField></div><div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Serial" for-id="serial" :error="form.errors.serial_number"><AdminTextInput id="serial" v-model="form.serial_number" required /></AdminFormField><AdminFormField label="Tên sản phẩm" for-id="product-name" :error="form.errors.product_name"><AdminTextInput id="product-name" v-model="form.product_name" :disabled="mode === 'order'" required /></AdminFormField><AdminFormField label="Tên khách hàng" for-id="customer-name" :error="form.errors.customer_name"><AdminTextInput id="customer-name" v-model="form.customer_name" :disabled="mode === 'order'" required /></AdminFormField><AdminFormField label="Số điện thoại" for-id="customer-phone" :error="form.errors.customer_phone"><AdminTextInput id="customer-phone" v-model="form.customer_phone" :disabled="mode === 'order'" required /></AdminFormField><AdminFormField label="Ngày kích hoạt" for-id="activation-date" :error="form.errors.activation_date"><AdminTextInput id="activation-date" v-model="form.activation_date" type="date" /></AdminFormField><AdminFormField label="Ngày hết hạn" for-id="expiration-date" :error="form.errors.expiration_date"><AdminTextInput id="expiration-date" v-model="form.expiration_date" type="date" /></AdminFormField></div><p v-if="existing && !existing.customer.phone_masked" class="border border-admin-accent/40 px-3 py-2 text-sm text-admin-content-muted">Bảo hành legacy chưa có snapshot khách hàng. Hãy lưu lại để chuẩn hóa dữ liệu trước khi dùng lookup công khai.</p><p v-if="form.errors.version" class="text-sm text-admin-danger" role="alert">{{ form.errors.version }}</p><button type="submit" :disabled="form.processing" class="rounded-lg bg-admin-accent px-4 py-2 text-sm font-semibold text-admin-page disabled:opacity-50">{{ existing ? 'Cập nhật bảo hành' : 'Tạo bảo hành' }}</button></form><div v-else class="space-y-3 border border-admin-danger/40 p-4 text-sm text-admin-content"><p class="font-semibold text-admin-danger">Bảo hành đã hủy và không thể chỉnh sửa.</p><p>Serial: {{ existing.serial }}</p><p>Sản phẩm: {{ existing.product_name }}</p><p>Trạng thái: {{ existing.effective_status_label }}</p></div></AdminDataCard></AuthenticatedLayout></template>
