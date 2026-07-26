@@ -8,11 +8,12 @@ import AdminPagination from '@/Components/Admin/AdminPagination.vue';
 import AdminStatusBadge from '@/Components/Admin/AdminStatusBadge.vue';
 import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({ page: { type: Object, required: true } });
-const module = props.page.module; const search = ref(module.filters.search || ''); const status = ref(module.filters.status || ''); const rating = ref(module.filters.rating || ''); const deleting = ref(null); const deleteForm = useForm({ version: '', reason: '' }); let timer;
-watch([search, status, rating], () => { clearTimeout(timer); timer = setTimeout(() => router.get(route('admin.reviews.index'), { search: search.value || undefined, status: status.value || undefined, rating: rating.value || undefined }, { preserveState: true, replace: true }), 250); });
+const module = computed(() => props.page.module); const search = ref(module.value.filters.search || ''); const status = ref(module.value.filters.status || ''); const rating = ref(module.value.filters.rating || ''); const deleting = ref(null); const deleteForm = useForm({ version: '', reason: '' }); let timer; let syncingFilters = false;
+watch([search, status, rating], () => { if (syncingFilters) { syncingFilters = false; return; } clearTimeout(timer); timer = setTimeout(() => router.get(route('admin.reviews.index'), { search: search.value || undefined, status: status.value || undefined, rating: rating.value || undefined }, { preserveState: true, replace: true }), 250); });
+watch(() => module.value.filters, (filters) => { const next = { search: filters.search || '', status: filters.status || '', rating: filters.rating || '' }; const changed = search.value !== next.search || status.value !== next.status || rating.value !== next.rating; syncingFilters = changed; if (search.value !== next.search) search.value = next.search; if (status.value !== next.status) status.value = next.status; if (rating.value !== next.rating) rating.value = next.rating; }, { deep: true });
 const changeStatus = (review, value) => router.patch(route('admin.reviews.updateStatus', review.id), { status: value, version: review.version }, { preserveScroll: true });
 const askDelete = (review) => { deleteForm.version = review.version; deleteForm.reason = ''; deleting.value = review; };
 const deleteReview = () => deleteForm.delete(route('admin.reviews.destroy', deleting.value.id), { preserveScroll: true, onFinish: () => { deleting.value = null; } });

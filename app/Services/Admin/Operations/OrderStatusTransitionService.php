@@ -15,9 +15,9 @@ class OrderStatusTransitionService
         private readonly AdminConcurrencyService $concurrency,
     ) {}
 
-    public function transition(Order $order, User $actor, array $data): Order
+    public function transition(Order $order, User $actor, array $data): array
     {
-        return DB::transaction(function () use ($order, $actor, $data): Order {
+        return DB::transaction(function () use ($order, $actor, $data): array {
             $locked = Order::query()->lockForUpdate()->findOrFail($order->id);
             $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Đơn hàng đã được cập nhật ở phiên khác. Vui lòng tải lại.');
             $from = (string) $locked->status;
@@ -25,11 +25,12 @@ class OrderStatusTransitionService
             $this->registry->assertTransition($from, $to);
 
             if ($from === $to) {
-                return $locked->load(['items', 'warranties', 'statusHistories']);
+                return ['order' => $locked->load(['items', 'warranties', 'statusHistories']), 'unresolved_stock_lines' => []];
             }
 
+            $unresolved = [];
             if ($to === 'cancelled' && in_array($from, ['pending', 'processing'], true)) {
-                $this->stock->restore($locked);
+                $unresolved = $this->stock->restore($locked);
             }
 
             $locked->update(['status' => $to]);
@@ -40,7 +41,7 @@ class OrderStatusTransitionService
                 'reason' => $data['reason'] ?? null,
             ]);
 
-            return $locked->refresh()->load(['items', 'warranties', 'statusHistories']);
+            return ['order' => $locked->refresh()->load(['items', 'warranties', 'statusHistories']), 'unresolved_stock_lines' => $unresolved];
         });
     }
 }

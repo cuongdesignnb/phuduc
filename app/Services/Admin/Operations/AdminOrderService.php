@@ -67,7 +67,7 @@ class AdminOrderService
         ], ['order' => $this->orders->detail($order), 'statuses' => $this->statuses->options()]);
     }
 
-    public function updateStatus(Order $order, User $user, array $data): Order
+    public function updateStatus(Order $order, User $user, array $data): array
     {
         return $this->transitions->transition($order, $user, $data);
     }

@@ -1,3 +1,4 @@
 Stored voided always presents voided.
 Future activation presents scheduled; past expiration presents expired; otherwise active.
 Dashboard active count applies effective date/status predicates instead of status=active alone.
+WarrantyEffectiveStatusTest passes scheduled/active/expired/voided presentation and active-count/filter parity.

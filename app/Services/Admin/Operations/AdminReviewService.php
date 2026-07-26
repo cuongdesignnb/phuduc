@@ -47,8 +47,8 @@ class AdminReviewService
         return $this->moderation->updateStatus($review, $user, $data);
     }
 
-    public function delete(Review $review, array $data): void
+    public function delete(Review $review, User $user, array $data): void
     {
-        $this->moderation->delete($review, $data);
+        $this->moderation->delete($review, $user, $data);
     }
 }

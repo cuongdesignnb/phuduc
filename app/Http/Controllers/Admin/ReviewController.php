@@ -28,7 +28,7 @@ class ReviewController extends Controller
 
     public function destroy(DeleteReviewRequest $request, Review $review, AdminReviewService $reviews): RedirectResponse
     {
-        $reviews->delete($review, $request->validated());
+        $reviews->delete($review, $request->user(), $request->validated());
 
         return back()->with('success', 'Đánh giá đã được xóa.');
     }

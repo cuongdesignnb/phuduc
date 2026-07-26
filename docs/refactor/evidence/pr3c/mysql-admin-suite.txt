@@ -1,4 +1,4 @@
 Database: temporary phuduc_pr3c_qa, removed after QA.
 Scope: tests/Feature/Admin plus PR3C storefront lookup/review tests.
-Result: 119 passed, 792 assertions.
+Result: 125 passed, 799 assertions, including process-level concurrent cancellation.
 Production database: not used.

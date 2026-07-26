@@ -1,2 +1,3 @@
-SQLite AdminOperationsQueryCountTest: REVIEW_INDEX_Q1=1, REVIEW_INDEX_Q30=3.
+SQLite AdminOperationsQueryCountTest: Q1_RECORD_COUNT=1, Q30_RECORD_COUNT=30.
+REVIEW_INDEX_Q1=3, REVIEW_INDEX_Q30=3.
 Bound: Q30 <= Q1 + 2, PASS. Eager product hydration remains bounded.

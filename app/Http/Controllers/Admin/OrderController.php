@@ -25,8 +25,13 @@ class OrderController extends Controller
 
     public function updateStatus(UpdateOrderStatusRequest $request, Order $order, AdminOrderService $orders): RedirectResponse
     {
-        $orders->updateStatus($order, $request->user(), $request->validated());
+        $result = $orders->updateStatus($order, $request->user(), $request->validated());
+        $response = back()->with('success', 'Trạng thái đơn hàng đã được cập nhật.');
+        $unresolved = count($result['unresolved_stock_lines'] ?? []);
+        if ($unresolved > 0) {
+            $response->with('warning', "Đơn hàng đã được hủy, nhưng có {$unresolved} dòng hàng không thể hoàn tồn kho tự động. Vui lòng kiểm tra tồn kho thủ công.");
+        }
 
-        return back()->with('success', 'Trạng thái đơn hàng đã được cập nhật.');
+        return $response;
     }
 }

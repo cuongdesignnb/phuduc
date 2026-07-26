@@ -7,17 +7,27 @@ import AdminStatusBadge from '@/Components/Admin/AdminStatusBadge.vue';
 import AdminTable from '@/Components/Admin/AdminTable.vue';
 import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({ page: { type: Object, required: true } });
-const module = props.page.module;
-const search = ref(module.filters.search || '');
-const status = ref(module.filters.status || '');
-const dateFrom = ref(module.filters.date_from || '');
-const dateTo = ref(module.filters.date_to || '');
+const module = computed(() => props.page.module);
+const search = ref(module.value.filters.search || '');
+const status = ref(module.value.filters.status || '');
+const dateFrom = ref(module.value.filters.date_from || '');
+const dateTo = ref(module.value.filters.date_to || '');
 let timer;
+let syncingFilters = false;
 const reload = () => router.get(route('admin.orders.index'), { search: search.value || undefined, status: status.value || undefined, date_from: dateFrom.value || undefined, date_to: dateTo.value || undefined }, { preserveState: true, replace: true });
-watch([search, status, dateFrom, dateTo], () => { clearTimeout(timer); timer = setTimeout(reload, 250); });
+watch([search, status, dateFrom, dateTo], () => { if (syncingFilters) { syncingFilters = false; return; } clearTimeout(timer); timer = setTimeout(reload, 250); });
+watch(() => module.value.filters, (filters) => {
+    const next = { search: filters.search || '', status: filters.status || '', dateFrom: filters.date_from || '', dateTo: filters.date_to || '' };
+    const changed = search.value !== next.search || status.value !== next.status || dateFrom.value !== next.dateFrom || dateTo.value !== next.dateTo;
+    syncingFilters = changed;
+    if (search.value !== next.search) search.value = next.search;
+    if (status.value !== next.status) status.value = next.status;
+    if (dateFrom.value !== next.dateFrom) dateFrom.value = next.dateFrom;
+    if (dateTo.value !== next.dateTo) dateTo.value = next.dateTo;
+}, { deep: true });
 </script>
 
 <template>

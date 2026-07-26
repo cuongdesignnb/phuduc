@@ -90,7 +90,7 @@ class AdminWarrantyService
 
     public function orderItems(Order $order): array
     {
-        return OrderItem::query()->where('order_id', $order->id)->orderBy('id')->limit(50)->get(['id', 'product_name', 'quantity'])->map(fn (OrderItem $item): array => ['id' => (int) $item->id, 'product_name' => $item->product_name, 'quantity' => (int) $item->quantity])->values()->all();
+        return OrderItem::query()->where('order_id', $order->id)->orderBy('id')->get(['id', 'product_name', 'quantity'])->map(fn (OrderItem $item): array => ['id' => (int) $item->id, 'product_name' => $item->product_name, 'quantity' => (int) $item->quantity])->values()->all();
     }
 
     private function maskPhone(?string $phone): ?string

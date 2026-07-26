@@ -8,18 +8,27 @@ import AdminStatusBadge from '@/Components/Admin/AdminStatusBadge.vue';
 import AdminTable from '@/Components/Admin/AdminTable.vue';
 import AdminTextarea from '@/Components/Admin/AdminTextarea.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({ page: { type: Object, required: true } });
-const order = props.page.module.order;
-const form = useForm({ status: '', reason: '', version: order.version });
+const module = computed(() => props.page.module);
+const order = computed(() => module.value.order);
+const form = useForm({ status: '', reason: '', version: order.value.version });
 const confirming = ref(false);
-const options = order.allowed_next_statuses || [];
+const options = computed(() => order.value.allowed_next_statuses || []);
+const applyServerOrder = (page) => {
+    const next = page.props.page?.module?.order;
+    if (!next) return;
+    form.version = next.version;
+    form.status = '';
+    form.reason = '';
+    form.defaults({ status: '', reason: '', version: next.version });
+};
 const submit = () => {
     if (form.status === 'cancelled') { confirming.value = true; return; }
-    form.patch(route('admin.orders.updateStatus', order.id), { preserveScroll: true });
+    form.patch(route('admin.orders.updateStatus', order.value.id), { preserveScroll: true, onSuccess: applyServerOrder });
 };
-const confirmCancellation = () => { confirming.value = false; form.patch(route('admin.orders.updateStatus', order.id), { preserveScroll: true }); };
+const confirmCancellation = () => { confirming.value = false; form.patch(route('admin.orders.updateStatus', order.value.id), { preserveScroll: true, onSuccess: applyServerOrder }); };
 </script>
 
 <template>

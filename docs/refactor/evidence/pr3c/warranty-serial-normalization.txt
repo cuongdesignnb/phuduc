@@ -1,2 +1,4 @@
 Serial values are trimmed, internal whitespace-normalized and uppercased before storage/lookup.
 Application uniqueness compares UPPER(serial_number), keeping SQLite/MySQL behavior aligned without relying only on collation.
+The existing database unique index is `warranties_serial_number_unique`; no duplicate index was added.
+Unique constraint conflicts are converted to: Mã serial này đã tồn tại.

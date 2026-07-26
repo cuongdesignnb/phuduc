@@ -34,7 +34,7 @@ class AdminWarrantyPresentationService
             'effective_status_label' => $this->statuses->label($effective),
             'edit_url' => route('admin.warranties.edit', $warranty),
             'version' => $this->concurrency->version($warranty),
-            'allowed_actions' => ['void' => $warranty->status !== 'voided'],
+            'allowed_actions' => ['edit' => $warranty->status !== 'voided', 'void' => $warranty->status !== 'voided'],
         ];
     }
 

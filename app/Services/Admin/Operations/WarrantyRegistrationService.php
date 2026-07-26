@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\Warranty;
 use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Storefront\PhoneNormalizer;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -24,7 +25,11 @@ class WarrantyRegistrationService
             $payload = $this->payload($data);
             $this->assertUnique($payload['serial_number']);
 
-            return Warranty::create($payload)->refresh();
+            try {
+                return Warranty::create($payload)->refresh();
+            } catch (QueryException $exception) {
+                $this->rethrowSerialConflict($exception);
+            }
         });
     }
 
@@ -33,10 +38,17 @@ class WarrantyRegistrationService
         return DB::transaction(function () use ($warranty, $data): Warranty {
             $locked = Warranty::query()->lockForUpdate()->findOrFail($warranty->id);
             $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Bảo hành đã được cập nhật ở phiên khác. Vui lòng tải lại.');
+            if ($locked->status === 'voided') {
+                throw ValidationException::withMessages(['warranty' => 'Bảo hành đã hủy không thể chỉnh sửa.']);
+            }
             $payload = $this->payload($data, $locked);
             $this->assertUnique($payload['serial_number'], $locked->id);
             unset($payload['version']);
-            $locked->update($payload);
+            try {
+                $locked->update($payload);
+            } catch (QueryException $exception) {
+                $this->rethrowSerialConflict($exception);
+            }
 
             return $locked->refresh();
         });
@@ -53,7 +65,10 @@ class WarrantyRegistrationService
 
         if ($mode === 'order') {
             $order = Order::query()->lockForUpdate()->findOrFail((int) $data['order_id']);
-            $item = OrderItem::query()->where('order_id', $order->id)->findOrFail((int) $data['order_item_id']);
+            $item = OrderItem::query()->where('order_id', $order->id)->find((int) $data['order_item_id']);
+            if (! $item) {
+                throw ValidationException::withMessages(['order_item_id' => 'Sản phẩm đã chọn không thuộc đơn hàng này.']);
+            }
 
             return [
                 'order_id' => $order->id,
@@ -89,5 +104,15 @@ class WarrantyRegistrationService
         if ($exists) {
             throw ValidationException::withMessages(['serial_number' => 'Mã serial này đã tồn tại.']);
         }
+    }
+
+    private function rethrowSerialConflict(QueryException $exception): never
+    {
+        $isIntegrityConflict = $exception->getCode() === '23000' || str_contains(strtolower((string) $exception->getMessage()), 'unique');
+        if ($isIntegrityConflict) {
+            throw ValidationException::withMessages(['serial_number' => 'Mã serial này đã tồn tại.']);
+        }
+
+        throw $exception;
     }
 }

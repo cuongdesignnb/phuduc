@@ -25,6 +25,7 @@ const provider = read('app/Providers/AppServiceProvider.php');
 const product = read('app/Models/Product.php');
 const productDetail = read('app/Services/Storefront/ProductDetailService.php');
 const warrantyController = read('app/Http/Controllers/Guest/WarrantyLookupController.php');
+const testSources = filesUnder('tests/Feature', '.php').map(read).join('\n');
 
 const counters = {
     RAW_ORDER_MODEL_PROP_HITS: (operationControllers.match(/'orders'\s*=>|'order'\s*=>\s*\$order/g) || []).length,
@@ -64,6 +65,23 @@ const counters = {
     LEGACY_ADMIN_TOKEN_HITS: (operationPages.match(/carbon-|volt-|industrial-/g) || []).length,
     MOJIBAKE_HITS: (operationBackend.concat(operationPages).match(/(?:Ã.|Â.|áº.|á».|Ä.|Æ.|â€|�)/g) || []).length,
     RUNTIME_ENGLISH_VALIDATION_MESSAGE_HITS: exists('lang/vi/validation.php') ? 0 : 1,
+    STALE_INERTIA_MODULE_CAPTURE_HITS: (operationPages.match(/const\s+(?:module|order|existing|options)\s*=\s*(?:props\.page\.module|module\.warranty|module\.order|order\.allowed_next_statuses)/g) || []).length,
+    ORDER_SUCCESS_VERSION_SYNC_MISSING: operationPages.includes('form.defaults({ status: \'\', reason: \'\', version: next.version })') && operationPages.includes('onSuccess: applyServerOrder') ? 0 : 1,
+    REVIEW_REACTIVE_MODULE_MISSING: read('resources/js/Pages/Admin/Review/Index.vue').includes("computed(() => props.page.module)") ? 0 : 1,
+    WARRANTY_REACTIVE_MODULE_MISSING: read('resources/js/Pages/Admin/Warranty/Index.vue').includes("computed(() => props.page.module)") && read('resources/js/Pages/Admin/Warranty/Edit.vue').includes("computed(() => props.page.module)") ? 0 : 1,
+    WARRANTY_ORDER_CHANGE_ITEM_CLEAR_MISSING: read('resources/js/Pages/Admin/Warranty/Edit.vue').includes('form.order_item_id = null') && read('resources/js/Pages/Admin/Warranty/Edit.vue').includes('items.value = []') ? 0 : 1,
+    WARRANTY_ITEM_OWNERSHIP_RULE_MISSING: operationRequests.includes("Rule::exists('order_items', 'id')->where") ? 0 : 1,
+    WARRANTY_ORDER_ITEM_TRUNCATION_HITS: (operationBackend.match(/orderItems[\s\S]{0,500}limit\(50\)/g) || []).length,
+    VOIDED_WARRANTY_UPDATE_GUARD_MISSING: operationBackend.includes("$locked->status === 'voided'") && operationBackend.includes('không thể chỉnh sửa') ? 0 : 1,
+    REVIEW_DELETE_REASON_UNUSED: operationBackend.includes("'reason' => $data['reason']") && operationBackend.includes("'action' => 'deleted'") ? 0 : 1,
+    REVIEW_MODERATION_HISTORY_MISSING: exists('database/migrations/2026_07_26_000003_create_review_moderation_histories_table.php') && operationBackend.includes('ReviewModerationHistory') ? 0 : 1,
+    UNRESOLVED_STOCK_RESULT_IGNORED: operationBackend.includes("'unresolved_stock_lines' => $unresolved") && operationControllers.includes("with('warning'") ? 0 : 1,
+    SERIAL_DATABASE_UNIQUE_GUARD_MISSING: read('database/migrations/2026_03_04_075733_create_warranties_table.php').includes("serial_number')->unique()") && operationBackend.includes('QueryException') ? 0 : 1,
+    REAL_CONCURRENT_CANCELLATION_TEST_MISSING: testSources.toLowerCase().includes('real concurrent cancellation') ? 0 : 1,
+    REVIEW_RATE_LIMIT_TEST_MISSING: testSources.toLowerCase().includes('sixth_submission') || testSources.includes('commerce-reviews') ? 0 : 1,
+    WARRANTY_VOID_TEST_MISSING: testSources.includes('voided_warranty_is_terminal') ? 0 : 1,
+    WARRANTY_EFFECTIVE_STATUS_TEST_MISSING: testSources.includes('effective status') || testSources.includes('effective_status') ? 0 : 1,
+    QUERY_Q1_FIXTURE_MISSING: read('tests/Feature/Admin/AdminOperationsQueryCountTest.php').includes('Q1_RECORD_COUNT=1') && read('tests/Feature/Admin/AdminOperationsQueryCountTest.php').includes("assertDatabaseCount('orders', 30)") ? 0 : 1,
 };
 
 for (const [key, value] of Object.entries(counters)) console.log(`${key}=${value}`);
