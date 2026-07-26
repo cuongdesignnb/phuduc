@@ -37,8 +37,8 @@ class NewsPageService
             ->when($selectedCategory, fn (Builder $query) => $query->where('post_category_id', $selectedCategory->id))
             ->when($filters['search'], fn (Builder $query, string $search) => $query->where(function (Builder $query) use ($search): void {
                 $keyword = $this->escapeLike($search);
-                $query->whereRaw("title LIKE ? ESCAPE '\\'", ["%{$keyword}%"])
-                    ->orWhereRaw("summary LIKE ? ESCAPE '\\'", ["%{$keyword}%"]);
+                $query->whereRaw("title LIKE ? ESCAPE '\\\\'", ["%{$keyword}%"])
+                    ->orWhereRaw("summary LIKE ? ESCAPE '\\\\'", ["%{$keyword}%"]);
             }))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
