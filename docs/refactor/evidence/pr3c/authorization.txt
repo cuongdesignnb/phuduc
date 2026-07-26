@@ -1,0 +1,3 @@
+Admin routes remain behind auth and admin middleware.
+PR3C mutation and picker requests authorize only is_admin users.
+Guest operations authorization test passes.

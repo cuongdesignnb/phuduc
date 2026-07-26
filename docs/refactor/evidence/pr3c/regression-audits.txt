@@ -1,0 +1,6 @@
+audit:storefront-theme: PASS.
+audit:pr2b-pages: PASS.
+audit:pr2b-evidence: PASS.
+audit:pr2c-commerce: PASS.
+audit:pr3a-admin: PASS.
+audit:pr3b-admin-content: PASS.

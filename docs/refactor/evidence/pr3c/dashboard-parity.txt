@@ -1,0 +1,2 @@
+Existing dashboard query budget remains 12 max with DASHBOARD_EMPTY=10, DASHBOARD_1=11, DASHBOARD_12=11.
+Pending order/review metrics and cancelled revenue rules remain intact; active warranty uses effective date/status rules.

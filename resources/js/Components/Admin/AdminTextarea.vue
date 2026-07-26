@@ -1,5 +1,5 @@
 <script setup>
-defineProps({ modelValue: { type: String, default: '' }, id: { type: String, default: '' }, rows: { type: Number, default: 5 }, placeholder: { type: String, default: '' } });
+defineProps({ modelValue: { type: String, default: '' }, id: { type: String, default: '' }, rows: { type: [Number, String], default: 5 }, placeholder: { type: String, default: '' } });
 defineEmits(['update:modelValue']);
 </script>
 

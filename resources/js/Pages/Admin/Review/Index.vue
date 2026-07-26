@@ -1,68 +1,22 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import AdminConfirmDialog from '@/Components/Admin/AdminConfirmDialog.vue';
+import AdminDataCard from '@/Components/Admin/AdminDataCard.vue';
+import AdminTextarea from '@/Components/Admin/AdminTextarea.vue';
+import AdminPageHeader from '@/Components/Admin/AdminPageHeader.vue';
+import AdminPagination from '@/Components/Admin/AdminPagination.vue';
+import AdminStatusBadge from '@/Components/Admin/AdminStatusBadge.vue';
+import AdminTextInput from '@/Components/Admin/AdminTextInput.vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
-const props = defineProps({ reviews: Object, filters: Object });
-const status = ref(props.filters?.status || '');
-const deleting = ref(null);
-
-watch(status, () => {
-    router.get(route('admin.reviews.index'), { status: status.value || undefined }, { preserveState: true, replace: true });
-});
-
-const updateStatus = (id, newStatus) => {
-    router.patch(route('admin.reviews.updateStatus', id), { status: newStatus }, { preserveScroll: true });
-};
-
-const deleteReview = (id) => {
-    deleting.value = id;
-};
-
-const confirmDelete = () => router.delete(route('admin.reviews.destroy', deleting.value), { preserveScroll: true, onFinish: () => { deleting.value = null; } });
-
-const statusLabels = { pending: 'Chờ duyệt', approved: 'Đã duyệt', rejected: 'Từ chối' };
-const statusColors = { pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20', approved: 'bg-admin-accent/10 text-admin-accent border-admin-accent/20', rejected: 'bg-red-500/10 text-red-400 border-red-500/20' };
+const props = defineProps({ page: { type: Object, required: true } });
+const module = computed(() => props.page.module); const search = ref(module.value.filters.search || ''); const status = ref(module.value.filters.status || ''); const rating = ref(module.value.filters.rating || ''); const deleting = ref(null); const deleteForm = useForm({ version: '', reason: '' }); let timer; let syncingFilters = false;
+watch([search, status, rating], () => { if (syncingFilters) { syncingFilters = false; return; } clearTimeout(timer); timer = setTimeout(() => router.get(route('admin.reviews.index'), { search: search.value || undefined, status: status.value || undefined, rating: rating.value || undefined }, { preserveState: true, replace: true }), 250); });
+watch(() => module.value.filters, (filters) => { const next = { search: filters.search || '', status: filters.status || '', rating: filters.rating || '' }; const changed = search.value !== next.search || status.value !== next.status || rating.value !== next.rating; syncingFilters = changed; if (search.value !== next.search) search.value = next.search; if (status.value !== next.status) status.value = next.status; if (rating.value !== next.rating) rating.value = next.rating; }, { deep: true });
+const changeStatus = (review, value) => router.patch(route('admin.reviews.updateStatus', review.id), { status: value, version: review.version }, { preserveScroll: true });
+const askDelete = (review) => { deleteForm.version = review.version; deleteForm.reason = ''; deleting.value = review; };
+const deleteReview = () => deleteForm.delete(route('admin.reviews.destroy', deleting.value.id), { preserveScroll: true, onFinish: () => { deleting.value = null; } });
 </script>
 
-<template>
-    <Head title="Quản lý Đánh giá" />
-    <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-2xl font-display font-bold text-white">Quản lý Đánh giá</h2>
-        </template>
-        <div class="py-6">
-            <div class="mx-auto max-w-7xl px-6">
-                <div class="mb-6">
-                    <select v-model="status" class="rounded-xl border border-white/10 bg-admin-surface/50 text-admin-content text-sm px-4 py-2.5 focus:border-admin-accent/50 focus:ring-1 focus:ring-admin-accent/20">
-                        <option value="">Tất cả</option>
-                        <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
-                    </select>
-                </div>
-                <div class="space-y-4">
-                    <div v-for="review in reviews.data" :key="review.id" class="rounded-2xl border border-white/5 bg-admin-surface/50 backdrop-blur-sm p-6 hover:border-white/10 transition-all">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="font-medium text-white">{{ review.customer_name }}</span>
-                                    <span class="text-amber-400 text-sm">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
-                                    <span :class="statusColors[review.status]" class="inline-flex rounded-lg px-2.5 py-0.5 text-xs font-medium border">{{ statusLabels[review.status] }}</span>
-                                </div>
-                                <p class="text-sm text-admin-content-muted mb-1">Sản phẩm: <span class="text-admin-content">{{ review.product?.name || 'Chưa có' }}</span></p>
-                                <p class="text-sm text-admin-content">{{ review.content }}</p>
-                                <p class="text-xs text-admin-content-muted mt-2">{{ new Date(review.created_at).toLocaleString('vi-VN') }}</p>
-                            </div>
-                            <div class="flex gap-2 shrink-0">
-                                <button v-if="review.status !== 'approved'" @click="updateStatus(review.id, 'approved')" class="text-xs bg-admin-accent/10 text-admin-accent border border-admin-accent/20 px-3 py-1.5 rounded-lg hover:bg-admin-accent/20 transition">Duyệt</button>
-                                <button v-if="review.status !== 'rejected'" @click="updateStatus(review.id, 'rejected')" class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition">Từ chối</button>
-                                <button @click="deleteReview(review.id)" class="text-xs text-red-400 hover:text-red-300 px-2 transition-colors">Xóa</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="!reviews.data.length" class="text-center py-12 text-admin-content-muted">Không có đánh giá nào.</div>
-                </div>
-            </div>
-        </div>
-        <AdminConfirmDialog :open="!!deleting" title="Xóa đánh giá" message="Bạn có chắc muốn xóa đánh giá này không?" confirm-label="Xóa đánh giá" danger @cancel="deleting = null" @confirm="confirmDelete" />
-    </AuthenticatedLayout>
-</template>
+<template><Head :title="page.meta.title" /><AuthenticatedLayout><AdminPageHeader :title="page.meta.title" description="Kiểm duyệt nội dung do khách hàng gửi" /><AdminDataCard title="Bộ lọc đánh giá" class="mt-6"><div class="grid gap-3 sm:grid-cols-3"><AdminTextInput v-model="search" placeholder="Tìm tên, nội dung, sản phẩm" aria-label="Tìm đánh giá" /><select v-model="status" aria-label="Lọc trạng thái" class="border border-admin-border bg-admin-page px-3 py-2 text-sm text-admin-content"><option value="">Tất cả trạng thái</option><option v-for="item in module.statuses" :key="item.key" :value="item.key">{{ item.label }}</option></select><select v-model="rating" aria-label="Lọc số sao" class="border border-admin-border bg-admin-page px-3 py-2 text-sm text-admin-content"><option value="">Tất cả số sao</option><option v-for="item in module.ratings" :key="item" :value="item">{{ item }} trên 5 sao</option></select></div></AdminDataCard><div class="mt-6 space-y-4"><article v-for="review in module.items" :key="review.id" class="border border-admin-border bg-admin-surface p-4"><div class="flex flex-col gap-4 lg:flex-row lg:justify-between"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="text-admin-content">{{ review.customer.name }}</strong><span class="text-sm text-admin-content-muted" :aria-label="review.rating_label">{{ review.rating_label }}</span><AdminStatusBadge :status="review.status" /></div><p class="mt-2 text-sm text-admin-content-muted">{{ review.product.name }} · {{ review.created_at_display }}</p><p class="mt-3 whitespace-pre-line text-sm text-admin-content">{{ review.content }}</p><p v-if="review.customer.phone_masked || review.customer.email_masked" class="mt-2 text-xs text-admin-content-muted">{{ review.customer.phone_masked || '' }} {{ review.customer.email_masked || '' }}</p></div><div class="flex shrink-0 flex-wrap items-start gap-2"><button v-if="review.allowed_actions.approve" type="button" class="rounded-lg border border-admin-success/40 px-3 py-2 text-sm text-admin-success" @click="changeStatus(review, 'approved')">Duyệt</button><button v-if="review.allowed_actions.reject" type="button" class="rounded-lg border border-admin-danger/40 px-3 py-2 text-sm text-admin-danger" @click="changeStatus(review, 'rejected')">Từ chối</button><button v-if="review.allowed_actions.delete" type="button" class="rounded-lg border border-admin-border px-3 py-2 text-sm text-admin-content-muted" @click="askDelete(review)">Xóa</button></div></div></article><p v-if="!module.items.length" class="border border-admin-border px-4 py-10 text-center text-sm text-admin-content-muted">Chưa có đánh giá phù hợp.</p></div><AdminPagination class="mt-6" :pagination="module.pagination" /><AdminConfirmDialog :open="!!deleting" title="Xóa đánh giá" message="Chỉ đánh giá chờ duyệt hoặc đã từ chối mới được xóa. Hãy nhập lý do để lưu quyết định." confirm-label="Xóa đánh giá" danger :processing="deleteForm.processing" @cancel="deleting = null" @confirm="deleteReview"><template #default><AdminTextarea v-model="deleteForm.reason" rows="3" placeholder="Lý do xóa bắt buộc" /></template></AdminConfirmDialog></AuthenticatedLayout></template>

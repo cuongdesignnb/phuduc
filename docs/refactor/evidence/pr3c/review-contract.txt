@@ -1,0 +1,3 @@
+Guest review submission uses StoreReviewRequest and server-owned pending status.
+Admin review index uses page.module DTOs with masked phone/email and server-formatted dates.
+Search is grouped across reviewer, content and product name; status/rating/product filters are bounded.

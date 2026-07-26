@@ -1,0 +1,2 @@
+PR3C changed scope is the admin operations layer, storefront review/lookup parity, shared confirmation slot, migrations, tests, audit script and package command.
+No .env, SQL dump, credentials, media backup or customer PII is included.

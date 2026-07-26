@@ -1,0 +1,3 @@
+Changed-scope Pint: PASS, 50 PHP files.
+Full-repository Pint: 43 existing style issues after PR3C; this is below the task baseline expectation of 46.
+Full-repository Pint remains a baseline comparison and is not cleaned up in PR3C.

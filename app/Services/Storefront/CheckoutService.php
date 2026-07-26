@@ -62,7 +62,7 @@ class CheckoutService
                 $order = Order::create([
                     'order_number' => Order::generateOrderNumber(),
                     'checkout_intent' => $intent,
-                    'public_token' => Str::random(64),
+                    'public_token' => 't'.Str::random(63),
                     'customer_name' => $data['customer_name'],
                     'customer_phone' => $data['customer_phone'],
                     'customer_email' => $data['customer_email'] ?? null,

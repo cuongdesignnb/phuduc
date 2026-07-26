@@ -1,0 +1,4 @@
+Vite build: PASS.
+Vite version: 7.3.1.
+Modules transformed: 910.
+Final build after checkout token hardening: PASS.

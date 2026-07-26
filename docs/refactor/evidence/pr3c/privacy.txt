@@ -1,0 +1,3 @@
+Admin and public contracts use explicit DTOs.
+Review contacts are masked in Admin lists; public lookup contracts omit unnecessary contact/order internals.
+No production data or customer PII is present in this evidence directory.

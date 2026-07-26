@@ -3,83 +3,66 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Warranty;
+use App\Http\Requests\Admin\StoreWarrantyRequest;
+use App\Http\Requests\Admin\UpdateWarrantyRequest;
+use App\Http\Requests\Admin\VoidWarrantyRequest;
+use App\Http\Requests\Admin\WarrantyIndexRequest;
+use App\Http\Requests\Admin\WarrantyOrderLookupRequest;
 use App\Models\Order;
-use Illuminate\Http\Request;
+use App\Models\Warranty;
+use App\Services\Admin\Operations\AdminWarrantyService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class WarrantyController extends Controller
 {
-    public function index(Request $request)
+    public function index(WarrantyIndexRequest $request, AdminWarrantyService $warranties): Response
     {
-        $warranties = Warranty::with('order:id,order_number')
-            ->when($request->search, fn($q, $s) => $q->where('serial_number', 'like', "%{$s}%")
-                ->orWhere('product_name', 'like', "%{$s}%"))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
-
-        return Inertia::render('Admin/Warranty/Index', [
-            'warranties' => $warranties,
-            'filters' => $request->only('search'),
-        ]);
+        return Inertia::render('Admin/Warranty/Index', $warranties->index($request->user(), $request->validated()));
     }
 
-    public function create()
+    public function create(AdminWarrantyService $warranties): Response
     {
-        $orders = Order::select('id', 'order_number', 'customer_name')->latest()->limit(100)->get();
-
-        return Inertia::render('Admin/Warranty/Edit', [
-            'warranty' => null,
-            'orders' => $orders,
-        ]);
+        return Inertia::render('Admin/Warranty/Edit', $warranties->editPage(request()->user(), null));
     }
 
-    public function store(Request $request)
+    public function store(StoreWarrantyRequest $request, AdminWarrantyService $warranties): RedirectResponse
     {
-        $data = $request->validate([
-            'order_id' => 'nullable|exists:orders,id',
-            'serial_number' => 'required|string|max:255|unique:warranties,serial_number',
-            'product_name' => 'required|string|max:255',
-            'activation_date' => 'nullable|date',
-            'expiration_date' => 'nullable|date|after_or_equal:activation_date',
-            'status' => 'nullable|in:active,expired,voided',
-        ]);
+        $warranty = $warranties->store($request->validated());
 
-        Warranty::create($data);
-
-        return redirect()->route('admin.warranties.index')->with('success', 'Bảo hành đã được tạo.');
+        return redirect()->route('admin.warranties.edit', $warranty)->with('success', 'Bảo hành đã được tạo.');
     }
 
-    public function edit(Warranty $warranty)
+    public function edit(Warranty $warranty, AdminWarrantyService $warranties): Response
     {
-        $orders = Order::select('id', 'order_number', 'customer_name')->latest()->limit(100)->get();
-
-        return Inertia::render('Admin/Warranty/Edit', [
-            'warranty' => $warranty,
-            'orders' => $orders,
-        ]);
+        return Inertia::render('Admin/Warranty/Edit', $warranties->editPage(request()->user(), $warranty));
     }
 
-    public function update(Request $request, Warranty $warranty)
+    public function update(UpdateWarrantyRequest $request, Warranty $warranty, AdminWarrantyService $warranties): RedirectResponse
     {
-        $data = $request->validate([
-            'order_id' => 'nullable|exists:orders,id',
-            'serial_number' => 'required|string|max:255|unique:warranties,serial_number,' . $warranty->id,
-            'product_name' => 'required|string|max:255',
-            'activation_date' => 'nullable|date',
-            'expiration_date' => 'nullable|date|after_or_equal:activation_date',
-            'status' => 'nullable|in:active,expired,voided',
-        ]);
+        $warranties->update($warranty, $request->validated());
 
-        $warranty->update($data);
-
-        return redirect()->route('admin.warranties.index')->with('success', 'Bảo hành đã được cập nhật.');
+        return redirect()->route('admin.warranties.edit', $warranty)->with('success', 'Bảo hành đã được cập nhật.');
     }
 
-    public function destroy(Warranty $warranty)
+    public function void(VoidWarrantyRequest $request, Warranty $warranty, AdminWarrantyService $warranties): RedirectResponse
     {
-        $warranty->delete();
-        return redirect()->route('admin.warranties.index')->with('success', 'Bảo hành đã được xóa.');
+        $warranties->void($warranty, $request->validated());
+
+        return back()->with('success', 'Bảo hành đã được hủy.');
+    }
+
+    public function orders(WarrantyOrderLookupRequest $request, AdminWarrantyService $warranties): JsonResponse
+    {
+        $items = $warranties->orderLookup($request->validated());
+
+        return response()->json(['items' => $items, 'data' => $items]);
+    }
+
+    public function orderItems(Order $order, AdminWarrantyService $warranties): JsonResponse
+    {
+        return response()->json(['data' => $warranties->orderItems($order)]);
     }
 }

@@ -1,0 +1,3 @@
+Registry: pending -> processing/cancelled; processing -> shipping/cancelled; shipping -> completed; completed/cancelled terminal.
+Same-status submission is a no-op without history or stock mutation.
+Transition service locks the order, validates version and writes one history row per real transition.

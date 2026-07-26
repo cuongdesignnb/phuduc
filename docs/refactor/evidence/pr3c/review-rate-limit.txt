@@ -1,0 +1,4 @@
+reviews.store uses throttle:commerce-reviews.
+Limiter: 5 submissions per 10 minutes per session+IP and 20 per day per IP.
+GuestReviewRateLimitTest: first five submissions accepted; sixth submission returned HTTP 429.
+Guest review submission test passes and inactive products are rejected.

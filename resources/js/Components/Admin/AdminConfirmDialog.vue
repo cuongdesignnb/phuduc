@@ -41,6 +41,7 @@ const confirm = () => {
             <div ref="dialog" tabindex="-1" class="w-full max-w-md border border-admin-border bg-admin-surface p-5 focus:outline-none" @keydown="onKeydown">
                 <h2 :id="titleId" class="text-lg font-semibold text-admin-content">{{ title }}</h2>
                 <p v-if="message" :id="messageId" class="mt-2 text-sm text-admin-content-muted">{{ message }}</p>
+                <div v-if="$slots.default" class="mt-4"><slot /></div>
                 <div class="mt-5 flex justify-end gap-3">
                     <button type="button" :disabled="processing" class="rounded-lg border border-admin-border px-4 py-2 text-sm text-admin-content-muted focus:outline-none focus:ring-2 focus:ring-admin-focus disabled:cursor-not-allowed disabled:opacity-50" @click="cancel">{{ cancelLabel }}</button>
                     <button type="button" :disabled="processing" :class="danger ? 'bg-admin-danger text-white' : 'bg-admin-accent text-admin-page'" class="rounded-lg px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-admin-focus disabled:cursor-not-allowed disabled:opacity-50" @click="confirm">{{ processing ? 'Đang xử lý...' : confirmLabel }}</button>

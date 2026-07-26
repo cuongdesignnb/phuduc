@@ -1,0 +1,9 @@
+Order status mutation requires the current updated-at version.
+Stale versions return the Vietnamese reload message and do not change status or stock.
+SQLite feature coverage passes stale and repeated cancellation cases.
+Isolated MySQL process-level concurrency test: 5 passed, 26 assertions.
+Two cancellation requests used the same version; exactly one committed, stock incremented once, and one history row remained.
+TRUE FINAL isolated MySQL evidence: Worker A fixture visible=YES; Worker B fixture visible=YES; Worker A barrier passed=YES; Worker B barrier passed=YES.
+Outcomes are scheduling-dependent changed/noop; final stock=2 from initial stock=0 and quantity=2; final history count=1.
+ModelNotFound hits=0; double stock restore=NO. Dedicated class has no RefreshDatabase or tempnam barrier and commits fixtures before workers.
+Atomic rollback: PASS, pending status and unchanged stock with zero history after invalid actor FK failure.

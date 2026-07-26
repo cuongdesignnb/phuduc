@@ -46,6 +46,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('commerce-cart', fn (Request $request) => Limit::perMinute(60)->by($commerceSessionKey($request)));
         RateLimiter::for('commerce-checkout', fn (Request $request) => Limit::perMinute(10)->by($commerceSessionKey($request)));
+        RateLimiter::for('commerce-reviews', fn (Request $request) => [
+            Limit::perMinutes(10, 5)->by($commerceSessionKey($request)),
+            Limit::perDay(20)->by('ip:'.$request->ip()),
+        ]);
         RateLimiter::for('commerce-order-lookup', fn (Request $request) => Limit::perMinute(10)
             ->by('ip:'.$request->ip()));
         RateLimiter::for('commerce-warranty-lookup', fn (Request $request) => Limit::perMinute(10)
@@ -57,10 +61,11 @@ class AppServiceProvider extends ServiceProvider
 
         Inertia::share([
             'cart_count' => fn () => app(CartSessionService::class)->count(),
-            'flash' => fn () => [
+            'flash' => Inertia::always(fn () => array_filter([
                 'success' => session('success'),
+                'warning' => session('warning'),
                 'error' => session('error'),
-            ],
+            ], static fn ($value): bool => $value !== null)),
             'fontSettings' => fn () => app(SiteConfigurationService::class)->get()['fonts'],
             'primaryColor' => fn () => app(SiteConfigurationService::class)->get()['primary_color'],
         ]);

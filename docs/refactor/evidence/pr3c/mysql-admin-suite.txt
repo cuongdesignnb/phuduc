@@ -1,0 +1,4 @@
+Database: temporary phuduc_pr3c_qa, removed after QA.
+Scope: tests/Feature/Admin plus PR3C storefront lookup/review tests.
+Result: 135 passed, 921 assertions, including two-worker concurrency, atomic rollback and expanded PR3C storefront/query coverage.
+Production database: not used.

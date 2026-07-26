@@ -1,0 +1,3 @@
+Command: isolated SQLite in-memory Laravel test suite.
+Result: 299 passed, 2 skipped, 2421 assertions.
+Focused final delta: +4 tests and +48 assertions over the previous closure evidence.

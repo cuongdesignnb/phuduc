@@ -1,0 +1,5 @@
+Moderation allows pending -> approved/rejected, approved -> rejected and rejected -> approved.
+Version is required for every status mutation.
+Approved reviews cannot be deleted directly; pending/rejected deletion requires version and reason.
+Every real status transition writes one review_moderation_histories event with actor and from/to status.
+Delete writes one event with review_reference and reason before deleting; review_id becomes null through FK behavior.
