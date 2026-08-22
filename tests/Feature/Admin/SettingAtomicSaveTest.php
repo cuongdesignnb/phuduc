@@ -16,6 +16,10 @@ class SettingAtomicSaveTest extends TestCase
         $source = file_get_contents(base_path('app/Services/Admin/Content/AdminSettingService.php'));
         $this->assertStringContainsString('DB::transaction', $source);
         $this->assertTrue(method_exists(app(AdminSettingService::class), 'save'));
-        $this->assertDatabaseCount('settings', 0);
+        $this->assertDatabaseHas('settings', [
+            'key' => 'seo.prevent_indexing',
+            'value' => '0',
+            'type' => 'boolean',
+        ]);
     }
 }

@@ -36,7 +36,7 @@ class SiteThemeContractTest extends TestCase
 
         $this->get('/')->assertInertia(fn (Assert $page) => $page
             ->where('site.theme.primary_color', '#ffd400')
-            ->where('site.theme.fonts.heading', 'Rajdhani')
+            ->where('site.theme.fonts.heading', 'Inter')
             ->missing('site.theme.css_variables.--attack')
             ->where('site.theme.css_variables.--ds-brand-primary', '255 212 0')
         );

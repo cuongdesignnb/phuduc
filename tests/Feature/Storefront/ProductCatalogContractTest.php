@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use App\Models\Review;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ProductCatalogContractTest extends TestCase
@@ -41,6 +42,43 @@ class ProductCatalogContractTest extends TestCase
                 ->where('page.seo.robots', 'noindex, follow')
                 ->missing('products')
             );
+    }
+
+    #[DataProvider('literalLikeSearchTokens')]
+    public function test_product_search_treats_like_metacharacters_as_literals(string $label, string $token): void
+    {
+        $product = Product::create([
+            'name' => "Literal {$label} product {$token}",
+            'slug' => "literal-{$label}",
+            'price' => 100,
+            'status' => 'active',
+        ]);
+        Product::create([
+            'name' => 'Ordinary product without the search token',
+            'slug' => "ordinary-{$label}",
+            'price' => 100,
+            'status' => 'active',
+        ]);
+
+        $this->get('/san-pham?search='.rawurlencode($token))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('page.catalog.items', 1)
+                ->where('page.catalog.items.0.id', $product->id)
+                ->where('page.catalog.filters.search', $token)
+            );
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function literalLikeSearchTokens(): array
+    {
+        return [
+            'underscore' => ['underscore', '_'],
+            'percent' => ['percent', '%'],
+            'exclamation' => ['exclamation', '!'],
+        ];
     }
 
     public function test_product_sort_is_deterministic(): void

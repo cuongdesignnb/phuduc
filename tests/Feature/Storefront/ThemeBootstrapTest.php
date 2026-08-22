@@ -35,8 +35,8 @@ class ThemeBootstrapTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('family=Rajdhani', false)
             ->assertSee('family=Inter', false)
+            ->assertDontSee('family=Rajdhani', false)
             ->assertDontSee('example.test', false)
             ->assertDontSee('<script>alert(1)</script>', false);
     }

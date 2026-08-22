@@ -29,8 +29,8 @@ class ProductCatalogService
             ->withAvg('approvedReviews', 'rating')
             ->when($filters['search'], fn (Builder $query, string $search) => $query->where(function (Builder $query) use ($search): void {
                 $keyword = $this->escapeLike($search);
-                $query->whereRaw("name LIKE ? ESCAPE '\\\\'", ["%{$keyword}%"])
-                    ->orWhereRaw("sku LIKE ? ESCAPE '\\\\'", ["%{$keyword}%"]);
+                $query->whereRaw("name LIKE ? ESCAPE '!'", ["%{$keyword}%"])
+                    ->orWhereRaw("sku LIKE ? ESCAPE '!'", ["%{$keyword}%"]);
             }))
             ->when($filters['min_price'] !== null, fn (Builder $query) => $query->where('price', '>=', $filters['min_price']))
             ->when($filters['max_price'] !== null, fn (Builder $query) => $query->where('price', '<=', $filters['max_price']));
@@ -97,7 +97,11 @@ class ProductCatalogService
 
     private function escapeLike(string $value): string
     {
-        return addcslashes($value, '\%_');
+        return strtr($value, [
+            '!' => '!!',
+            '%' => '!%',
+            '_' => '!_',
+        ]);
     }
 
     /**
