@@ -11,6 +11,7 @@ class ProductionDefaultsSeeder extends Seeder
         $this->call([
             SettingSeeder::class,
             HomeContentSeeder::class,
+            MenuSeeder::class,
         ]);
     }
 }

@@ -12,16 +12,21 @@ class SeoService
     public static function meta(array $overrides = []): array
     {
         $siteName = Setting::get('site.name', config('app.name'));
+        $preventIndexing = in_array((string) Setting::get('seo.prevent_indexing', '0'), ['1', 'true'], true);
         $defaults = [
             'title' => $siteName,
             'description' => Setting::get('site.description', ''),
             'ogImage' => Setting::get('site.og_image', ''),
             'ogType' => 'website',
             'canonical' => url()->current(),
-            'robots' => 'index, follow',
+            'robots' => $preventIndexing ? 'noindex, nofollow' : 'index, follow',
         ];
 
         $meta = array_merge($defaults, array_filter($overrides));
+
+        if ($preventIndexing) {
+            $meta['robots'] = 'noindex, nofollow';
+        }
 
         // Append site name to title if it's not the homepage
         if (!empty($overrides['title'])) {

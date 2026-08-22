@@ -18,6 +18,10 @@ class StorefrontSeoService
             $title .= ' | '.$site['name'];
         }
 
+        $robots = $site['prevent_indexing']
+            ? 'noindex, nofollow'
+            : ($overrides['robots'] ?? 'index, follow');
+
         return [
             'title' => $title,
             'description' => $overrides['description'] ?? $site['description'],
@@ -26,7 +30,7 @@ class StorefrontSeoService
             'canonical' => array_key_exists('canonical', $overrides)
                 ? $overrides['canonical']
                 : url()->current(),
-            'robots' => $overrides['robots'] ?? 'index, follow',
+            'robots' => $robots,
         ];
     }
 
@@ -71,7 +75,29 @@ class StorefrontSeoService
             $schema['image'] = $images;
         }
 
-        if (($product['price'] ?? 0) > 0) {
+        $variantPrices = collect($product['variants'] ?? [])
+            ->pluck('price')
+            ->map(fn ($price) => (float) $price)
+            ->filter(fn (float $price) => $price > 0)
+            ->values();
+
+        if ($variantPrices->isNotEmpty()) {
+            $schema['offers'] = $variantPrices->count() > 1
+                ? [
+                    '@type' => 'AggregateOffer',
+                    'lowPrice' => $variantPrices->min(),
+                    'highPrice' => $variantPrices->max(),
+                    'offerCount' => $variantPrices->count(),
+                    'priceCurrency' => 'VND',
+                    'url' => route('products.show', $product['slug']),
+                ]
+                : [
+                    '@type' => 'Offer',
+                    'price' => $variantPrices->first(),
+                    'priceCurrency' => 'VND',
+                    'url' => route('products.show', $product['slug']),
+                ];
+        } elseif (($product['price'] ?? 0) > 0) {
             $schema['offers'] = [
                 '@type' => 'Offer',
                 'price' => $product['price'],

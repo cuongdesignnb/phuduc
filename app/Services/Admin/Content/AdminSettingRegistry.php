@@ -32,6 +32,7 @@ final class AdminSettingRegistry
             'seo.default_title' => ['label' => 'Tiêu đề SEO mặc định', 'description' => 'Tiêu đề mặc định cho trang chưa có SEO riêng.', 'group' => 'seo', 'type' => 'text', 'default' => 'PhuDuc', 'max' => 255],
             'seo.default_description' => ['label' => 'Mô tả SEO mặc định', 'description' => 'Mô tả mặc định cho công cụ tìm kiếm.', 'group' => 'seo', 'type' => 'textarea', 'default' => '', 'max' => 500],
             'seo.default_keywords' => ['label' => 'Từ khóa SEO', 'description' => 'Danh sách từ khóa SEO cách nhau bằng dấu phẩy.', 'group' => 'seo', 'type' => 'text', 'default' => '', 'max' => 1000],
+            'seo.prevent_indexing' => ['label' => 'Chặn công cụ tìm kiếm lập chỉ mục', 'description' => 'Bật để thêm noindex, nofollow và X-Robots-Tag cho toàn bộ website. Tắt khi website đã sẵn sàng xuất hiện trên Google.', 'group' => 'seo', 'type' => 'boolean', 'default' => '0', 'max' => 1],
             'font.heading' => ['label' => 'Font tiêu đề', 'description' => 'Font dùng cho tiêu đề giao diện.', 'group' => 'appearance', 'type' => 'font', 'default' => 'Rajdhani', 'max' => 100],
             'font.body' => ['label' => 'Font nội dung', 'description' => 'Font dùng cho nội dung giao diện.', 'group' => 'appearance', 'type' => 'font', 'default' => 'Inter', 'max' => 100],
         ];

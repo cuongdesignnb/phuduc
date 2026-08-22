@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "source": "D:\\phuducdos",
+  "rules": {
+    "name": "Tên sản phẩm được làm sạch lỗi chính tả, đơn vị và dấu câu; không đưa giá vào tên.",
+    "slug": "Sinh từ tên chuẩn bằng chữ thường không dấu, dấu gạch nối; bảo đảm duy nhất.",
+    "multiple_prices": "Giữ toàn bộ trong specifications với nhãn biến thể; không chọn một giá đại diện gây sai lệch.",
+    "single_price": "Ghi vào price theo VND.",
+    "image": "Chỉ nhận ảnh trong folder sản phẩm; chuyển về WebP, đặt tên theo slug và số thứ tự, alt theo tên sản phẩm."
+  },
+  "products": [
+    {
+      "source_folder": "cần cẩu chân nhện loại 12 tấn giá  1ty2 -  5 tấn 660 tr - 8 tấn  695 triệu - 1 TẤN 245 TR",
+      "name": "Cần cẩu chân nhện",
+      "slug": "can-cau-chan-nhen",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "12 tấn", "price_vnd": 1200000000},
+        {"label": "5 tấn", "price_vnd": 660000000},
+        {"label": "8 tấn", "price_vnd": 695000000},
+        {"label": "1 tấn", "price_vnd": 245000000}
+      ]
+    },
+    {
+      "source_folder": "cẩu chân nhện chạy điện - trọng tải cẩu max 1.5 tấn 76 triệu đã bao gồm vat và motor tời",
+      "name": "Cẩu chân nhện chạy điện 1,5 tấn",
+      "slug": "cau-chan-nhen-chay-dien-1-5-tan",
+      "price_vnd": 76000000,
+      "variants": [{"label": "Tải trọng tối đa 1,5 tấn", "price_vnd": 76000000, "note": "Đã bao gồm VAT và motor tời"}]
+    },
+    {
+      "source_folder": "cẩu điện tải trọng cẩu max 2 tấn 3 đốt thuỷ lực cần vươn 3 mét xoay 360 độ - 65 triệu bao gồm chân cẩu + bình điện  + motor 12000 lbs đã bao gồm vat",
+      "name": "Cẩu điện thủy lực 2 tấn",
+      "slug": "cau-dien-thuy-luc-2-tan",
+      "price_vnd": 65000000,
+      "variants": [{"label": "Tải trọng tối đa 2 tấn; cần 3 đốt, vươn 3 m, xoay 360°", "price_vnd": 65000000, "note": "Bao gồm chân cẩu, bình điện và motor 12.000 lbs; đã bao gồm VAT"}]
+    },
+    {
+      "source_folder": "cẩu thuỷ lực 500 kg giá 8tr8 đã bao gồm motor",
+      "name": "Cẩu thủy lực 500 kg",
+      "slug": "cau-thuy-luc-500-kg",
+      "price_vnd": 8800000,
+      "variants": [{"label": "Tải trọng 500 kg", "price_vnd": 8800000, "note": "Đã bao gồm motor"}]
+    },
+    {
+      "source_folder": "cẩu trục chạy điện có chân di chuyển cao 3 mét ngang 3 mét tải 2 tấn gia 54 triệu - 3 tấn 62tr - 5 tấn - giá 74 triệu",
+      "name": "Cẩu trục chạy điện có chân di chuyển",
+      "slug": "cau-truc-chay-dien-co-chan-di-chuyen",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "2 tấn; cao 3 m, ngang 3 m", "price_vnd": 54000000},
+        {"label": "3 tấn; cao 3 m, ngang 3 m", "price_vnd": 62000000},
+        {"label": "5 tấn; cao 3 m, ngang 3 m", "price_vnd": 74000000}
+      ]
+    },
+    {
+      "source_folder": "cẩu trục có định xoay 360  độ chạy điện 1 tấn giá 44 triệu - 2 tấn 53 triêu",
+      "name": "Cẩu trục cố định xoay 360° chạy điện",
+      "slug": "cau-truc-co-dinh-xoay-360-do-chay-dien",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "1 tấn", "price_vnd": 44000000},
+        {"label": "2 tấn", "price_vnd": 53000000}
+      ],
+      "source_note": "Đã sửa lỗi gõ 'có định' thành 'cố định' trong tên SEO."
+    },
+    {
+      "source_folder": "điều hoà 24 vol cho xe tải loại cắt nóc 1 quạt gió giá 7tr6 - loại 2 quạt gió giá 8tr2  loại cục nóng riêng 6tr2",
+      "name": "Điều hòa 24V cho xe tải cắt nóc",
+      "slug": "dieu-hoa-24v-cho-xe-tai-cat-noc",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Loại 1 quạt gió", "price_vnd": 7600000},
+        {"label": "Loại 2 quạt gió", "price_vnd": 8200000},
+        {"label": "Cục nóng riêng", "price_vnd": 6200000}
+      ]
+    },
+    {
+      "source_folder": "máy bơm bê tông chạy dầu giá 188 triệu",
+      "name": "Máy bơm bê tông chạy dầu",
+      "slug": "may-bom-be-tong-chay-dau",
+      "price_vnd": 188000000,
+      "variants": [{"label": "Máy bơm bê tông chạy dầu", "price_vnd": 188000000}]
+    },
+    {
+      "source_folder": "máy cắt có điều khiển từ xa 64 triệu đặt hàng 15-20 ngày",
+      "name": "Máy cắt điều khiển từ xa",
+      "slug": "may-cat-dieu-khien-tu-xa",
+      "price_vnd": 64000000,
+      "variants": [{"label": "Máy cắt điều khiển từ xa", "price_vnd": 64000000, "note": "Đặt hàng 15–20 ngày"}]
+    },
+    {
+      "source_folder": "máy gắp hàng khí nén tải trọng gắp 100 kg giá 29tr500",
+      "name": "Máy gắp hàng khí nén 100 kg",
+      "slug": "may-gap-hang-khi-nen-100-kg",
+      "price_vnd": 29500000,
+      "variants": [{"label": "Tải trọng gắp 100 kg", "price_vnd": 29500000}]
+    },
+    {
+      "source_folder": "máy phát điện nạp cho xe tải chạy xăng đầy tự ngắt hết điện tự nổ có blutooth 7 lít giá 7tr4",
+      "name": "Máy phát điện nạp cho xe tải chạy xăng 7L",
+      "slug": "may-phat-dien-nap-cho-xe-tai-chay-xang-7l",
+      "price_vnd": 7400000,
+      "variants": [{"label": "Dung tích 7L", "price_vnd": 7400000, "note": "Tự ngắt khi đầy, tự nổ khi hết điện, có Bluetooth"}]
+    },
+    {
+      "source_folder": "máy phun vữa tường  chạy điên giá 35tr500",
+      "name": "Máy phun vữa tường chạy điện",
+      "slug": "may-phun-vua-tuong-chay-dien",
+      "price_vnd": 35500000,
+      "variants": [{"label": "Máy phun vữa tường chạy điện", "price_vnd": 35500000}]
+    },
+    {
+      "source_folder": "máy xúc lật 3 bánh gầu 0.2 giá 44 triệu",
+      "name": "Máy xúc lật 3 bánh gầu 0,2 m³",
+      "slug": "may-xuc-lat-3-banh-gau-0-2-m3",
+      "price_vnd": 44000000,
+      "variants": [{"label": "Gầu 0,2 m³", "price_vnd": 44000000}]
+    },
+    {
+      "source_folder": "máy xúc lật 4 bánh gầu 0.4 chạy điện giá 74 triệu chạy dầu diesel 77tr",
+      "name": "Máy xúc lật 4 bánh gầu 0,4 m³",
+      "slug": "may-xuc-lat-4-banh-gau-0-4-m3",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Chạy điện; gầu 0,4 m³", "price_vnd": 74000000},
+        {"label": "Chạy dầu diesel; gầu 0,4 m³", "price_vnd": 77000000}
+      ]
+    },
+    {
+      "source_folder": "máy xúc lật gầu 0.7 giá 155tr",
+      "name": "Máy xúc lật gầu 0,7 m³",
+      "slug": "may-xuc-lat-gau-0-7-m3",
+      "price_vnd": 155000000,
+      "variants": [{"label": "Gầu 0,7 m³", "price_vnd": 155000000}]
+    },
+    {
+      "source_folder": "motor tời 6000 lbs giá 4tr6- loại 12000 bán7tr5",
+      "name": "Motor tời",
+      "slug": "motor-toi",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "6.000 lbs", "price_vnd": 4600000},
+        {"label": "12.000 lbs", "price_vnd": 7500000}
+      ]
+    },
+    {
+      "source_folder": "nhà container  20 feet giá 56 triệu 40 feet giá 88tr",
+      "name": "Nhà container",
+      "slug": "nha-container",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "20 feet", "price_vnd": 56000000},
+        {"label": "40 feet", "price_vnd": 88000000}
+      ]
+    },
+    {
+      "source_folder": "xe chở hàng 3 bánh  tải 1 tấn  chạy điện giá 36 triệu chạy dầu 35 triệu",
+      "name": "Xe chở hàng 3 bánh 1 tấn",
+      "slug": "xe-cho-hang-3-banh-1-tan",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Chạy điện; tải 1 tấn", "price_vnd": 36000000},
+        {"label": "Chạy dầu; tải 1 tấn", "price_vnd": 35000000}
+      ]
+    },
+    {
+      "source_folder": "xe chở hàng chạy điện 500 kg giá 24 triệu - 700 kg 29 triệu",
+      "name": "Xe chở hàng chạy điện",
+      "slug": "xe-cho-hang-chay-dien",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Tải 500 kg", "price_vnd": 24000000},
+        {"label": "Tải 700 kg", "price_vnd": 29000000}
+      ]
+    },
+    {
+      "source_folder": "xe nâng 0.8  tấn chạy điện giá 92 triệu đã bao gồm vat",
+      "name": "Xe nâng điện 0,8 tấn",
+      "slug": "xe-nang-dien-0-8-tan",
+      "price_vnd": 92000000,
+      "variants": [{"label": "Tải trọng 0,8 tấn", "price_vnd": 92000000, "note": "Đã bao gồm VAT"}]
+    },
+    {
+      "source_folder": "xe nâng 1.0 tấn chạy điện giá 123 triệu - 1.5 tấn 154 tr - 2.5 tấn 192tr - 3.5 tấn 285 triêu  đã bao gồm vat",
+      "name": "Xe nâng điện",
+      "slug": "xe-nang-dien",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Tải 1,0 tấn", "price_vnd": 123000000},
+        {"label": "Tải 1,5 tấn", "price_vnd": 154000000},
+        {"label": "Tải 2,5 tấn", "price_vnd": 192000000},
+        {"label": "Tải 3,5 tấn", "price_vnd": 285000000}
+      ],
+      "source_note": "Các giá trong folder đều ghi đã bao gồm VAT."
+    },
+    {
+      "source_folder": "xe nâng chạy dầu diesel tải 3 tấn  giá 220 triệu",
+      "name": "Xe nâng dầu diesel 3 tấn",
+      "slug": "xe-nang-dau-diesel-3-tan",
+      "price_vnd": 220000000,
+      "variants": [{"label": "Tải trọng 3 tấn", "price_vnd": 220000000}]
+    },
+    {
+      "source_folder": "xe nâng điện 500 kg chạy điện 48 vol giá 39tr500 đã bao gồm vat",
+      "name": "Xe nâng điện 500 kg 48V",
+      "slug": "xe-nang-dien-500-kg-48v",
+      "price_vnd": 39500000,
+      "variants": [{"label": "Tải 500 kg; điện áp 48V", "price_vnd": 39500000, "note": "Đã bao gồm VAT"}]
+    },
+    {
+      "source_folder": "xe nâng kết hợp chở hàng tải 1.5 tấn giá 88 triệu",
+      "name": "Xe nâng kết hợp chở hàng 1,5 tấn",
+      "slug": "xe-nang-ket-hop-cho-hang-1-5-tan",
+      "price_vnd": 88000000,
+      "variants": [{"label": "Tải trọng 1,5 tấn", "price_vnd": 88000000}]
+    },
+    {
+      "source_folder": "xe nâng palet  tải trong nâng 2 tấn giá 25tr500 có cân điện tử 32 triệu",
+      "name": "Xe nâng pallet 2 tấn",
+      "slug": "xe-nang-pallet-2-tan",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Tải nâng 2 tấn", "price_vnd": 25500000},
+        {"label": "Tải nâng 2 tấn, có cân điện tử", "price_vnd": 32000000}
+      ]
+    },
+    {
+      "source_folder": "xe nâng tay 200 kg nâng cao 1 mét giá 3tr880 - nâng 1m2 tải 260kg giá 4tr8",
+      "name": "Xe nâng tay",
+      "slug": "xe-nang-tay",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Tải 200 kg; nâng cao 1 m", "price_vnd": 3880000},
+        {"label": "Tải 260 kg; nâng cao 1,2 m", "price_vnd": 4800000}
+      ]
+    },
+    {
+      "source_folder": "xe rùa bánh xích chở hàng có điều khiển từ xa chạy điện tải trọng 500 kg 44 triệu - 1 tấn66 triêu - 2 tấn 69 triệu",
+      "name": "Xe rùa bánh xích chở hàng điều khiển từ xa",
+      "slug": "xe-rua-banh-xich-cho-hang-dieu-khien-tu-xa",
+      "price_vnd": 0,
+      "variants": [
+        {"label": "Chạy điện; tải 500 kg", "price_vnd": 44000000},
+        {"label": "Chạy điện; tải 1 tấn", "price_vnd": 66000000},
+        {"label": "Chạy điện; tải 2 tấn", "price_vnd": 69000000}
+      ]
+    },
+    {
+      "source_folder": "xe tải bánh xích chở hàng chạy dầu diesel  4 máy tải 1.8 tấn 142 triệu",
+      "name": "Xe tải bánh xích chở hàng 1,8 tấn",
+      "slug": "xe-tai-banh-xich-cho-hang-1-8-tan",
+      "price_vnd": 142000000,
+      "variants": [{"label": "Chạy dầu diesel; 4 máy; tải 1,8 tấn", "price_vnd": 142000000}]
+    }
+  ],
+  "excluded": [
+    {"source_folder": "New folder", "reason": "Folder rỗng, chưa đủ dữ liệu để tạo sản phẩm."},
+    {"source_folder": "(root files)", "reason": "File nằm ngoài folder sản phẩm; không tự gán để tránh nhập nhầm."}
+  ]
+}

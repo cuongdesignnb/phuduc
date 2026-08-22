@@ -4,7 +4,7 @@ FROM php:8.2-cli
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl zip unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     libwebp-dev libzip-dev libonig-dev libxml2-dev sqlite3 libsqlite3-dev \
-    ca-certificates gnupg \
+    ca-certificates gnupg imagemagick libheif1 libheif-dev libavif-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip \
     && pecl install redis && docker-php-ext-enable redis \

@@ -4,6 +4,7 @@ namespace App\Services\Storefront;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use App\Models\Review;
 use Illuminate\Support\Str;
 
@@ -54,6 +55,7 @@ class ProductPresentationService
     public function detail(Product $product): array
     {
         $specifications = $this->normalizeSpecifications($product->specifications);
+        $variants = $this->normalizeVariants($product->variants);
         $price = $product->price !== null ? (float) $product->price : null;
         $reviewCount = (int) ($product->approved_reviews_count ?? 0);
         $averageRating = $product->approved_reviews_avg_rating !== null
@@ -81,6 +83,7 @@ class ProductPresentationService
                 ->map(fn (ProductImage $image) => $this->presentImage($image, $product->name))
                 ->values()
                 ->all(),
+            'variants' => $variants,
             'specifications' => $specifications,
             'review_summary' => [
                 'count' => $reviewCount,
@@ -92,6 +95,29 @@ class ProductPresentationService
                 ->values()
                 ->all(),
         ];
+    }
+
+    /**
+     * @param  iterable<ProductVariant>  $variants
+     * @return list<array{id: int, image_id: ?int, name: string, sku: ?string, price: float, price_display: string, stock: int, note: ?string}>
+     */
+    public function normalizeVariants(iterable $variants): array
+    {
+        return collect($variants)
+            ->filter(fn (ProductVariant $variant) => $variant->status === 'active' && filled($variant->name))
+            ->sortBy([['sort_order', 'asc'], ['id', 'asc']])
+            ->map(fn (ProductVariant $variant) => [
+                'id' => (int) $variant->id,
+                'image_id' => $variant->product_image_id ? (int) $variant->product_image_id : null,
+                'name' => trim((string) $variant->name),
+                'sku' => $variant->sku,
+                'price' => (float) $variant->price,
+                'price_display' => $this->priceDisplay((float) $variant->price),
+                'stock' => (int) $variant->stock,
+                'note' => filled($variant->note) ? trim((string) $variant->note) : null,
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -173,10 +199,12 @@ class ProductPresentationService
      */
     private function presentImage(ProductImage $image, string $fallbackAlt): array
     {
+        $sequence = (int) $image->sort_order + 1;
+
         return [
             'id' => $image->id,
             'url' => $this->mediaUrl->resolve($image->image_path),
-            'alt' => $fallbackAlt,
+            'alt' => sprintf('%s – ảnh sản phẩm %d', $fallbackAlt, $sequence),
             'sort_order' => (int) $image->sort_order,
         ];
     }

@@ -27,7 +27,7 @@ class HomeContentSeeder extends Seeder
             'featured_products' => [
                 'title' => 'Sản phẩm nổi bật',
                 'sort_order' => 40,
-                'settings_json' => ['source' => 'manual', 'limit' => 4, 'product_ids' => []],
+                'settings_json' => ['source' => 'latest', 'limit' => 4, 'product_ids' => []],
             ],
             'energy_banner' => [
                 'title' => 'Cho tương lai bền vững',

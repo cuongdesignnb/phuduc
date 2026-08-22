@@ -26,6 +26,14 @@ const processing = ref(false);
 const product = computed(() => props.page.product);
 const site = computed(() => inertiaPage.props.site || {});
 const contactPhone = computed(() => site.value.hotline || site.value.phone || '');
+const selectedVariantId = ref(null);
+const activeVariant = computed(() => product.value.variants?.find((variant) => variant.id === selectedVariantId.value) || product.value.variants?.[0] || null);
+const displayPrice = computed(() => activeVariant.value?.price_display || product.value.price_display);
+const canPurchase = computed(() => !product.value.variants?.length && product.value.price > 0 && product.value.stock > 0);
+
+const selectVariant = (variant) => {
+    selectedVariantId.value = variant.id;
+};
 
 const addToCart = () => {
     const value = Number.parseInt(quantity.value, 10);
@@ -51,16 +59,16 @@ const addToCart = () => {
             <div class="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
                 <div class="space-y-5">
                     <ProductViewer360 v-if="product.spin_frames.length" :frames="product.spin_frames" />
-                    <ProductGallery :images="product.gallery" :title="product.name" />
+                    <ProductGallery :images="product.gallery" :title="product.name" :selected-id="activeVariant?.image_id || null" />
                 </div>
 
                 <aside class="space-y-6">
                     <div class="storefront-card p-6">
                         <p v-if="product.sku" class="text-xs font-semibold uppercase tracking-wide text-content-muted">SKU: {{ product.sku }}</p>
                         <h2 class="mt-2 font-display text-3xl font-bold text-content-primary">{{ product.name }}</h2>
-                        <p class="mt-4 font-display text-3xl font-bold text-content-primary">{{ product.price_display }}</p>
+                        <p class="mt-4 font-display text-3xl font-bold text-content-primary">{{ displayPrice }}</p>
 
-                        <form v-if="product.price > 0" class="mt-6 flex flex-wrap items-center gap-4" @submit.prevent="addToCart">
+                        <form v-if="canPurchase" class="mt-6 flex flex-wrap items-center gap-4" @submit.prevent="addToCart">
                             <QuantityStepper v-model="quantity" :min="1" :max="99" />
                             <UiButton type="submit" :disabled="processing">{{ processing ? 'Đang thêm' : 'Thêm vào giỏ hàng' }}</UiButton>
                         </form>
@@ -69,6 +77,32 @@ const addToCart = () => {
                             <UiButton v-if="contactPhone" :href="`tel:${contactPhone}`">Liên hệ báo giá</UiButton>
                             <UiButton v-else :href="route('about')" variant="outline">Thông tin liên hệ</UiButton>
                         </div>
+                    </div>
+
+                    <div v-if="product.variants?.length" class="storefront-card p-6">
+                        <div class="flex items-center justify-between gap-4">
+                            <h2 class="font-display text-xl font-bold text-content-primary">Chọn phiên bản</h2>
+                            <span class="text-xs font-semibold uppercase tracking-wide text-content-muted">{{ product.variants.length }} lựa chọn</span>
+                        </div>
+                        <div class="mt-4 space-y-3" role="radiogroup" aria-label="Các phiên bản sản phẩm">
+                            <button
+                                v-for="variant in product.variants"
+                                :key="variant.id"
+                                type="button"
+                                class="flex w-full items-start justify-between gap-4 rounded-lg border p-4 text-left transition"
+                                :class="activeVariant?.id === variant.id ? 'border-brand bg-brand-soft ring-2 ring-brand/30' : 'border-line bg-surface-card hover:border-brand-border'"
+                                role="radio"
+                                :aria-checked="activeVariant?.id === variant.id"
+                                @click="selectVariant(variant)"
+                            >
+                                <span class="min-w-0">
+                                    <strong class="block text-sm font-semibold text-content-primary">{{ variant.name }}</strong>
+                                    <span v-if="variant.note" class="mt-1 block text-xs leading-5 text-content-muted">{{ variant.note }}</span>
+                                </span>
+                                <span class="shrink-0 text-sm font-bold text-content-primary">{{ variant.price_display }}</span>
+                            </button>
+                        </div>
+                        <p class="mt-4 text-xs leading-5 text-content-muted">Giá và cấu hình được giữ theo từng phiên bản trong dữ liệu nguồn. Vui lòng liên hệ để xác nhận tồn kho và báo giá cuối cùng.</p>
                     </div>
 
                     <div v-if="product.specifications.length" class="storefront-card p-6">

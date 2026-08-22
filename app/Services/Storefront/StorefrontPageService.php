@@ -27,7 +27,7 @@ class StorefrontPageService
                     'title' => $site['name'],
                     'description' => $description,
                     'canonical' => url('/'),
-                    'robots' => 'index, follow',
+                    'robots' => $site['prevent_indexing'] ? 'noindex, nofollow' : 'index, follow',
                 ],
                 'json_ld' => [
                     '@context' => 'https://schema.org',
