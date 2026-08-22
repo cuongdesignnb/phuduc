@@ -1,5 +1,5 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -12,6 +12,9 @@ const props = defineProps({
     jsonLd: { type: [Object, Array], default: null },
 });
 
+const page = usePage();
+const robotsContent = computed(() => page.props.site?.prevent_indexing ? 'noindex, nofollow' : props.robots);
+
 const jsonLdScript = computed(() => {
     if (!props.jsonLd) return null;
     const data = Array.isArray(props.jsonLd) ? props.jsonLd : [props.jsonLd];
@@ -22,7 +25,7 @@ const jsonLdScript = computed(() => {
 <template>
     <Head :title="title">
         <meta v-if="description" name="description" :content="description" />
-        <meta v-if="robots" name="robots" :content="robots" />
+        <meta v-if="robotsContent" name="robots" :content="robotsContent" />
 
         <!-- Open Graph -->
         <meta v-if="title" property="og:title" :content="title" />

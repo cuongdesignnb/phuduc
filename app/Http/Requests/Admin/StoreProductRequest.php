@@ -32,6 +32,14 @@ class StoreProductRequest extends FormRequest
             'specifications' => ['nullable', 'array', 'max:50'],
             'specifications.*.key' => ['nullable', 'string', 'max:150'],
             'specifications.*.value' => ['nullable', 'string', 'max:500'],
+            'variants' => ['nullable', 'array', 'max:50'],
+            'variants.*.name' => ['required', 'string', 'max:255'],
+            'variants.*.image_id' => ['nullable', 'integer', 'exists:product_images,id'],
+            'variants.*.sku' => ['nullable', 'string', 'max:100'],
+            'variants.*.price' => ['required', 'integer', 'min:0'],
+            'variants.*.stock' => ['required', 'integer', 'min:0'],
+            'variants.*.note' => ['nullable', 'string', 'max:1000'],
+            'variants.*.status' => ['required', Rule::in(['active', 'inactive'])],
         ];
     }
 
@@ -46,6 +54,13 @@ class StoreProductRequest extends FormRequest
                 if (blank($item['key'] ?? null) && filled($item['value'] ?? null)) {
                     $validator->errors()->add("specifications.$index.key", 'Tên thông số là bắt buộc khi có giá trị.');
                 }
+            }
+
+            $variantNames = collect($this->input('variants', []))
+                ->map(fn ($item) => mb_strtolower(trim((string) ($item['name'] ?? ''))))
+                ->filter();
+            if ($variantNames->duplicates()->isNotEmpty()) {
+                $validator->errors()->add('variants', 'Tên biến thể không được trùng nhau.');
             }
         });
     }

@@ -79,6 +79,9 @@ class AdminSettingService
         if ($definition['type'] === 'font' && $value !== '' && ! array_key_exists($value, ThemeTokenService::FONT_OPTIONS)) {
             throw ValidationException::withMessages(['settings' => 'Font đã chọn không được hỗ trợ.']);
         }
+        if ($definition['type'] === 'boolean' && ! in_array($value, ['0', '1'], true)) {
+            throw ValidationException::withMessages(['settings' => $definition['label'].' phải ở trạng thái bật hoặc tắt.']);
+        }
         if ($definition['type'] === 'image' && $value !== '' && ! $this->mediaReferences->idForPath($value)) {
             throw ValidationException::withMessages(['settings' => 'Ảnh phải được chọn từ Thư viện Media.']);
         }

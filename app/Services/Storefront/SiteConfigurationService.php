@@ -32,6 +32,7 @@ class SiteConfigurationService
         'site.og_image',
         'site.copyright',
         'site.primary_color',
+        'seo.prevent_indexing',
         'font.heading',
         'font.body',
     ];
@@ -93,6 +94,7 @@ class SiteConfigurationService
                 'youtube' => $value('site.youtube'),
             ],
             'og_image_url' => $this->mediaUrl->resolve($value('site.og_image')),
+            'prevent_indexing' => in_array((string) $value('seo.prevent_indexing', '0'), ['1', 'true'], true),
             'theme' => $theme,
             // Temporary Admin compatibility. New public components use site.theme.
             'primary_color' => $theme['primary_color'],

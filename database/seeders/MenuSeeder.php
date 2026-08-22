@@ -11,7 +11,7 @@ class MenuSeeder extends Seeder
     public function run(): void
     {
         // ─── Header Menu ───
-        $header = Menu::create(['name' => 'Menu chính', 'location' => 'header']);
+        $header = Menu::firstOrCreate(['location' => 'header'], ['name' => 'Menu chính']);
 
         $headerItems = [
             ['title' => 'Trang chủ', 'url' => '/', 'sort_order' => 1],
@@ -23,13 +23,16 @@ class MenuSeeder extends Seeder
         ];
 
         foreach ($headerItems as $item) {
-            MenuItem::create(array_merge($item, ['menu_id' => $header->id]));
+            MenuItem::firstOrCreate(
+                ['menu_id' => $header->id, 'title' => $item['title']],
+                ['url' => $item['url'], 'sort_order' => $item['sort_order']],
+            );
         }
 
         // ─── Footer Menu ───
-        $footer = Menu::create(['name' => 'Menu footer', 'location' => 'footer']);
+        $footer = Menu::firstOrCreate(['location' => 'footer'], ['name' => 'Menu footer']);
 
-        $support = MenuItem::create(['menu_id' => $footer->id, 'title' => 'Hỗ trợ khách hàng', 'url' => null, 'sort_order' => 1]);
+        $support = MenuItem::firstOrCreate(['menu_id' => $footer->id, 'title' => 'Hỗ trợ khách hàng'], ['url' => null, 'sort_order' => 1]);
         $supportItems = [
             ['title' => 'Chính sách bảo hành', 'url' => '/chinh-sach-bao-hanh', 'sort_order' => 1],
             ['title' => 'Hướng dẫn mua hàng', 'url' => '/huong-dan-mua-hang', 'sort_order' => 2],
@@ -37,17 +40,23 @@ class MenuSeeder extends Seeder
             ['title' => 'Câu hỏi thường gặp', 'url' => '/faq', 'sort_order' => 4],
         ];
         foreach ($supportItems as $item) {
-            MenuItem::create(array_merge($item, ['menu_id' => $footer->id, 'parent_id' => $support->id]));
+            MenuItem::firstOrCreate(
+                ['menu_id' => $footer->id, 'title' => $item['title'], 'parent_id' => $support->id],
+                ['url' => $item['url'], 'sort_order' => $item['sort_order']],
+            );
         }
 
-        $about = MenuItem::create(['menu_id' => $footer->id, 'title' => 'Về Phú Đức', 'url' => null, 'sort_order' => 2]);
+        $about = MenuItem::firstOrCreate(['menu_id' => $footer->id, 'title' => 'Về Phú Đức'], ['url' => null, 'sort_order' => 2]);
         $aboutItems = [
             ['title' => 'Giới thiệu công ty', 'url' => '/gioi-thieu', 'sort_order' => 1],
             ['title' => 'Tuyển dụng', 'url' => '/tuyen-dung', 'sort_order' => 2],
             ['title' => 'Liên hệ', 'url' => '/lien-he', 'sort_order' => 3],
         ];
         foreach ($aboutItems as $item) {
-            MenuItem::create(array_merge($item, ['menu_id' => $footer->id, 'parent_id' => $about->id]));
+            MenuItem::firstOrCreate(
+                ['menu_id' => $footer->id, 'title' => $item['title'], 'parent_id' => $about->id],
+                ['url' => $item['url'], 'sort_order' => $item['sort_order']],
+            );
         }
     }
 }

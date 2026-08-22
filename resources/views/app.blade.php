@@ -6,6 +6,10 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        @if($rootSite['prevent_indexing'] ?? false)
+            <meta name="robots" content="noindex, nofollow">
+        @endif
+
         @if(filled($rootSite['favicon_url'] ?? null))
             <link rel="icon" href="{{ $rootSite['favicon_url'] }}">
             <link rel="shortcut icon" href="{{ $rootSite['favicon_url'] }}">

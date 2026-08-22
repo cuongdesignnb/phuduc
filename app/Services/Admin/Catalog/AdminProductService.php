@@ -5,6 +5,7 @@ namespace App\Services\Admin\Catalog;
 use App\Models\MediaLibrary;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\Admin\AdminConcurrencyService;
 use App\Services\Admin\AdminPageService;
@@ -33,7 +34,7 @@ class AdminProductService
 
     public function editPage(User $user, ?Product $product): array
     {
-        $module = ['product' => $product ? $this->presentation->edit($product->load('images'), $this->references->references($product)) : null, 'statuses' => [['key' => 'active', 'label' => 'Đang bán'], ['key' => 'inactive', 'label' => 'Ngừng bán']]];
+        $module = ['product' => $product ? $this->presentation->edit($product->load(['images', 'variants']), $this->references->references($product)) : null, 'statuses' => [['key' => 'active', 'label' => 'Đang bán'], ['key' => 'inactive', 'label' => 'Ngừng bán']]];
         $label = $product ? 'Sửa sản phẩm' : 'Thêm sản phẩm';
 
         return $this->pages->envelope($user, 'admin_products_edit', $label, [['label' => 'Sản phẩm', 'url' => route('admin.products.index')], ['label' => $label, 'url' => $product ? route('admin.products.edit', $product) : null]], $module);
@@ -45,8 +46,13 @@ class AdminProductService
         $data['price'] = (int) ($data['price'] ?? 0);
         $data['stock'] = (int) ($data['stock'] ?? 0);
         $data['specifications'] = $this->specifications($data['specifications'] ?? []);
+        $variants = $this->variants($data['variants'] ?? []);
+        unset($data['variants']);
 
-        return Product::create($data);
+        $product = Product::create($data);
+        $this->syncVariants($product, $variants);
+
+        return $product->refresh();
     }
 
     public function update(Product $product, array $data): Product
@@ -59,8 +65,11 @@ class AdminProductService
             $payload['price'] = (int) ($payload['price'] ?? 0);
             $payload['stock'] = (int) ($payload['stock'] ?? 0);
             $payload['specifications'] = $this->specifications($payload['specifications'] ?? []);
+            $variants = $this->variants($payload['variants'] ?? []);
             unset($payload['version']);
+            unset($payload['variants']);
             $locked->update($payload);
+            $this->syncVariants($locked, $variants);
 
             return $locked->refresh();
         });
@@ -119,5 +128,36 @@ class AdminProductService
     private function specifications(array $specifications): array
     {
         return collect($specifications)->map(fn ($item) => ['key' => trim((string) ($item['key'] ?? '')), 'value' => trim((string) ($item['value'] ?? ''))])->filter(fn ($item) => $item['key'] !== '')->values()->all();
+    }
+
+    private function variants(array $variants): array
+    {
+        return collect($variants)
+            ->map(fn ($variant) => [
+                'name' => trim((string) ($variant['name'] ?? '')),
+                'image_id' => filter_var($variant['image_id'] ?? null, FILTER_VALIDATE_INT) ?: null,
+                'sku' => trim((string) ($variant['sku'] ?? '')) ?: null,
+                'price' => (int) ($variant['price'] ?? 0),
+                'stock' => (int) ($variant['stock'] ?? 0),
+                'note' => trim((string) ($variant['note'] ?? '')) ?: null,
+                'status' => in_array($variant['status'] ?? 'active', ['active', 'inactive'], true) ? $variant['status'] : 'active',
+            ])
+            ->filter(fn (array $variant) => $variant['name'] !== '')
+            ->values()
+            ->all();
+    }
+
+    private function syncVariants(Product $product, array $variants): void
+    {
+        ProductVariant::query()->where('product_id', $product->id)->delete();
+
+        foreach ($variants as $index => $variant) {
+            $imageId = $variant['image_id'] ?? null;
+            if ($imageId && ! ProductImage::query()->where('product_id', $product->id)->whereKey($imageId)->exists()) {
+                $imageId = null;
+            }
+            unset($variant['image_id']);
+            $product->variants()->create([...$variant, 'product_image_id' => $imageId, 'sort_order' => $index]);
+        }
     }
 }

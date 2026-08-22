@@ -23,6 +23,7 @@ class ProductDetailService
             ->where('status', 'active')
             ->with([
                 'images:id,product_id,image_path,is_360,sort_order',
+                'variants:id,product_id,product_image_id,name,sku,price,stock,note,status,sort_order',
                 'approvedReviews' => fn ($query) => $query
                     ->select(['id', 'product_id', 'customer_name', 'content', 'rating', 'created_at'])
                     ->latest()

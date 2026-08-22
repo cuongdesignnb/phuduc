@@ -6,7 +6,9 @@ class ThemeTokenService
 {
     public const DEFAULT_PRIMARY_COLOR = '#ffd400';
 
-    public const DEFAULT_HEADING_FONT = 'Rajdhani';
+    // Inter has complete Vietnamese glyph coverage and remains readable when
+    // the remote stylesheet is unavailable through the local system fallback.
+    public const DEFAULT_HEADING_FONT = 'Inter';
 
     public const DEFAULT_BODY_FONT = 'Inter';
 
@@ -385,7 +387,11 @@ class ThemeTokenService
     {
         $generic = self::FONT_OPTIONS[$font] ?? 'sans-serif';
 
-        return '"'.$font.'", ui-sans-serif, system-ui, '.$generic;
+        $fallback = $generic === 'serif'
+            ? 'Georgia, serif'
+            : '"Segoe UI", Arial, sans-serif';
+
+        return '"'.$font.'", '.$fallback;
     }
 
     /**

@@ -36,7 +36,7 @@ class HandleInertiaRequests extends Middleware
                     'ogImage' => $site['og_image_url'],
                     'ogType' => 'website',
                     'canonical' => url()->current(),
-                    'robots' => 'index, follow',
+                    'robots' => $site['prevent_indexing'] ? 'noindex, nofollow' : 'index, follow',
                 ];
             },
             'admin' => function (Request $request): array {

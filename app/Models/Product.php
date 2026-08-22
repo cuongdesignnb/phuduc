@@ -23,6 +23,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('sort_order');
+    }
+
     public function cardImage()
     {
         return $this->hasOne(ProductImage::class)
