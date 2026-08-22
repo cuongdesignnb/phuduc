@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class NewsIndexContractTest extends TestCase
@@ -31,6 +32,43 @@ class NewsIndexContractTest extends TestCase
                 ->where('page.seo.robots', 'noindex, follow')
                 ->missing('posts')
             );
+    }
+
+    #[DataProvider('literalLikeSearchTokens')]
+    public function test_news_search_treats_like_metacharacters_as_literals(string $label, string $token): void
+    {
+        $post = Post::create([
+            'title' => "Literal {$label} news {$token}",
+            'slug' => "literal-{$label}",
+            'summary' => 'A matching news summary.',
+            'status' => 'published',
+        ]);
+        Post::create([
+            'title' => 'Ordinary news without the search token',
+            'slug' => "ordinary-{$label}",
+            'summary' => 'An ordinary news summary.',
+            'status' => 'published',
+        ]);
+
+        $this->get('/tin-tuc?search='.rawurlencode($token))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('page.news.items', 1)
+                ->where('page.news.items.0.slug', $post->slug)
+                ->where('page.news.filters.search', $token)
+            );
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function literalLikeSearchTokens(): array
+    {
+        return [
+            'underscore' => ['underscore', '_'],
+            'percent' => ['percent', '%'],
+            'exclamation' => ['exclamation', '!'],
+        ];
     }
 
     public function test_valid_category_returns_canonical_category_archive(): void
