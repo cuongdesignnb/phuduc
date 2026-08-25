@@ -16,10 +16,12 @@ class AdminNavigationContractTest extends TestCase
         $items = app(AdminNavigationService::class)->for(User::factory()->admin()->create());
         $keys = array_column($items, 'key');
 
-        $this->assertCount(11, $items);
+        $this->assertCount(12, $items);
         $this->assertSame($keys, array_values(array_unique($keys)));
         $this->assertContains('media', $keys);
         $this->assertSame('admin.media.index', $items[array_search('media', $keys, true)]['route']);
+        $this->assertContains('ai', $keys);
+        $this->assertSame('admin.ai.index', $items[array_search('ai', $keys, true)]['route']);
         $this->assertNotSame('', trim((string) file_get_contents(base_path('app/Services/Admin/AdminNavigationService.php'))));
     }
 }

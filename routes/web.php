@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AiController;
 use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\Admin\MenuController;
@@ -126,6 +127,15 @@ Route::middleware('auth')->group(function () {
         // Settings
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [SettingController::class, 'save'])->name('settings.save');
+
+        // AI content, SEO and schedules
+        Route::get('ai', [AiController::class, 'index'])->name('ai.index');
+        Route::post('ai/settings', [AiController::class, 'saveSettings'])->name('ai.settings.save');
+        Route::post('ai/content', [AiController::class, 'generate'])->middleware('throttle:ai')->name('ai.content.generate');
+        Route::post('ai/products/{product}/seo', [AiController::class, 'generateProductSeo'])->middleware('throttle:ai')->name('ai.products.seo');
+        Route::post('ai/generations/{generationId}/create-post', [AiController::class, 'createPost'])->name('ai.generations.create-post');
+        Route::post('ai/schedules', [AiController::class, 'storeSchedule'])->name('ai.schedules.store');
+        Route::delete('ai/schedules/{schedule}', [AiController::class, 'destroySchedule'])->name('ai.schedules.destroy');
     });
 });
 

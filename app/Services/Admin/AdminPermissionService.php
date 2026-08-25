@@ -27,6 +27,7 @@ class AdminPermissionService
             'admin.reviews.view',
             'admin.warranties.view',
             'admin.settings.view',
+            'admin.ai.view',
         ], $isAdmin);
     }
 

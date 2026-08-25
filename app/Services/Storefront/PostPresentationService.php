@@ -18,6 +18,9 @@ class PostPresentationService
             'title' => $post->title,
             'slug' => $post->slug,
             'summary' => $post->summary,
+            'meta_title' => $post->meta_title,
+            'meta_description' => $post->meta_description,
+            'meta_keywords' => $post->meta_keywords,
             'image_url' => $this->mediaUrl->resolve($post->featured_image),
             'category' => $post->category ? [
                 'name' => $post->category->name,

@@ -25,6 +25,9 @@ const form = useForm({
     post_category_id: post?.post_category_id || '',
     summary: post?.summary || '',
     content: post?.content || '',
+    meta_title: post?.meta_title || '',
+    meta_description: post?.meta_description || '',
+    meta_keywords: post?.meta_keywords || '',
     status: post?.status || 'draft',
     featured_media_id: post?.featured_media_id || null,
     gallery_media_ids: galleryMedia.value.map((media) => media.media_id),
@@ -79,6 +82,7 @@ const save = () => {
                     </div>
                     <AdminFormField label="Tóm tắt" for-id="post-summary" :error="form.errors.summary"><AdminTextarea id="post-summary" v-model="form.summary" rows="4" /></AdminFormField>
                     <AdminFormField label="Nội dung" for-id="post-content" :error="form.errors.content"><AdvancedTextEditor id="post-content" v-model="form.content" :height="360" /></AdminFormField>
+                    <div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Meta title" for-id="post-meta-title" :error="form.errors.meta_title"><AdminTextInput id="post-meta-title" v-model="form.meta_title" /></AdminFormField><AdminFormField label="Meta keywords" for-id="post-meta-keywords" :error="form.errors.meta_keywords"><AdminTextInput id="post-meta-keywords" v-model="form.meta_keywords" /></AdminFormField><AdminFormField label="Meta description" for-id="post-meta-description" :error="form.errors.meta_description"><AdminTextarea id="post-meta-description" v-model="form.meta_description" rows="3" /></AdminFormField></div>
                     <AdminFormField label="Ảnh nổi bật" :error="form.errors.featured_media_id">
                         <div class="flex items-center gap-3">
                             <img v-if="featuredPreviewUrl" :src="featuredPreviewUrl" :alt="form.title || 'Ảnh nổi bật'" class="h-20 w-32 rounded object-cover" />

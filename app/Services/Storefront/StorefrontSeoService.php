@@ -25,6 +25,7 @@ class StorefrontSeoService
         return [
             'title' => $title,
             'description' => $overrides['description'] ?? $site['description'],
+            'keywords' => $overrides['keywords'] ?? null,
             'ogImage' => $overrides['ogImage'] ?? $site['og_image_url'],
             'ogType' => $overrides['ogType'] ?? 'website',
             'canonical' => array_key_exists('canonical', $overrides)

@@ -8,6 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'name', 'slug', 'description', 'price', 'sku', 'stock', 'specifications', 'status',
+        'youtube_url', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     protected function casts(): array

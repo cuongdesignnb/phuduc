@@ -48,4 +48,27 @@ class AdminImageStorageService
 
         return $path;
     }
+
+    /** @return array{path: string, mime_type: string, size: int, file_name: string} */
+    public function storeGenerated(string $contents, string $originalName, string $directory): array
+    {
+        $extension = 'webp';
+        $baseName = Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) ?: 'ai-image';
+        $path = trim($directory, '/').'/'.$baseName.'-'.Str::uuid().'.'.$extension;
+
+        try {
+            $encoded = (new ImageManager(new Driver))->read($contents)->toWebp(82)->toString();
+            Storage::disk('public')->put($path, $encoded);
+
+            return [
+                'path' => $path,
+                'mime_type' => 'image/webp',
+                'size' => strlen($encoded),
+                'file_name' => $baseName.'.webp',
+            ];
+        } catch (\Throwable $exception) {
+            Storage::disk('public')->delete($path);
+            throw $exception;
+        }
+    }
 }

@@ -18,7 +18,7 @@ class ProductDetailService
     public function page(string $slug): array
     {
         $product = Product::query()
-            ->select(['id', 'name', 'slug', 'description', 'price', 'sku', 'stock', 'specifications', 'status', 'created_at', 'updated_at'])
+            ->select(['id', 'name', 'slug', 'description', 'price', 'sku', 'stock', 'specifications', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
             ->where('slug', $slug)
             ->where('status', 'active')
             ->with([
@@ -59,8 +59,9 @@ class ProductDetailService
             'page' => [
                 'type' => 'product_detail',
                 'seo' => $this->seo->meta([
-                    'title' => $presented['name'],
-                    'description' => mb_substr(strip_tags((string) $presented['description_html']), 0, 160),
+                    'title' => $product->meta_title ?: $presented['name'],
+                    'description' => $product->meta_description ?: mb_substr(strip_tags((string) $presented['description_html']), 0, 160),
+                    'keywords' => $product->meta_keywords,
                     'ogImage' => $presented['gallery'][0]['url'] ?? null,
                     'ogType' => 'product',
                     'canonical' => route('products.show', $presented['slug']),

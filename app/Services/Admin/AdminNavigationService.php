@@ -25,6 +25,7 @@ class AdminNavigationService
             ['key' => 'reviews', 'label' => 'Đánh giá', 'route' => 'admin.reviews.index', 'icon' => 'star', 'active_patterns' => ['admin.reviews.*'], 'permission' => 'admin.reviews.view'],
             ['key' => 'warranties', 'label' => 'Bảo hành', 'route' => 'admin.warranties.index', 'icon' => 'shield', 'active_patterns' => ['admin.warranties.*'], 'permission' => 'admin.warranties.view'],
             ['key' => 'settings', 'label' => 'Cài đặt', 'route' => 'admin.settings.index', 'icon' => 'cog', 'active_patterns' => ['admin.settings.*'], 'permission' => 'admin.settings.view'],
+            ['key' => 'ai', 'label' => 'AI nội dung & SEO', 'route' => 'admin.ai.index', 'icon' => 'sparkles', 'active_patterns' => ['admin.ai.*'], 'permission' => 'admin.ai.view'],
         ];
     }
 

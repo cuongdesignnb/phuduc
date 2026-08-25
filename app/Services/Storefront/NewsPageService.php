@@ -31,7 +31,7 @@ class NewsPageService
             : null;
 
         $paginator = Post::query()
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'created_at', 'updated_at'])
+            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
             ->where('status', 'published')
             ->with('category:id,name,slug')
             ->when($selectedCategory, fn (Builder $query) => $query->where('post_category_id', $selectedCategory->id))
@@ -98,7 +98,7 @@ class NewsPageService
     public function show(string $slug): array
     {
         $post = Post::query()
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'content', 'featured_image', 'status', 'created_at', 'updated_at'])
+            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'content', 'featured_image', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
             ->where('slug', $slug)
             ->where('status', 'published')
             ->with('category:id,name,slug')
@@ -107,7 +107,7 @@ class NewsPageService
         $post->content = $this->sanitizer->sanitize($post->content);
         $presented = $this->posts->detail($post);
         $related = Post::query()
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'created_at', 'updated_at'])
+            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
             ->where('status', 'published')
             ->whereKeyNot($post->id)
             ->when($post->post_category_id, fn (Builder $query) => $query->where('post_category_id', $post->post_category_id))
@@ -129,8 +129,9 @@ class NewsPageService
             'page' => [
                 'type' => 'news_detail',
                 'seo' => $this->seo->meta([
-                    'title' => $presented['title'],
-                    'description' => mb_substr(strip_tags((string) ($presented['summary'] ?: $presented['content_html'])), 0, 160),
+                    'title' => $post->meta_title ?: $presented['title'],
+                    'description' => $post->meta_description ?: mb_substr(strip_tags((string) ($presented['summary'] ?: $presented['content_html'])), 0, 160),
+                    'keywords' => $post->meta_keywords,
                     'ogImage' => $presented['image_url'],
                     'ogType' => 'article',
                     'canonical' => route('news.show', $presented['slug']),

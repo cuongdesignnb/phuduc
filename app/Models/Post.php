@@ -8,6 +8,7 @@ class Post extends Model
 {
     protected $fillable = [
         'post_category_id', 'title', 'slug', 'summary', 'content', 'featured_image', 'status',
+        'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     public function category()
