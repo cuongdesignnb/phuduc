@@ -23,7 +23,13 @@ class AdminProductService
     {
         $sort = $filters['sort'] ?? 'latest';
         $direction = $filters['direction'] ?? 'desc';
-        $paginator = Product::query()->with('cardImage:id,product_id,image_path,is_360,sort_order')->when($filters['search'] ?? null, fn ($query, $search) => $query->where(function ($query) use ($search): void {
+        $paginator = Product::query()->with(['cardImage' => fn ($query) => $query->select([
+            'product_images.id',
+            'product_images.product_id',
+            'product_images.image_path',
+            'product_images.is_360',
+            'product_images.sort_order',
+        ])])->when($filters['search'] ?? null, fn ($query, $search) => $query->where(function ($query) use ($search): void {
             $escaped = '%'.addcslashes($search, '%_\\').'%';
             $query->where('name', 'like', $escaped)->orWhere('sku', 'like', $escaped);
         }))->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))->orderBy($sort === 'latest' ? 'updated_at' : $sort, $direction)->paginate(15)->withQueryString();
