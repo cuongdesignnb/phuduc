@@ -102,7 +102,7 @@ class AdminMediaService
                     $storedPaths[] = $stored['path'];
                     $media = MediaLibrary::create([
                         'folder_id' => $folderId,
-                        'file_name' => $file->getClientOriginalName(),
+                        'file_name' => $stored['file_name'],
                         'file_path' => $stored['path'],
                         'mime_type' => $stored['mime_type'],
                         'size' => $stored['size'],
