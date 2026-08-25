@@ -5,6 +5,7 @@ import { computed } from 'vue';
 const props = defineProps({
     title: String,
     description: String,
+    keywords: String,
     ogImage: String,
     ogType: { type: String, default: 'website' },
     canonical: String,
@@ -25,6 +26,7 @@ const jsonLdScript = computed(() => {
 <template>
     <Head :title="title">
         <meta v-if="description" name="description" :content="description" />
+        <meta v-if="keywords" name="keywords" :content="keywords" />
         <meta v-if="robotsContent" name="robots" :content="robotsContent" />
 
         <!-- Open Graph -->

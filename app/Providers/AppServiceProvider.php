@@ -54,6 +54,8 @@ class AppServiceProvider extends ServiceProvider
             ->by('ip:'.$request->ip()));
         RateLimiter::for('commerce-warranty-lookup', fn (Request $request) => Limit::perMinute(10)
             ->by('ip:'.$request->ip()));
+        RateLimiter::for('ai', fn (Request $request) => Limit::perMinute(10)
+            ->by('user:'.($request->user()?->id ?? $request->ip())));
 
         View::composer('app', function ($view): void {
             $view->with('rootSite', app(SiteConfigurationService::class)->get());

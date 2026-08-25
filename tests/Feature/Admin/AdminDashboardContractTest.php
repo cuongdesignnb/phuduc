@@ -22,7 +22,7 @@ class AdminDashboardContractTest extends TestCase
                 ->component('Dashboard')
                 ->where('page.type', 'admin_dashboard')
                 ->where('page.meta.title', 'Tổng quan')
-                ->has('page.admin.navigation', 11)
+                ->has('page.admin.navigation', 12)
                 ->has('page.admin.breadcrumbs')
                 ->has('page.admin.permissions')
                 ->has('page.dashboard.summary', 9)
