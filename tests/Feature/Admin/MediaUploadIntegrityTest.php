@@ -18,8 +18,26 @@ class MediaUploadIntegrityTest extends TestCase
         Storage::fake('public');
         $result = app(AdminMediaService::class)->store([UploadedFile::fake()->image('logo.png')]);
         $this->assertCount(1, $result);
-        $path = MediaLibrary::firstOrFail()->file_path;
+        $media = MediaLibrary::firstOrFail();
+        $path = $media->file_path;
         $this->assertStringStartsWith('media/', $path);
+        $this->assertStringEndsWith('.webp', $path);
+        $this->assertSame('logo.webp', $media->file_name);
+        $this->assertSame('image/webp', $media->mime_type);
         Storage::disk('public')->assertExists($path);
+        $this->assertCount(1, Storage::disk('public')->allFiles('media'));
+    }
+
+    public function test_jpeg_upload_is_converted_without_retaining_the_original_extension(): void
+    {
+        Storage::fake('public');
+
+        app(AdminMediaService::class)->store([UploadedFile::fake()->image('hero.jpg')]);
+
+        $media = MediaLibrary::firstOrFail();
+        $this->assertSame('hero.webp', $media->file_name);
+        $this->assertSame('image/webp', $media->mime_type);
+        $this->assertStringEndsWith('.webp', $media->file_path);
+        $this->assertStringNotContainsString('.jpg', $media->file_path);
     }
 }
