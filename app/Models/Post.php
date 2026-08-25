@@ -14,4 +14,9 @@ class Post extends Model
     {
         return $this->belongsTo(PostCategory::class, 'post_category_id');
     }
+
+    public function gallery()
+    {
+        return $this->hasMany(PostMedia::class)->orderBy('sort_order');
+    }
 }

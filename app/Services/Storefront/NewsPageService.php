@@ -102,6 +102,7 @@ class NewsPageService
             ->where('slug', $slug)
             ->where('status', 'published')
             ->with('category:id,name,slug')
+            ->with('gallery.media')
             ->firstOrFail();
         $post->content = $this->sanitizer->sanitize($post->content);
         $presented = $this->posts->detail($post);

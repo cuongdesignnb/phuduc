@@ -4,6 +4,7 @@ namespace App\Services\Admin\Content;
 
 use App\Models\HomeSection;
 use App\Models\MenuItem;
+use App\Models\PostMedia;
 use App\Models\Post;
 use App\Models\User;
 use App\Services\Admin\AdminConcurrencyService;
@@ -52,7 +53,7 @@ class AdminPostService
             ['label' => 'Bài viết', 'url' => route('admin.posts.index')],
             ['label' => $label, 'url' => $post ? route('admin.posts.edit', $post) : null],
         ], [
-            'post' => $post ? $this->presentation->edit($post) : null,
+            'post' => $post ? $this->presentation->edit($post->load('gallery.media')) : null,
             'categories' => $categories,
             'statuses' => [['key' => 'draft', 'label' => 'Bản nháp'], ['key' => 'published', 'label' => 'Đã đăng']],
         ]);
@@ -62,9 +63,13 @@ class AdminPostService
     {
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['title']);
         $data['featured_image'] = $this->path($data['featured_media_id'] ?? null);
+        $galleryMediaIds = $data['gallery_media_ids'] ?? [];
+        unset($data['gallery_media_ids']);
         unset($data['featured_media_id']);
+        $post = Post::create($data);
+        $this->syncGallery($post, $galleryMediaIds);
 
-        return Post::create($data);
+        return $post->refresh();
     }
 
     public function update(Post $post, array $data): Post
@@ -74,8 +79,12 @@ class AdminPostService
             $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Bài viết đã được cập nhật ở phiên khác. Vui lòng tải lại.');
             $data['slug'] = $data['slug'] ?: $this->uniqueSlug($data['title'], $locked->id);
             $data['featured_image'] = $this->path($data['featured_media_id'] ?? null);
-            unset($data['featured_media_id'], $data['version']);
+            $galleryMediaIds = $data['gallery_media_ids'] ?? null;
+            unset($data['featured_media_id'], $data['gallery_media_ids'], $data['version']);
             $locked->update($data);
+            if ($galleryMediaIds !== null) {
+                $this->syncGallery($locked, $galleryMediaIds);
+            }
 
             return $locked->refresh();
         });
@@ -101,6 +110,16 @@ class AdminPostService
     private function path(?int $mediaId): ?string
     {
         return $mediaId ? $this->assets->requireImage($mediaId)->file_path : null;
+    }
+
+    /** @param list<int> $mediaIds */
+    private function syncGallery(Post $post, array $mediaIds): void
+    {
+        PostMedia::query()->where('post_id', $post->id)->delete();
+        foreach (array_values(array_unique(array_map('intval', $mediaIds))) as $sortOrder => $mediaId) {
+            $this->assets->requireImage($mediaId);
+            PostMedia::create(['post_id' => $post->id, 'media_id' => $mediaId, 'sort_order' => $sortOrder]);
+        }
     }
 
     private function uniqueSlug(string $value, ?int $ignoreId = null): string

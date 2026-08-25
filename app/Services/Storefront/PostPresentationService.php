@@ -36,6 +36,13 @@ class PostPresentationService
         return [
             ...$this->card($post),
             'content_html' => $post->content,
+            'gallery' => $post->relationLoaded('gallery')
+                ? $post->gallery->map(fn ($gallery) => [
+                    'id' => $gallery->id,
+                    'url' => $this->mediaUrl->resolve($gallery->media?->file_path),
+                    'alt_text' => $gallery->media?->alt_text ?: $post->title,
+                ])->values()->all()
+                : [],
             'updated_at' => $post->updated_at?->toIso8601String(),
         ];
     }

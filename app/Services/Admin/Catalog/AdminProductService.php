@@ -109,6 +109,11 @@ class AdminProductService
         $this->images->attach($product, MediaLibrary::query()->findOrFail($mediaId), $is360);
     }
 
+    public function attachMany(Product $product, array $mediaIds, bool $is360): void
+    {
+        $this->images->attachMany($product, $mediaIds, $is360);
+    }
+
     public function deleteImage(Product $product, $image): void
     {
         $this->images->delete($product, $image);

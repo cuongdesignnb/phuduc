@@ -21,6 +21,7 @@ class AdminMediaPresentationService
 
         return [
             'id' => $media->id,
+            'folder_id' => $media->folder_id ? (int) $media->folder_id : null,
             'file_name' => $media->file_name,
             'alt_text' => $media->alt_text,
             'mime_type' => $media->mime_type,
@@ -44,6 +45,7 @@ class AdminMediaPresentationService
     {
         return [
             'id' => $media->id,
+            'folder_id' => $media->folder_id ? (int) $media->folder_id : null,
             'file_name' => $media->file_name,
             'alt_text' => $media->alt_text,
             'mime_type' => $media->mime_type,
