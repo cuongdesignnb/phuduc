@@ -6,6 +6,7 @@ use App\Models\AiGeneration;
 use App\Models\MediaLibrary;
 use App\Models\Product;
 use App\Models\Post;
+use App\Models\ProductImage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -114,5 +115,28 @@ class AiContentGenerationTest extends TestCase
         $this->assertStringEndsWith('.webp', $media->file_path);
         $this->assertSame('Xe điện nhà xưởng', $media->alt_text);
         $this->assertStringContainsString('ai-article-image', AiGeneration::firstOrFail()->result_payload['content']);
+    }
+
+    public function test_product_ai_image_action_attaches_generated_media_to_product(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+        $product = Product::create(['name' => 'Xe nâng điện PhuDuc', 'slug' => 'xe-nang-dien-phuduc', 'status' => 'active']);
+        $image = base64_encode(UploadedFile::fake()->image('product-ai.png')->getContent());
+        Http::fake([
+            'https://ai.test/*' => Http::response(['output_text' => json_encode([
+                'title' => 'Xe nâng điện PhuDuc', 'excerpt' => 'Mô tả sản phẩm', 'content' => '<p>Mô tả sản phẩm.</p>',
+                'meta_title' => 'Xe nâng điện PhuDuc', 'meta_desc' => 'Mô tả SEO sản phẩm.', 'meta_keywords' => 'xe nâng điện',
+            ], JSON_UNESCAPED_UNICODE)], 200),
+            'https://image.test/*' => Http::response(['data' => [['b64_json' => $image]]], 200),
+        ]);
+
+        $response = $this->actingAs($admin)->postJson(route('admin.ai.products.seo', $product), [
+            'keywords' => 'xe nâng điện', 'with_images' => true, 'image_count' => 1,
+        ]);
+
+        $response->assertOk()->assertJsonPath('status', 'completed');
+        $this->assertCount(1, ProductImage::where('product_id', $product->id)->get());
+        $this->assertStringStartsWith('products/'.$product->id.'/', ProductImage::firstOrFail()->image_path);
     }
 }

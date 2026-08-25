@@ -11,6 +11,7 @@ use App\Models\AiGeneration;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Services\Admin\AdminPageService;
+use App\Services\Admin\Catalog\AdminProductService;
 use App\Services\Admin\Ai\AiConfigurationService;
 use App\Services\Admin\Ai\AiContentGenerationService;
 use App\Services\Admin\Ai\AiContentScheduleService;
@@ -55,7 +56,7 @@ class AiController extends Controller
         return response()->json($generator->generate($request->validated(), $request->user()));
     }
 
-    public function generateProductSeo(Product $product, Request $request, AiContentGenerationService $generator): JsonResponse
+    public function generateProductSeo(Product $product, Request $request, AiContentGenerationService $generator, AdminProductService $products): JsonResponse
     {
         $data = [
             'type' => 'product_description',
@@ -64,11 +65,20 @@ class AiController extends Controller
             'tone' => $request->string('tone')->toString() ?: 'professional',
             'length' => $request->string('length')->toString() ?: 'medium',
             'full_article' => false,
-            'with_images' => false,
+            'with_images' => $request->boolean('with_images'),
+            'image_count' => min(max((int) $request->input('image_count', 1), 1), 2),
             'keywords' => array_values(array_filter(array_map('trim', preg_split('/[,\n]+/', (string) $request->input('keywords', ''), -1, PREG_SPLIT_NO_EMPTY)))),
         ];
 
-        return response()->json($generator->generate($data, $request->user()));
+        $result = $generator->generate($data, $request->user());
+        if ($data['with_images']) {
+            $mediaIds = collect($result['result']['images'] ?? [])->pluck('media_id')->filter()->map(fn ($id) => (int) $id)->values()->all();
+            if ($mediaIds !== []) {
+                $products->attachMany($product, $mediaIds, false);
+            }
+        }
+
+        return response()->json($result);
     }
 
     public function createPost(string $generationId, AiCreatePostRequest $request, AiContentGenerationService $generator): RedirectResponse

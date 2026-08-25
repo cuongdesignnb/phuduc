@@ -17,6 +17,8 @@ const module = props.page.module;
 const post = module.post;
 const featuredPicker = ref(false);
 const galleryPicker = ref(false);
+const aiBusy = ref(false);
+const aiError = ref('');
 const featuredPreviewUrl = ref(post?.featured_image_url || null);
 const galleryMedia = ref(post?.gallery || []);
 const form = useForm({
@@ -64,6 +66,46 @@ const save = () => {
     if (post) form.put(route('admin.posts.update', post.id), options);
     else form.post(route('admin.posts.store'), options);
 };
+const generateArticle = async (withImages = false) => {
+    if (!form.title.trim()) {
+        aiError.value = 'Hãy nhập tiêu đề hoặc chủ đề trước khi sinh bài.';
+        return;
+    }
+    aiBusy.value = true;
+    aiError.value = '';
+    try {
+        const response = await window.axios.post(route('admin.ai.content.generate'), {
+            type: 'article',
+            topic: form.title,
+            keywords: form.meta_keywords.split(/[,\n]+/).map((keyword) => keyword.trim()).filter(Boolean),
+            tone: 'professional',
+            length: 'medium',
+            full_article: true,
+            existing_content: form.content,
+            category_id: form.post_category_id || null,
+            with_images: withImages,
+            image_count: withImages ? 1 : 1,
+        });
+        const generated = response.data.result || {};
+        form.title = generated.title || form.title;
+        form.summary = generated.excerpt || form.summary;
+        form.content = generated.content || form.content;
+        form.meta_title = generated.meta_title || form.meta_title;
+        form.meta_description = generated.meta_desc || form.meta_description;
+        form.meta_keywords = generated.meta_keywords || form.meta_keywords;
+        if (withImages && generated.images?.length) {
+            const images = generated.images.map((image) => ({ media_id: image.media_id, id: image.media_id, url: image.url, alt_text: image.alt, file_name: image.alt }));
+            galleryMedia.value = images;
+            form.gallery_media_ids = images.map((image) => image.media_id);
+            form.featured_media_id = images[0].media_id;
+            featuredPreviewUrl.value = images[0].url;
+        }
+    } catch (exception) {
+        aiError.value = exception.response?.data?.message || 'Không thể sinh bài viết. Kiểm tra cấu hình AI và thử lại.';
+    } finally {
+        aiBusy.value = false;
+    }
+};
 </script>
 
 <template>
@@ -73,6 +115,8 @@ const save = () => {
         <div class="mt-6 space-y-6">
             <AdminErrorSummary :errors="form.errors" />
             <AdminDataCard title="Thông tin bài viết">
+                <div class="mb-5 flex flex-wrap items-center gap-3 rounded border border-admin-border bg-admin-page p-3"><p class="mr-auto text-sm text-admin-content-muted">AI có thể điền nội dung, meta SEO và ảnh thumbnail vào biểu mẫu.</p><button type="button" class="rounded border border-admin-border px-4 py-2 text-sm text-admin-content" :disabled="aiBusy" @click="generateArticle(false)">{{ aiBusy ? 'Đang sinh...' : 'Sinh bài viết + Meta' }}</button><button type="button" class="rounded bg-admin-accent px-4 py-2 text-sm font-semibold text-admin-page" :disabled="aiBusy" @click="generateArticle(true)">{{ aiBusy ? 'Đang sinh...' : 'Sinh bài viết kèm ảnh + thumbnail' }}</button></div>
+                <p v-if="aiError" class="mb-4 text-sm text-admin-danger" role="alert">{{ aiError }}</p>
                 <form class="space-y-5" @submit.prevent="save">
                     <div class="grid gap-4 md:grid-cols-2">
                         <AdminFormField label="Tiêu đề" for-id="post-title" :error="form.errors.title"><AdminTextInput id="post-title" v-model="form.title" /></AdminFormField>
