@@ -31,6 +31,7 @@ defineProps({ page: { type: Object, required: true } });
                 </header>
 
                 <ResponsiveImage v-if="page.post.image_url" :src="page.post.image_url" :alt="page.post.title" aspect="16/9" loading="eager" class="mb-8 rounded-lg" />
+                <section v-if="page.post.gallery?.length" class="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3"><img v-for="image in page.post.gallery" :key="image.id" :src="image.url" :alt="image.alt_text || page.post.title" class="aspect-square w-full rounded object-cover" loading="lazy" /></section>
                 <RichContent :html="page.post.content_html" />
             </article>
 

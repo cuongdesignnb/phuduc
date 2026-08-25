@@ -31,6 +31,7 @@ class MediaIndexRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:100'],
             'media_type' => ['nullable', Rule::in(['image', 'file'])],
+            'folder_id' => ['nullable', 'integer', 'exists:media_folders,id'],
             'ids' => ['array'],
             'ids.*' => ['integer', 'min:1'],
             'page' => ['integer', 'min:1'],

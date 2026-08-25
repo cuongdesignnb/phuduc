@@ -42,19 +42,37 @@ class ProductImageService
 
     public function attach(Product $product, MediaLibrary $media, bool $is360): ProductImage
     {
-        $media = $this->assets->requireImage((int) $media->id);
-        $path = $this->storage->copyMedia($media, 'products/'.$product->id);
+        return $this->attachMany($product, [(int) $media->id], $is360)[0];
+    }
+
+    /** @return list<ProductImage> */
+    public function attachMany(Product $product, array $mediaIds, bool $is360): array
+    {
+        $paths = [];
+        $images = [];
+        $nextOrder = ((int) $product->images()->max('sort_order')) + 1;
 
         try {
-            return DB::transaction(fn () => $product->images()->create([
-                'image_path' => $path,
-                'is_360' => $is360,
-                'sort_order' => ((int) $product->images()->max('sort_order')) + 1,
-            ]));
+            DB::transaction(function () use ($product, $mediaIds, $is360, &$nextOrder, &$paths, &$images): void {
+                foreach (array_values(array_unique(array_map('intval', $mediaIds))) as $mediaId) {
+                    $media = $this->assets->requireImage($mediaId);
+                    $path = $this->storage->copyMedia($media, 'products/'.$product->id);
+                    $paths[] = $path;
+                    $images[] = $product->images()->create([
+                        'image_path' => $path,
+                        'is_360' => $is360,
+                        'sort_order' => $nextOrder++,
+                    ]);
+                }
+            });
         } catch (\Throwable $exception) {
-            Storage::disk('public')->delete($path);
+            foreach ($paths as $path) {
+                Storage::disk('public')->delete($path);
+            }
             throw $exception;
         }
+
+        return $images;
     }
 
     public function delete(Product $product, ProductImage $image): void

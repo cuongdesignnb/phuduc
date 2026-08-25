@@ -20,6 +20,16 @@ class StorePostRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['title' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', 'unique:posts,slug'], 'post_category_id' => ['nullable', 'integer', 'exists:post_categories,id'], 'summary' => ['nullable', 'string', 'max:5000'], 'content' => ['nullable', 'string', 'max:100000'], 'status' => ['required', Rule::in(['draft', 'published'])], 'featured_media_id' => ['nullable', 'integer', MediaAssetRule::image()]];
+        return [
+            'title' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', 'unique:posts,slug'],
+            'post_category_id' => ['nullable', 'integer', 'exists:post_categories,id'],
+            'summary' => ['nullable', 'string', 'max:5000'],
+            'content' => ['nullable', 'string', 'max:100000'],
+            'status' => ['required', Rule::in(['draft', 'published'])],
+            'featured_media_id' => ['nullable', 'integer', MediaAssetRule::image()],
+            'gallery_media_ids' => ['sometimes', 'array', 'max:30'],
+            'gallery_media_ids.*' => ['integer', 'distinct', MediaAssetRule::image()],
+        ];
     }
 }

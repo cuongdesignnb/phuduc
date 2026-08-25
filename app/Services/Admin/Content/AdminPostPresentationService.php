@@ -18,6 +18,25 @@ class AdminPostPresentationService
 
     public function edit(Post $post): array
     {
-        return ['id' => $post->id, 'title' => $post->title, 'slug' => $post->slug, 'summary' => $post->summary, 'content' => $post->content, 'status' => $post->status, 'post_category_id' => $post->post_category_id, 'featured_media_id' => $this->mediaReferences->idForPath($post->featured_image), 'featured_image_url' => $this->mediaUrl->resolve($post->featured_image), 'version' => (string) optional($post->updated_at)->toISOString()];
+        return [
+            'id' => $post->id,
+            'title' => $post->title,
+            'slug' => $post->slug,
+            'summary' => $post->summary,
+            'content' => $post->content,
+            'status' => $post->status,
+            'post_category_id' => $post->post_category_id,
+            'featured_media_id' => $this->mediaReferences->idForPath($post->featured_image),
+            'featured_image_url' => $this->mediaUrl->resolve($post->featured_image),
+            'gallery' => $post->gallery->map(fn ($gallery) => [
+                'id' => $gallery->id,
+                'media_id' => $gallery->media_id,
+                'url' => $this->mediaUrl->resolve($gallery->media?->file_path),
+                'alt_text' => $gallery->media?->alt_text,
+                'file_name' => $gallery->media?->file_name,
+                'sort_order' => (int) $gallery->sort_order,
+            ])->values()->all(),
+            'version' => (string) optional($post->updated_at)->toISOString(),
+        ];
     }
 }

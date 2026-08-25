@@ -3,6 +3,7 @@
 namespace App\Services\Admin\Media;
 
 use App\Models\MediaLibrary;
+use App\Models\MediaFolder;
 use App\Models\User;
 use App\Services\Admin\AdminPageService;
 use App\Services\Admin\AdminPresentationService;
@@ -33,6 +34,7 @@ class AdminMediaService
             ->when($filters['media_type'] ?? null, fn ($query, $type) => $type === 'image'
                 ? $query->whereIn('mime_type', ImageMimeTypes::ALLOWLIST)
                 : $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST))
+            ->when($filters['folder_id'] ?? null, fn ($query, $folderId) => $query->where('folder_id', $folderId))
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -47,7 +49,9 @@ class AdminMediaService
             'filters' => [
                 'search' => (string) ($filters['search'] ?? ''),
                 'media_type' => (string) ($filters['media_type'] ?? ''),
+                'folder_id' => ($filters['folder_id'] ?? null) ? (int) $filters['folder_id'] : null,
             ],
+            'folders' => $this->folderTree(),
             'upload' => ['max_files' => 20, 'max_file_size' => 10 * 1024 * 1024, 'max_request_size' => 50 * 1024 * 1024],
         ]);
     }
@@ -63,7 +67,8 @@ class AdminMediaService
             $query->where('file_name', 'like', $value)->orWhere('alt_text', 'like', $value);
         }))->when($filters['media_type'] ?? null, fn ($query, $type) => $type === 'image'
             ? $query->whereIn('mime_type', ImageMimeTypes::ALLOWLIST)
-            : $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST));
+            : $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST))
+            ->when($filters['folder_id'] ?? null, fn ($query, $folderId) => $query->where('folder_id', $folderId));
         $paginator = $query->latest()->paginate($limit, ['*'], 'page', (int) ($filters['page'] ?? 1));
         $selected = $ids === [] ? collect() : MediaLibrary::query()->whereIn('id', $ids)->when(($filters['media_type'] ?? null) === 'image', fn ($query) => $query->whereIn('mime_type', ImageMimeTypes::ALLOWLIST))->when(($filters['media_type'] ?? null) === 'file', fn ($query) => $query->whereNotIn('mime_type', ImageMimeTypes::ALLOWLIST))->get();
         $items = $selected->concat($paginator->getCollection())->unique('id')->map(fn (MediaLibrary $media) => $this->presentation->pickerItem($media))->values()->all();
@@ -71,19 +76,24 @@ class AdminMediaService
         return [
             'items' => $items,
             'pagination' => $this->adminPresentation->pagination($paginator),
-            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'media_type' => (string) ($filters['media_type'] ?? ''), 'ids' => $ids, 'limit' => $limit],
+            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'media_type' => (string) ($filters['media_type'] ?? ''), 'folder_id' => ($filters['folder_id'] ?? null) ? (int) $filters['folder_id'] : null, 'ids' => $ids, 'limit' => $limit],
+            'folders' => $this->folderTree(),
             'data' => $items,
         ];
     }
 
     /** @return array<int, array<string, mixed>> */
-    public function store(array $files, ?string $altText = null): array
+    public function store(array $files, ?string $altText = null, ?int $folderId = null): array
     {
         $created = [];
         $storedPaths = [];
 
+        if ($folderId !== null) {
+            MediaFolder::query()->findOrFail($folderId);
+        }
+
         try {
-            DB::transaction(function () use ($files, $altText, &$created, &$storedPaths): void {
+            DB::transaction(function () use ($files, $altText, $folderId, &$created, &$storedPaths): void {
                 foreach ($files as $file) {
                     if (! $file instanceof UploadedFile) {
                         continue;
@@ -91,6 +101,7 @@ class AdminMediaService
                     $stored = $this->storage->store($file, 'media');
                     $storedPaths[] = $stored['path'];
                     $media = MediaLibrary::create([
+                        'folder_id' => $folderId,
                         'file_name' => $file->getClientOriginalName(),
                         'file_path' => $stored['path'],
                         'mime_type' => $stored['mime_type'],
@@ -108,6 +119,43 @@ class AdminMediaService
         }
 
         return $created;
+    }
+
+    /** @return array<string, mixed> */
+    public function createFolder(array $data): array
+    {
+        $parentId = $data['parent_id'] ?? null;
+        $this->assertFolderNameAvailable((string) $data['name'], $parentId);
+        $folder = MediaFolder::create(['parent_id' => $parentId, 'name' => $data['name']]);
+
+        return $this->folderItem($folder->loadCount('media'));
+    }
+
+    /** @return array<string, mixed> */
+    public function renameFolder(MediaFolder $folder, string $name): array
+    {
+        $this->assertFolderNameAvailable($name, $folder->parent_id, $folder->id);
+        $folder->update(['name' => $name]);
+
+        return $this->folderItem($folder->refresh()->loadCount('media'));
+    }
+
+    public function move(array $mediaIds, ?int $folderId): void
+    {
+        if ($folderId !== null) {
+            MediaFolder::query()->findOrFail($folderId);
+        }
+
+        MediaLibrary::query()->whereIn('id', array_map('intval', $mediaIds))->update(['folder_id' => $folderId]);
+    }
+
+    public function destroyFolder(MediaFolder $folder): void
+    {
+        if ($folder->media()->exists() || $folder->children()->exists()) {
+            throw ValidationException::withMessages(['folder' => 'Thư mục phải trống trước khi xóa.']);
+        }
+
+        $folder->delete();
     }
 
     public function update(MediaLibrary $media, string $altText): MediaLibrary
@@ -129,5 +177,51 @@ class AdminMediaService
             $media->delete();
         });
         DB::afterCommit(fn () => Storage::disk('public')->delete($path));
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function folderTree(): array
+    {
+        $folders = MediaFolder::query()
+            ->withCount('media')
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get();
+        $byParent = $folders->groupBy(fn (MediaFolder $folder) => (int) ($folder->parent_id ?? 0));
+        $flatten = function (?int $parentId, int $depth) use (&$flatten, $byParent): array {
+            return collect($byParent->get((int) ($parentId ?? 0), []))
+                ->flatMap(fn (MediaFolder $folder) => [
+                    $this->folderItem($folder, $depth),
+                    ...$flatten((int) $folder->id, $depth + 1),
+                ])
+                ->values()
+                ->all();
+        };
+
+        return $flatten(null, 0);
+    }
+
+    /** @return array<string, mixed> */
+    private function folderItem(MediaFolder $folder, int $depth = 0): array
+    {
+        return [
+            'id' => (int) $folder->id,
+            'parent_id' => $folder->parent_id ? (int) $folder->parent_id : null,
+            'name' => $folder->name,
+            'depth' => $depth,
+            'media_count' => (int) ($folder->media_count ?? 0),
+        ];
+    }
+
+    private function assertFolderNameAvailable(string $name, mixed $parentId, ?int $ignoreId = null): void
+    {
+        $exists = MediaFolder::query()
+            ->where('name', $name)
+            ->when($parentId === null, fn ($query) => $query->whereNull('parent_id'), fn ($query) => $query->where('parent_id', $parentId))
+            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->exists();
+        if ($exists) {
+            throw ValidationException::withMessages(['name' => 'Tên thư mục đã tồn tại trong vị trí này.']);
+        }
     }
 }

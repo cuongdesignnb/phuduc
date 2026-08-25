@@ -63,7 +63,12 @@ class ProductController extends Controller
 
     public function addImageFromMedia(AttachProductMediaRequest $request, Product $product, AdminProductService $products): RedirectResponse
     {
-        $products->attach($product, (int) $request->validated('media_id'), $request->boolean('is_360'));
+        $mediaIds = $request->validated('media_ids', []);
+        if ($mediaIds !== []) {
+            $products->attachMany($product, $mediaIds, $request->boolean('is_360'));
+        } else {
+            $products->attach($product, (int) $request->validated('media_id'), $request->boolean('is_360'));
+        }
 
         return back()->with('success', 'Ảnh đã được sao chép từ Thư viện Media.');
     }

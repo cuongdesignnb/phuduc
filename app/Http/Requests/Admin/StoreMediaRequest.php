@@ -25,6 +25,7 @@ class StoreMediaRequest extends FormRequest
             'files' => ['required', 'array', 'max:20'],
             'files.*' => ['required', 'file', 'max:10240', 'mimetypes:'.implode(',', [...ImageMimeTypes::ALLOWLIST, 'video/mp4', 'video/webm', 'application/pdf'])],
             'alt_text' => ['nullable', 'string', 'max:255'],
+            'folder_id' => ['nullable', 'integer', 'exists:media_folders,id'],
         ];
     }
 

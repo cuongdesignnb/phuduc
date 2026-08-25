@@ -74,6 +74,10 @@ Route::middleware('auth')->group(function () {
         Route::get('media', [MediaLibraryController::class, 'index'])->name('media.index');
         Route::get('media/data', [MediaLibraryController::class, 'data'])->name('media.data');
         Route::post('media', [MediaLibraryController::class, 'store'])->name('media.store');
+        Route::post('media/folders', [MediaLibraryController::class, 'storeFolder'])->name('media.folders.store');
+        Route::patch('media/folders/{folder}', [MediaLibraryController::class, 'updateFolder'])->name('media.folders.update');
+        Route::delete('media/folders/{folder}', [MediaLibraryController::class, 'destroyFolder'])->name('media.folders.destroy');
+        Route::post('media/move', [MediaLibraryController::class, 'move'])->name('media.move');
         Route::patch('media/{media}', [MediaLibraryController::class, 'update'])->name('media.update');
         Route::delete('media/{media}', [MediaLibraryController::class, 'destroy'])->name('media.destroy');
 

@@ -6,6 +6,7 @@ use App\Models\HomeSection;
 use App\Models\HomeSectionItem;
 use App\Models\MediaLibrary;
 use App\Models\Post;
+use App\Models\PostMedia;
 use App\Models\ProductImage;
 use App\Models\Setting;
 use App\Services\Media\RichContentMediaReferenceService;
@@ -65,6 +66,16 @@ class MediaReferenceService
         }
         foreach (Post::query()->whereIn('featured_image', $normalized)->selectRaw('featured_image, count(*) as aggregate')->groupBy('featured_image')->get() as $row) {
             $counts[$this->normalize($row->featured_image)]['posts'] = (int) $row->aggregate;
+        }
+        $mediaIds = MediaLibrary::query()->whereIn('file_path', $normalized)->pluck('id', 'file_path');
+        if ($mediaIds->isNotEmpty()) {
+            $pathById = $mediaIds->mapWithKeys(fn ($id, $path) => [(int) $id => $this->normalize($path)]);
+            foreach (PostMedia::query()->whereIn('media_id', $pathById->keys())->selectRaw('media_id, count(*) as aggregate')->groupBy('media_id')->get() as $row) {
+                $path = $pathById[(int) $row->media_id] ?? null;
+                if ($path) {
+                    $counts[$path]['post_galleries'] = (int) $row->aggregate;
+                }
+            }
         }
         foreach (HomeSectionItem::query()->whereIn('image', $normalized)->selectRaw('image, count(*) as aggregate')->groupBy('image')->get() as $row) {
             $counts[$this->normalize($row->image)]['home_section_items'] = (int) $row->aggregate;
