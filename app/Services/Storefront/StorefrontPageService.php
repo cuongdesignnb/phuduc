@@ -8,6 +8,7 @@ class StorefrontPageService
         private readonly SiteConfigurationService $siteConfiguration,
         private readonly NavigationService $navigation,
         private readonly HomePageDataService $homePage,
+        private readonly StorefrontSeoService $seo,
     ) {}
 
     /**
@@ -23,21 +24,15 @@ class StorefrontPageService
             'navigation' => $this->navigation->get(),
             'page' => [
                 'type' => 'home',
-                'seo' => [
+                'seo' => $this->seo->meta([
                     'title' => $site['name'],
                     'description' => $description,
                     'canonical' => url('/'),
-                    'robots' => $site['prevent_indexing'] ? 'noindex, nofollow' : 'index, follow',
-                ],
+                    'append_site' => false,
+                ]),
                 'json_ld' => [
-                    '@context' => 'https://schema.org',
-                    '@type' => 'Organization',
-                    'name' => $site['name'],
-                    'url' => url('/'),
-                    'logo' => $site['logo_url'],
-                    'email' => $site['email'],
-                    'telephone' => $site['hotline'] ?: $site['phone'],
-                    'address' => $site['address'],
+                    $this->seo->organizationJsonLd(),
+                    $this->seo->websiteJsonLd(),
                 ],
                 'sections' => $this->homePage->sections(),
             ],

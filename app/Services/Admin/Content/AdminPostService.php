@@ -53,15 +53,18 @@ class AdminPostService
             ['label' => 'Bài viết', 'url' => route('admin.posts.index')],
             ['label' => $label, 'url' => $post ? route('admin.posts.edit', $post) : null],
         ], [
-            'post' => $post ? $this->presentation->edit($post->load('gallery.media')) : null,
+            'post' => $post ? $this->presentation->edit($post->load(['gallery.media', 'author:id,name'])) : null,
             'categories' => $categories,
             'statuses' => [['key' => 'draft', 'label' => 'Bản nháp'], ['key' => 'published', 'label' => 'Đã đăng']],
         ]);
     }
 
-    public function store(array $data): Post
+    public function store(array $data, ?User $author = null): Post
     {
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['title']);
+        if ($author && blank($data['author_id'] ?? null)) {
+            $data['author_id'] = $author->id;
+        }
         $data['featured_image'] = $this->path($data['featured_media_id'] ?? null);
         $galleryMediaIds = $data['gallery_media_ids'] ?? [];
         unset($data['gallery_media_ids']);
@@ -72,12 +75,15 @@ class AdminPostService
         return $post->refresh();
     }
 
-    public function update(Post $post, array $data): Post
+    public function update(Post $post, array $data, ?User $author = null): Post
     {
         return DB::transaction(function () use ($post, $data): Post {
             $locked = Post::query()->lockForUpdate()->findOrFail($post->id);
             $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Bài viết đã được cập nhật ở phiên khác. Vui lòng tải lại.');
             $data['slug'] = $data['slug'] ?: $this->uniqueSlug($data['title'], $locked->id);
+            if ($author && $locked->author_id === null && ($data['status'] ?? $locked->status) === 'published') {
+                $data['author_id'] = $author->id;
+            }
             $data['featured_image'] = $this->path($data['featured_media_id'] ?? null);
             $galleryMediaIds = $data['gallery_media_ids'] ?? null;
             unset($data['featured_media_id'], $data['gallery_media_ids'], $data['version']);

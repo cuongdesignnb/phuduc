@@ -29,7 +29,6 @@ class StorePostRequest extends FormRequest
             'status' => ['required', Rule::in(['draft', 'published'])],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
-            'meta_keywords' => ['nullable', 'string', 'max:1000'],
             'featured_media_id' => ['nullable', 'integer', MediaAssetRule::image()],
             'gallery_media_ids' => ['sometimes', 'array', 'max:30'],
             'gallery_media_ids.*' => ['integer', 'distinct', MediaAssetRule::image()],

@@ -101,9 +101,9 @@ final class AiContentGenerationService
             'content' => $result['content'],
             'featured_image' => $featuredPath,
             'status' => $autoPublish ? 'published' : 'draft',
+            'author_id' => $user?->id,
             'meta_title' => $result['meta_title'],
             'meta_description' => $result['meta_desc'],
-            'meta_keywords' => $result['meta_keywords'],
         ]);
         foreach ($mediaIds as $index => $mediaId) {
             PostMedia::create(['post_id' => $post->id, 'media_id' => $mediaId, 'sort_order' => $index]);
@@ -157,13 +157,13 @@ final class AiContentGenerationService
             'variants' => $product->variants->map(fn ($variant) => ['name' => $variant->name, 'price' => (string) $variant->price, 'stock' => $variant->stock])->all(),
             'specifications' => $product->specifications,
         ] : null;
-        $schema = '{"title":"...","excerpt":"...","content":"HTML không có h1, chỉ h2/h3 và thẻ an toàn","meta_title":"...","meta_desc":"...","meta_keywords":"từ khóa, ...","tags":["..."],"category_id":null}';
+        $schema = '{"title":"...","excerpt":"...","content":"HTML không có h1, chỉ h2/h3 và thẻ an toàn","meta_title":"...","meta_desc":"...","tags":["..."],"category_id":null}';
         if ($payload['type'] === 'product_description') {
-            $schema = '{"title":"...","excerpt":"...","content":"HTML mô tả sản phẩm","meta_title":"...","meta_desc":"...","meta_keywords":"từ khóa, ...","tags":["..."]}';
+            $schema = '{"title":"...","excerpt":"...","content":"HTML mô tả sản phẩm","meta_title":"...","meta_desc":"...","tags":["..."]}';
         }
 
         return [
-            ['role' => 'system', 'content' => 'Bạn là chuyên gia SEO tiếng Việt cho website PhuDuc. Chỉ trả về JSON hợp lệ theo schema, không markdown fence, không bịa giá/SKU/thông số. Không dùng h1. Nội dung phải tự nhiên, có anchor text và chỉ dùng internal link trong danh sách được phép. Mỗi URL tối đa một lần.'],
+            ['role' => 'system', 'content' => 'Bạn là chuyên gia SEO tiếng Việt cho website Phú Đức. Chỉ trả về JSON hợp lệ theo schema, không markdown fence. Không bịa giá, SKU, thông số, thương hiệu, review, tồn kho, chứng nhận, năm thành lập hoặc claim không có dữ liệu. Không dùng h1, không tự thêm tên thương hiệu vào meta title. Nội dung phải tự nhiên, có anchor text và chỉ dùng internal link trong danh sách được phép. Mỗi URL tối đa một lần.'],
             ['role' => 'user', 'content' => json_encode([
                 'task' => $payload,
                 'product_data' => $productData,
@@ -174,7 +174,8 @@ final class AiContentGenerationService
                     'từ khóa được phân bổ tự nhiên, không nhồi nhét',
                     'content là HTML an toàn gồm p, h2, h3, ul, ol, strong, a',
                     'anchor text phải mô tả đúng trang đích',
-                    'meta_title khoảng 50-60 ký tự, meta_desc khoảng 140-160 ký tự',
+                    'meta_title thường cô đọng khoảng 50-60 ký tự, meta_desc thường khoảng 140-160 ký tự; đây là hướng dẫn biên tập, không phải giới hạn cứng',
+                    'meta_desc là plain text, không chứa HTML',
                 ],
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),],
         ];
@@ -210,7 +211,6 @@ final class AiContentGenerationService
             'content' => $content,
             'meta_title' => trim((string) ($data['meta_title'] ?? $title)),
             'meta_desc' => trim((string) ($data['meta_desc'] ?? $data['meta_description'] ?? $data['excerpt'] ?? '')),
-            'meta_keywords' => trim((string) ($data['meta_keywords'] ?? implode(', ', $payload['keywords']))),
             'tags' => array_values(array_filter(array_map('strval', (array) ($data['tags'] ?? [])))),
             'category_id' => $payload['category_id'] ?? null,
             'images' => [],

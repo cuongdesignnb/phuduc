@@ -31,7 +31,7 @@ class NewsPageService
             : null;
 
         $paginator = Post::query()
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
+            ->select(['id', 'post_category_id', 'author_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'meta_title', 'meta_description', 'published_at', 'created_at', 'updated_at'])
             ->where('status', 'published')
             ->with('category:id,name,slug')
             ->when($selectedCategory, fn (Builder $query) => $query->where('post_category_id', $selectedCategory->id))
@@ -40,7 +40,7 @@ class NewsPageService
                 $query->whereRaw("title LIKE ? ESCAPE '!'", ["%{$keyword}%"])
                     ->orWhereRaw("summary LIKE ? ESCAPE '!'", ["%{$keyword}%"]);
             }))
-            ->orderByDesc('created_at')
+            ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->paginate(self::PER_PAGE)
             ->withQueryString();
@@ -61,7 +61,10 @@ class NewsPageService
             ['name' => 'Trang chủ', 'url' => url('/')],
             ['name' => 'Tin tức', 'url' => route('news.index')],
         ];
-        $hasSearch = filled($filters['search']);
+        $hasUtilityQuery = filled($filters['search']) || $selectedCategory !== null;
+        $canonical = $hasUtilityQuery || $paginator->currentPage() === 1
+            ? route('news.index')
+            : route('news.index', ['page' => $paginator->currentPage()]);
 
         return [
             'page' => [
@@ -69,8 +72,8 @@ class NewsPageService
                 'seo' => $this->seo->meta([
                     'title' => 'Tin tức',
                     'description' => 'Tin tức và bài viết mới nhất',
-                    'canonical' => route('news.index', array_filter(['category' => $selectedCategory?->slug])),
-                    'robots' => $hasSearch ? 'noindex, follow' : 'index, follow',
+                    'canonical' => $canonical,
+                    'robots' => $hasUtilityQuery ? 'noindex, follow' : 'index, follow',
                 ]),
                 'json_ld' => [$this->seo->breadcrumbJsonLd($breadcrumbs)],
                 'breadcrumbs' => $breadcrumbs,
@@ -98,21 +101,22 @@ class NewsPageService
     public function show(string $slug): array
     {
         $post = Post::query()
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'content', 'featured_image', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
+            ->select(['id', 'post_category_id', 'author_id', 'title', 'slug', 'summary', 'content', 'featured_image', 'status', 'meta_title', 'meta_description', 'published_at', 'created_at', 'updated_at'])
             ->where('slug', $slug)
             ->where('status', 'published')
             ->with('category:id,name,slug')
+            ->with('author:id,name')
             ->with('gallery.media')
             ->firstOrFail();
         $post->content = $this->sanitizer->sanitize($post->content);
         $presented = $this->posts->detail($post);
         $related = Post::query()
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
+            ->select(['id', 'post_category_id', 'author_id', 'title', 'slug', 'summary', 'featured_image', 'status', 'meta_title', 'meta_description', 'published_at', 'created_at', 'updated_at'])
             ->where('status', 'published')
             ->whereKeyNot($post->id)
             ->when($post->post_category_id, fn (Builder $query) => $query->where('post_category_id', $post->post_category_id))
             ->with('category:id,name,slug')
-            ->orderByDesc('created_at')
+            ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->limit(4)
             ->get()
@@ -130,11 +134,14 @@ class NewsPageService
                 'type' => 'news_detail',
                 'seo' => $this->seo->meta([
                     'title' => $post->meta_title ?: $presented['title'],
-                    'description' => $post->meta_description ?: mb_substr(strip_tags((string) ($presented['summary'] ?: $presented['content_html'])), 0, 160),
-                    'keywords' => $post->meta_keywords,
+                    'description' => $post->meta_description ?: ($presented['summary'] ?: $presented['content_html']),
                     'ogImage' => $presented['image_url'],
+                    'ogImageAlt' => $presented['title'],
                     'ogType' => 'article',
                     'canonical' => route('news.show', $presented['slug']),
+                    'publishedTime' => $presented['published_at'],
+                    'modifiedTime' => $presented['updated_at'],
+                    'section' => $presented['category']['name'] ?? null,
                 ]),
                 'json_ld' => [
                     $this->seo->articleJsonLd($presented),

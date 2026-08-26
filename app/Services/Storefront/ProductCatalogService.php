@@ -45,7 +45,13 @@ class ProductCatalogService
             ['name' => 'Trang chủ', 'url' => url('/')],
             ['name' => 'Sản phẩm', 'url' => route('products.index')],
         ];
-        $hasFilters = filled($filters['search']) || $filters['min_price'] !== null || $filters['max_price'] !== null;
+        $hasFilters = filled($filters['search'])
+            || $filters['min_price'] !== null
+            || $filters['max_price'] !== null
+            || $filters['sort'] !== 'latest';
+        $canonical = $hasFilters || $paginator->currentPage() === 1
+            ? route('products.index')
+            : route('products.index', ['page' => $paginator->currentPage()]);
 
         return [
             'page' => [
@@ -53,7 +59,7 @@ class ProductCatalogService
                 'seo' => $this->seo->meta([
                     'title' => 'Sản phẩm',
                     'description' => 'Danh sách sản phẩm xe điện công nghiệp',
-                    'canonical' => route('products.index'),
+                    'canonical' => $canonical,
                     'robots' => $hasFilters ? 'noindex, follow' : 'index, follow',
                 ]),
                 'json_ld' => [$this->seo->breadcrumbJsonLd($breadcrumbs)],

@@ -23,7 +23,7 @@ class PostPresentationServiceTest extends TestCase
             'status' => 'published',
         ]);
 
-        $post->forceFill(['created_at' => '2026-07-22 10:00:00'])->save();
+        $post->forceFill(['published_at' => '2026-07-22 10:00:00'])->save();
         $post->load('category');
 
         $card = app(PostPresentationService::class)->card($post);
