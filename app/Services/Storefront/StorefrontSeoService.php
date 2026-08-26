@@ -33,7 +33,7 @@ class StorefrontSeoService
             : $this->absoluteUrl(url()->current());
         // Keep all public pages shareable even before an administrator uploads a
         // site-wide social image. A page-specific image still takes precedence.
-        $ogImage = $overrides['ogImage'] ?? $site['og_image_url'] ?? url('/og-default.svg');
+        $ogImage = $overrides['ogImage'] ?? $site['og_image_url'] ?? url('/og-default.png');
 
         return [
             'title' => $title,
@@ -180,6 +180,10 @@ class StorefrontSeoService
             'headline' => $post['title'],
             'description' => $this->text->normalize($post['summary'] ?? $post['content_html'] ?? '', 200),
             'url' => route('news.show', $post['slug']),
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id' => route('news.show', $post['slug']),
+            ],
             'datePublished' => $post['published_at'] ?? null,
             'dateModified' => $post['updated_at'] ?? null,
             'image' => $post['image_url'] ?? null,

@@ -77,7 +77,7 @@ class AdminPostService
 
     public function update(Post $post, array $data, ?User $author = null): Post
     {
-        return DB::transaction(function () use ($post, $data): Post {
+        return DB::transaction(function () use ($post, $data, $author): Post {
             $locked = Post::query()->lockForUpdate()->findOrFail($post->id);
             $this->concurrency->assertVersion($data['version'] ?? null, $locked, 'Bài viết đã được cập nhật ở phiên khác. Vui lòng tải lại.');
             $data['slug'] = $data['slug'] ?: $this->uniqueSlug($data['title'], $locked->id);

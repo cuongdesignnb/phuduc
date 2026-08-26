@@ -4,6 +4,7 @@ namespace Tests\Feature\Seo;
 
 use App\Models\Post;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -32,8 +33,8 @@ class PublicSeoTest extends TestCase
             ->assertSee('<title inertia>Xe điện chở hàng | Phú Đức</title>', false)
             ->assertSee('name="description" content="META sạch cho xe điện."', false)
             ->assertSee('rel="canonical" href="'.route('products.show', $product->slug).'"', false)
-            ->assertSee('property="og:image" content="'.url('/og-default.svg').'"', false)
-            ->assertSee('name="twitter:image" content="'.url('/og-default.svg').'"', false)
+            ->assertSee('property="og:image" content="'.url('/og-default.png').'"', false)
+            ->assertSee('name="twitter:image" content="'.url('/og-default.png').'"', false)
             ->assertSee('type="application/ld+json"', false)
             ->assertDontSee('name="keywords"', false)
             ->assertDontSee('Laravel');
@@ -99,9 +100,40 @@ class PublicSeoTest extends TestCase
         $this->get(route('news.show', $post->slug))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('page.seo.publishedTime', $publishedAt->toIso8601String())
+                ->where('page.json_ld.0.@context', 'https://schema.org')
                 ->where('page.json_ld.0.@type', 'NewsArticle')
+                ->where('page.json_ld.0.headline', $post->title)
+                ->where('page.json_ld.0.url', route('news.show', $post->slug))
+                ->where('page.json_ld.0.mainEntityOfPage.@type', 'WebPage')
+                ->where('page.json_ld.0.mainEntityOfPage.@id', route('news.show', $post->slug))
                 ->where('page.json_ld.0.datePublished', $publishedAt->toIso8601String())
+                ->where('page.json_ld.0.dateModified', $post->updated_at->toIso8601String())
+                ->where('page.json_ld.0.publisher.@type', 'Organization')
                 ->where('page.json_ld.0.author.name', $author->name));
+    }
+
+    public function test_page_specific_images_take_precedence_over_the_raster_social_fallback(): void
+    {
+        $product = Product::create(['name' => 'Xe có ảnh riêng', 'slug' => 'xe-co-anh-rieng', 'status' => 'active']);
+        ProductImage::create(['product_id' => $product->id, 'image_path' => 'products/xe-rieng.jpg', 'sort_order' => 0]);
+        $post = Post::create([
+            'title' => 'Tin có ảnh riêng',
+            'slug' => 'tin-co-anh-rieng',
+            'featured_image' => 'posts/tin-rieng.jpg',
+            'status' => 'published',
+        ]);
+
+        $this->get(route('products.show', $product->slug))
+            ->assertSee('property="og:image" content="'.url('/storage/products/xe-rieng.jpg').'"', false)
+            ->assertSee('name="twitter:image" content="'.url('/storage/products/xe-rieng.jpg').'"', false)
+            ->assertDontSee('property="og:image" content="'.url('/og-default.png').'"', false)
+            ->assertDontSee('name="twitter:image" content="'.url('/og-default.png').'"', false);
+
+        $this->get(route('news.show', $post->slug))
+            ->assertSee('property="og:image" content="'.url('/storage/posts/tin-rieng.jpg').'"', false)
+            ->assertSee('name="twitter:image" content="'.url('/storage/posts/tin-rieng.jpg').'"', false)
+            ->assertDontSee('property="og:image" content="'.url('/og-default.png').'"', false)
+            ->assertDontSee('name="twitter:image" content="'.url('/og-default.png').'"', false);
     }
 
     public function test_publishing_a_draft_sets_the_timestamp_once_and_keeps_it_on_later_edits(): void
