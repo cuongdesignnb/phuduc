@@ -207,7 +207,9 @@ class ProductPresentationService
         return [
             'id' => $image->id,
             'url' => $this->mediaUrl->resolve($image->image_path),
-            'alt' => sprintf('%s – ảnh sản phẩm %d', $fallbackAlt, $sequence),
+            'alt' => filled($image->alt_text)
+                ? trim((string) $image->alt_text)
+                : sprintf('%s – ảnh sản phẩm %d', $fallbackAlt, $sequence),
             'sort_order' => (int) $image->sort_order,
         ];
     }

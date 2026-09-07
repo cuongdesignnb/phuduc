@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProductImage extends Model
 {
     protected $fillable = [
-        'product_id', 'image_path', 'is_360', 'sort_order',
+        'product_id', 'image_path', 'alt_text', 'is_360', 'sort_order',
     ];
 
     protected function casts(): array

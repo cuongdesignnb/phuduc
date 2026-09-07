@@ -60,6 +60,7 @@ class ProductImageService
                     $paths[] = $path;
                     $images[] = $product->images()->create([
                         'image_path' => $path,
+                        'alt_text' => $media->alt_text,
                         'is_360' => $is360,
                         'sort_order' => $nextOrder++,
                     ]);
