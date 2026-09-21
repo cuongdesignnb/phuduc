@@ -25,6 +25,14 @@ class PhuDucSeoProductSeederTest extends TestCase
         $this->assertSame(28, Product::query()->count());
         $this->assertSame(48, ProductVariant::query()->count());
 
+        $products = Product::query()->get(['description', 'meta_description']);
+        $this->assertSame(28, $products->pluck('meta_description')->filter()->unique()->count());
+        $products->each(function (Product $product): void {
+            $this->assertGreaterThanOrEqual(900, mb_strlen(strip_tags((string) $product->description)));
+            $this->assertStringContainsString('Tiêu chí chọn cấu hình', (string) $product->description);
+            $this->assertLessThanOrEqual(160, mb_strlen((string) $product->meta_description));
+        });
+
         $crane = Product::query()->where('slug', 'cau-dien-thuy-luc-2-tan')->firstOrFail();
         $this->assertSame('Cẩu điện thủy lực 2 tấn', $crane->name);
         $this->assertSame('2 tấn', $crane->specifications[1]['value']);

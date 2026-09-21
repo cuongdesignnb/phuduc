@@ -34,6 +34,7 @@ Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 // Products
 Route::get('/san-pham', [GuestProductController::class, 'index'])->name('products.index');
+Route::get('/san-pham/goi-y', [GuestProductController::class, 'suggestions'])->middleware('throttle:commerce-product-search')->name('products.suggestions');
 Route::get('/san-pham/{slug}', [GuestProductController::class, 'show'])->name('products.show');
 
 // Cart & Checkout
