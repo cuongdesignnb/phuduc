@@ -1,10 +1,12 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import DesktopNavigation from './DesktopNavigation.vue';
 import MobileNavigation from './MobileNavigation.vue';
 import StorefrontContainer from './StorefrontContainer.vue';
+import StorefrontIcon from './StorefrontIcon.vue';
 import StorefrontSearch from './StorefrontSearch.vue';
+import { useMobileMenu } from '@/Composables/useMobileMenu';
 
 const props = defineProps({
     site: { type: Object, default: () => ({}) },
@@ -31,8 +33,10 @@ const initialSearch = (url) => {
     }
 };
 const searchKeyword = ref(initialSearch(props.currentUrl));
-const mobileOpen = ref(false);
-const mobileMenuTrigger = ref(null);
+const searchOpen = ref(false);
+const searchPanel = ref(null);
+const menu = useMobileMenu();
+const scrolled = ref(false);
 const contactPhone = computed(() => props.site.hotline || props.site.phone || '');
 const accountHref = computed(() => {
     if (!props.authUser) return route('login');
@@ -42,64 +46,109 @@ const accountLabel = computed(() => props.authUser?.name || 'Đăng nhập');
 const submitSearch = (keyword) => {
     const search = keyword.trim();
     if (!search) return;
-    mobileOpen.value = false;
+    menu.hide();
+    searchOpen.value = false;
     router.get(route('products.index'), { search });
 };
-watch(mobileOpen, async (open, wasOpen) => {
-    if (!open && wasOpen && mobileMenuTrigger.value) {
+const toggleSearch = async () => {
+    searchOpen.value = !searchOpen.value;
+    if (searchOpen.value) {
         await nextTick();
-        mobileMenuTrigger.value.focus();
+        searchPanel.value?.querySelector('input')?.focus();
+    }
+};
+const onScroll = () => { scrolled.value = window.scrollY > 12; };
+const onKeydown = (event) => { if (event.key === 'Escape') searchOpen.value = false; };
+onMounted(() => {
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('keydown', onKeydown);
+});
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', onScroll);
+    document.removeEventListener('keydown', onKeydown);
+});
+watch(menu.open, async (open, wasOpen) => {
+    if (!open && wasOpen && menu.trigger.value) {
+        await nextTick();
+        menu.trigger.value.focus();
     }
 });
 watch(() => props.currentUrl, (url) => {
     if ((url || '').startsWith('/san-pham')) searchKeyword.value = initialSearch(url);
-    mobileOpen.value = false;
+    menu.hide();
+    searchOpen.value = false;
 });
 </script>
 
 <template>
-    <header class="sticky top-0 z-50 border-b border-line bg-surface-card/95 backdrop-blur" style="box-shadow: var(--ds-shadow-sm)">
-        <div class="h-1 bg-gradient-to-r from-brand via-brand-hover to-brand" aria-hidden="true" />
+    <header class="sticky top-0 z-50 border-b bg-surface-card/95 backdrop-blur-lg transition-shadow duration-300" :class="scrolled ? 'border-line shadow-card' : 'border-transparent'">
         <StorefrontContainer>
-            <div class="flex min-h-[calc(var(--ds-header-height)-0.25rem)] items-center gap-3 py-2 lg:gap-6">
+            <div class="flex items-center gap-3 transition-[min-height] duration-300 lg:gap-6" :class="scrolled ? 'min-h-14 lg:min-h-16' : 'min-h-16 lg:min-h-[4.5rem]'">
                 <Link :href="route('home')" class="group flex min-w-0 shrink-0 items-center gap-2.5">
-                    <span v-if="!site.logo_url" class="h-10 w-1 shrink-0 rounded-full bg-brand transition group-hover:scale-y-110" aria-hidden="true" />
-                    <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name || 'Trang chủ'" width="160" height="48" class="h-11 w-auto max-w-36 object-contain sm:max-w-44">
-                    <span class="min-w-0" :class="site.logo_url && 'hidden sm:block'">
-                        <strong class="block truncate font-display text-xl font-bold uppercase leading-none tracking-tight text-content-primary sm:text-2xl">{{ site.name }}</strong>
-                        <small v-if="site.tagline" class="mt-1 hidden max-w-56 truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-content-muted xl:block">{{ site.tagline }}</small>
+                    <span v-if="!site.logo_url" class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-brand-contrast transition group-hover:rotate-6" aria-hidden="true">
+                        <StorefrontIcon name="bolt" class="h-5 w-5" />
+                    </span>
+                    <img v-if="site.logo_url" :src="site.logo_url" :alt="site.name || 'Trang chủ'" width="160" height="48" class="h-10 w-auto max-w-36 object-contain sm:h-11 sm:max-w-44">
+                    <span class="min-w-0" :class="site.logo_url && 'hidden sm:block lg:hidden xl:block'">
+                        <strong class="block truncate py-0.5 font-display text-lg font-extrabold uppercase leading-snug tracking-tight text-content-primary sm:text-xl">{{ site.name }}</strong>
+                        <small v-if="site.tagline" class="mt-1 hidden max-w-48 truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-content-muted xl:block">{{ site.tagline }}</small>
                     </span>
                 </Link>
 
-                <div class="hidden min-w-52 max-w-2xl flex-1 lg:block">
-                    <StorefrontSearch id="desktop-storefront-search" v-model="searchKeyword" @submit="submitSearch" />
+                <div class="hidden h-full min-w-0 flex-1 justify-center lg:flex">
+                    <DesktopNavigation :items="items" :current-path="currentPath" />
                 </div>
 
-                <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-                    <a v-if="contactPhone" :href="`tel:${contactPhone}`" class="hidden min-h-11 items-center gap-2.5 rounded-xl border border-line bg-surface-page px-3 text-sm font-semibold text-content-secondary transition hover:-translate-y-0.5 hover:border-brand-border hover:bg-brand-soft xl:flex">
-                        <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-soft text-brand-text" aria-hidden="true">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 0 0-1.173.417l-.97 1.293" /></svg>
-                        </span>
-                        <span><small class="block text-[10px] font-bold uppercase tracking-wide text-content-muted">Tư vấn nhanh</small>{{ contactPhone }}</span>
-                    </a>
-                    <Link :href="accountHref" class="grid min-h-11 min-w-11 place-items-center rounded-xl border border-transparent text-content-secondary transition hover:border-line hover:bg-surface-muted hover:text-content-primary" :aria-label="`Tài khoản: ${accountLabel}`">
-                        <svg class="h-6 w-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" /></svg>
-                    </Link>
-                    <Link :href="route('cart.index')" class="relative grid min-h-11 min-w-11 place-items-center rounded-xl bg-surface-inverse text-content-inverse shadow-ds-sm transition hover:-translate-y-0.5 hover:bg-content-primary" :aria-label="`Giỏ hàng, ${cartCount} sản phẩm`">
-                        <svg class="h-6 w-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437L6.75 14.25h10.5l3-8.978H5.106M8.25 20.25h.008v.008H8.25v-.008Zm9 0h.008v.008h-.008v-.008Z" /></svg>
-                        <span v-if="cartCount" class="absolute right-0 top-0 grid min-h-5 min-w-5 translate-x-1/4 -translate-y-1/4 place-items-center rounded-full bg-brand px-1 text-[10px] font-black text-brand-contrast">{{ cartCount }}</span>
-                    </Link>
-                    <button ref="mobileMenuTrigger" type="button" class="grid min-h-11 min-w-11 place-items-center rounded-xl border border-line bg-surface-muted transition hover:bg-brand-soft lg:hidden" aria-label="Mở menu" :aria-expanded="mobileOpen" aria-controls="mobile-navigation-dialog" @click="mobileOpen = true">
-                        <svg class="h-6 w-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" /></svg>
+                <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 lg:ml-0">
+                    <button
+                        type="button"
+                        class="grid h-11 w-11 place-items-center rounded-full text-content-secondary transition hover:bg-surface-muted hover:text-content-primary"
+                        :class="searchOpen && 'bg-brand-soft text-content-primary'"
+                        aria-label="Tìm kiếm sản phẩm"
+                        aria-controls="header-search-panel"
+                        :aria-expanded="searchOpen"
+                        @click="toggleSearch"
+                    >
+                        <StorefrontIcon :name="searchOpen ? 'close' : 'search'" class="h-5 w-5" />
                     </button>
+                    <Link :href="accountHref" class="hidden h-11 w-11 place-items-center rounded-full text-content-secondary transition hover:bg-surface-muted hover:text-content-primary lg:grid" :aria-label="`Tài khoản: ${accountLabel}`">
+                        <StorefrontIcon name="user" class="h-5 w-5" />
+                    </Link>
+                    <Link :href="route('cart.index')" class="relative hidden h-11 w-11 place-items-center rounded-full text-content-secondary transition hover:bg-surface-muted hover:text-content-primary sm:grid" :aria-label="`Giỏ hàng, ${cartCount} sản phẩm`">
+                        <StorefrontIcon name="cart" class="h-5 w-5" />
+                        <span v-if="cartCount" class="absolute right-0.5 top-0.5 grid min-h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-brand px-1 text-[10px] font-black text-brand-contrast">{{ cartCount }}</span>
+                    </Link>
+                    <a
+                        v-if="contactPhone"
+                        :href="`tel:${contactPhone}`"
+                        class="ev-shine group hidden min-h-11 items-center gap-2 rounded-full bg-brand px-5 font-display text-sm font-bold text-brand-contrast shadow-ds-sm transition hover:-translate-y-0.5 hover:bg-brand-hover md:inline-flex"
+                    >
+                        Nhận tư vấn
+                        <StorefrontIcon name="arrow" class="h-4 w-4 transition group-hover:translate-x-0.5" />
+                    </a>
                 </div>
-            </div>
-
-            <div class="hidden h-11 border-t border-line-subtle lg:block">
-                <DesktopNavigation :items="items" :current-path="currentPath" />
             </div>
         </StorefrontContainer>
 
-        <MobileNavigation v-model:search-keyword="searchKeyword" :open="mobileOpen" :items="items" @close="mobileOpen = false" @search="submitSearch" />
+        <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="-translate-y-2 opacity-0" leave-active-class="transition duration-150" leave-to-class="-translate-y-2 opacity-0">
+            <div v-show="searchOpen" id="header-search-panel" ref="searchPanel" class="absolute inset-x-0 top-full border-b border-line bg-surface-card shadow-card">
+                <StorefrontContainer size="content" class="py-4">
+                    <StorefrontSearch id="desktop-storefront-search" v-model="searchKeyword" @submit="submitSearch" />
+                </StorefrontContainer>
+            </div>
+        </Transition>
+
+        <MobileNavigation
+            v-model:search-keyword="searchKeyword"
+            :open="menu.open.value"
+            :items="items"
+            :site="site"
+            :current-path="currentPath"
+            :account-href="accountHref"
+            :account-label="accountLabel"
+            @close="menu.hide()"
+            @search="submitSearch"
+        />
     </header>
 </template>

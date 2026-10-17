@@ -6,14 +6,16 @@ class ThemeTokenService
 {
     public const DEFAULT_PRIMARY_COLOR = '#ffd400';
 
-    // Inter has complete Vietnamese glyph coverage and remains readable when
-    // the remote stylesheet is unavailable through the local system fallback.
-    public const DEFAULT_HEADING_FONT = 'Inter';
+    // Be Vietnam Pro is drawn for Vietnamese diacritics; Inter has complete
+    // Vietnamese coverage and stays readable through the system fallback.
+    public const DEFAULT_HEADING_FONT = 'Be Vietnam Pro';
 
     public const DEFAULT_BODY_FONT = 'Inter';
 
     /**
      * This is the canonical font allowlist shared by Admin and the storefront.
+     * Every entry must ship a Vietnamese subset; fonts without it (e.g. Rajdhani)
+     * render diacritics in a fallback face, so saved values fall back to the default.
      *
      * @var array<string, string>
      */
@@ -29,7 +31,6 @@ class ThemeTokenService
         'Mulish' => 'sans-serif',
         'Quicksand' => 'sans-serif',
         'Lexend' => 'sans-serif',
-        'Rajdhani' => 'sans-serif',
         'Barlow' => 'sans-serif',
         'Barlow Condensed' => 'sans-serif',
         'Josefin Sans' => 'sans-serif',

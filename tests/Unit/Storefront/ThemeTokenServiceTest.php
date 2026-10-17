@@ -11,7 +11,7 @@ class ThemeTokenServiceTest extends TestCase
     #[DataProvider('primaryColors')]
     public function test_it_normalizes_colors_and_generates_an_aa_contrast_token(string $input, string $expected): void
     {
-        $theme = (new ThemeTokenService)->resolve($input, 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve($input, 'Be Vietnam Pro', 'Inter');
 
         $this->assertSame($expected, $theme['primary_color']);
         $this->assertGreaterThanOrEqual(
@@ -80,6 +80,14 @@ class ThemeTokenServiceTest extends TestCase
         $this->assertNotContains('--user-controlled', $service->cssVariableNames());
     }
 
+    public function test_fonts_without_vietnamese_glyphs_fall_back_to_the_default(): void
+    {
+        $theme = (new ThemeTokenService)->resolve('#ffd400', 'Rajdhani', 'Inter');
+
+        $this->assertSame(ThemeTokenService::DEFAULT_HEADING_FONT, $theme['fonts']['heading']);
+        $this->assertStringNotContainsString('Rajdhani', $theme['font_stylesheet_url']);
+    }
+
     public function test_fonts_are_whitelisted_and_unsafe_values_fall_back(): void
     {
         $theme = (new ThemeTokenService)->resolve(
@@ -98,7 +106,7 @@ class ThemeTokenServiceTest extends TestCase
     #[DataProvider('focusRingColors')]
     public function test_focus_ring_contrasts_with_page_and_card_surfaces(string $color): void
     {
-        $theme = (new ThemeTokenService)->resolve($color, 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve($color, 'Be Vietnam Pro', 'Inter');
         $focusRing = $this->rgb($theme['css_variables']['--ds-focus-ring']);
         $surfacePage = [246, 247, 249];
         $surfaceCard = [255, 255, 255];
@@ -133,7 +141,7 @@ class ThemeTokenServiceTest extends TestCase
 
     public function test_white_primary_has_visible_focus_ring(): void
     {
-        $theme = (new ThemeTokenService)->resolve('#ffffff', 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve('#ffffff', 'Be Vietnam Pro', 'Inter');
         $focusRing = $this->rgb($theme['css_variables']['--ds-focus-ring']);
 
         // Focus ring must NOT be white/near-white on white surfaces.
@@ -146,7 +154,7 @@ class ThemeTokenServiceTest extends TestCase
 
     public function test_near_white_primary_has_visible_focus_ring(): void
     {
-        $theme = (new ThemeTokenService)->resolve('#fefefe', 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve('#fefefe', 'Be Vietnam Pro', 'Inter');
 
         $this->assertNotSame('254 254 254', $theme['css_variables']['--ds-focus-ring']);
         $this->assertGreaterThanOrEqual(
@@ -160,7 +168,7 @@ class ThemeTokenServiceTest extends TestCase
 
     public function test_yellow_primary_has_visible_focus_ring(): void
     {
-        $theme = (new ThemeTokenService)->resolve('#ffd400', 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve('#ffd400', 'Be Vietnam Pro', 'Inter');
 
         $this->assertGreaterThanOrEqual(
             3.0,
@@ -173,7 +181,7 @@ class ThemeTokenServiceTest extends TestCase
 
     public function test_white_primary_has_visible_control_border(): void
     {
-        $theme = (new ThemeTokenService)->resolve('#ffffff', 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve('#ffffff', 'Be Vietnam Pro', 'Inter');
         $controlBorder = $this->rgb($theme['css_variables']['--ds-brand-control-border']);
 
         $this->assertArrayHasKey('--ds-brand-control-border', $theme['css_variables']);
@@ -187,7 +195,7 @@ class ThemeTokenServiceTest extends TestCase
     #[DataProvider('focusRingColors')]
     public function test_hover_and_active_are_distinct(string $color): void
     {
-        $theme = (new ThemeTokenService)->resolve($color, 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve($color, 'Be Vietnam Pro', 'Inter');
 
         $this->assertNotSame(
             $theme['css_variables']['--ds-brand-primary'],
@@ -209,7 +217,7 @@ class ThemeTokenServiceTest extends TestCase
     #[DataProvider('focusRingColors')]
     public function test_brand_soft_and_muted_are_distinct_from_surface(string $color): void
     {
-        $theme = (new ThemeTokenService)->resolve($color, 'Rajdhani', 'Inter');
+        $theme = (new ThemeTokenService)->resolve($color, 'Be Vietnam Pro', 'Inter');
         $surfaceCard = [255, 255, 255];
 
         $soft = $this->rgb($theme['css_variables']['--ds-brand-soft']);

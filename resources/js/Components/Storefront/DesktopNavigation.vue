@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
 
 <template>
     <nav ref="navigation" aria-label="Điều hướng chính" class="h-full">
-        <ul class="flex h-full items-stretch gap-1 xl:gap-3">
+        <ul class="flex h-full items-stretch gap-0.5 xl:gap-2">
             <li
                 v-for="item in items"
                 :key="itemKey(item)"
@@ -60,13 +60,13 @@ onBeforeUnmount(() => {
                     :href="item.url"
                     :target="isExternal(item.url) ? '_blank' : undefined"
                     :rel="isExternal(item.url) ? 'noopener noreferrer' : undefined"
-                    class="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold transition hover:bg-brand-soft hover:text-content-primary"
-                    :class="isActive(item) ? 'text-brand-text' : 'text-content-secondary'"
+                    class="relative flex min-h-11 items-center whitespace-nowrap rounded-lg px-2 text-[0.8125rem] font-bold xl:px-3 xl:text-sm transition after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-left after:rounded-full after:bg-brand after:transition-transform after:duration-300 hover:text-content-primary hover:after:scale-x-100"
+                    :class="isActive(item) ? 'text-brand-text after:scale-x-100' : 'text-content-secondary after:scale-x-0'"
                     @click="close"
                 >
                     {{ item.label }}
                 </component>
-                <span v-else class="flex min-h-11 items-center px-3 text-sm font-bold text-content-secondary">{{ item.label }}</span>
+                <span v-else class="flex min-h-11 items-center whitespace-nowrap px-2 text-[0.8125rem] font-bold xl:px-3 xl:text-sm text-content-secondary">{{ item.label }}</span>
                 <button
                     v-if="item.children?.length"
                     type="button"
