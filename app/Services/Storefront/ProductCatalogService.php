@@ -45,7 +45,13 @@ class ProductCatalogService
             ['name' => 'Trang chủ', 'url' => url('/')],
             ['name' => 'Sản phẩm', 'url' => route('products.index')],
         ];
-        $hasFilters = filled($filters['search']) || $filters['min_price'] !== null || $filters['max_price'] !== null;
+        $hasFilters = filled($filters['search'])
+            || $filters['min_price'] !== null
+            || $filters['max_price'] !== null
+            || $filters['sort'] !== 'latest';
+        $canonical = $hasFilters || $paginator->currentPage() === 1
+            ? route('products.index')
+            : route('products.index', ['page' => $paginator->currentPage()]);
 
         return [
             'page' => [
@@ -53,7 +59,7 @@ class ProductCatalogService
                 'seo' => $this->seo->meta([
                     'title' => 'Sản phẩm',
                     'description' => 'Danh sách sản phẩm xe điện công nghiệp',
-                    'canonical' => route('products.index'),
+                    'canonical' => $canonical,
                     'robots' => $hasFilters ? 'noindex, follow' : 'index, follow',
                 ]),
                 'json_ld' => [$this->seo->breadcrumbJsonLd($breadcrumbs)],
@@ -82,6 +88,49 @@ class ProductCatalogService
                 ],
             ],
         ];
+    }
+
+    /**
+     * Lightweight product matches for the storefront typeahead search.
+     *
+     * @return list<array{id: int, name: string, sku: ?string, price_display: string, image_url: ?string, url: string}>
+     */
+    public function suggestions(string $search, int $limit = 6): array
+    {
+        $search = trim($search);
+
+        if (mb_strlen($search) < 2) {
+            return [];
+        }
+
+        $keyword = $this->escapeLike($search);
+        $limit = min(max($limit, 1), 8);
+
+        return Product::query()
+            ->select(['id', 'name', 'slug', 'price', 'sku', 'specifications', 'status'])
+            ->where('status', 'active')
+            ->with('cardImage')
+            ->where(function (Builder $query) use ($keyword): void {
+                $query->whereRaw("name LIKE ? ESCAPE '!'", ["%{$keyword}%"])
+                    ->orWhereRaw("sku LIKE ? ESCAPE '!'", ["%{$keyword}%"]);
+            })
+            ->orderBy('name')
+            ->limit($limit)
+            ->get()
+            ->map(function (Product $product): array {
+                $presented = $this->products->present($product);
+
+                return [
+                    'id' => $presented['id'],
+                    'name' => $presented['name'],
+                    'sku' => $presented['sku'],
+                    'price_display' => $presented['price_display'],
+                    'image_url' => $presented['image_url'],
+                    'url' => route('products.show', $presented['slug']),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     private function applySort(Builder $query, string $sort): void

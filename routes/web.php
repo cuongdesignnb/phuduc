@@ -22,14 +22,19 @@ use App\Http\Controllers\Guest\ProductController as GuestProductController;
 use App\Http\Controllers\Guest\ReviewController as GuestReviewController;
 use App\Http\Controllers\Guest\WarrantyLookupController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RobotsController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public / Guest Routes ───────────────────────────────────────
 
 Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 // Products
 Route::get('/san-pham', [GuestProductController::class, 'index'])->name('products.index');
+Route::get('/san-pham/goi-y', [GuestProductController::class, 'suggestions'])->middleware('throttle:commerce-product-search')->name('products.suggestions');
 Route::get('/san-pham/{slug}', [GuestProductController::class, 'show'])->name('products.show');
 
 // Cart & Checkout

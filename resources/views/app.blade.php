@@ -4,16 +4,54 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        @php
+            $criticalSeo = data_get($page, 'props.page.seo', data_get($page, 'props.seo', []));
+            $criticalSeo = is_array($criticalSeo) ? $criticalSeo : [];
+            $criticalTitle = $criticalSeo['title'] ?? ($rootSite['name'] ?? config('app.name', 'Phú Đức'));
+            $criticalDescription = $criticalSeo['description'] ?? ($rootSite['description'] ?? null);
+            $criticalCanonical = array_key_exists('canonical', $criticalSeo)
+                ? $criticalSeo['canonical']
+                : url()->current();
+            $criticalOgUrl = array_key_exists('ogUrl', $criticalSeo)
+                ? $criticalSeo['ogUrl']
+                : $criticalCanonical;
+            $criticalRobots = $criticalSeo['robots'] ?? (($rootSite['prevent_indexing'] ?? false) ? 'noindex, nofollow' : 'index, follow');
+            $criticalJsonLd = data_get($page, 'props.page.json_ld', []);
+            $criticalJsonLd = is_array($criticalJsonLd) ? $criticalJsonLd : [];
+        @endphp
 
-        @if($rootSite['prevent_indexing'] ?? false)
-            <meta name="robots" content="noindex, nofollow">
+        <title inertia>{{ $criticalTitle }}</title>
+        <meta data-server-seo name="description" content="{{ $criticalDescription }}">
+        <meta data-server-seo name="robots" content="{{ $criticalRobots }}">
+        @if(filled($criticalCanonical))<link data-server-seo rel="canonical" href="{{ $criticalCanonical }}">@endif
+        <meta data-server-seo property="og:title" content="{{ $criticalSeo['ogTitle'] ?? $criticalTitle }}">
+        <meta data-server-seo property="og:description" content="{{ $criticalSeo['ogDescription'] ?? $criticalDescription }}">
+        <meta data-server-seo property="og:type" content="{{ $criticalSeo['ogType'] ?? 'website' }}">
+        @if(filled($criticalOgUrl))<meta data-server-seo property="og:url" content="{{ $criticalOgUrl }}">@endif
+        @if(filled($criticalSeo['ogImage'] ?? null))
+            <meta data-server-seo property="og:image" content="{{ $criticalSeo['ogImage'] }}">
+            <meta data-server-seo property="og:image:alt" content="{{ $criticalSeo['ogImageAlt'] ?? $criticalTitle }}">
         @endif
+        <meta data-server-seo property="og:site_name" content="{{ $criticalSeo['siteName'] ?? ($rootSite['name'] ?? config('app.name', 'Phú Đức')) }}">
+        <meta data-server-seo property="og:locale" content="{{ $criticalSeo['locale'] ?? 'vi_VN' }}">
+        <meta data-server-seo name="twitter:card" content="{{ $criticalSeo['twitterCard'] ?? 'summary_large_image' }}">
+        <meta data-server-seo name="twitter:title" content="{{ $criticalSeo['twitterTitle'] ?? $criticalTitle }}">
+        <meta data-server-seo name="twitter:description" content="{{ $criticalSeo['twitterDescription'] ?? $criticalDescription }}">
+        @if(filled($criticalSeo['twitterImage'] ?? $criticalSeo['ogImage'] ?? null))
+            <meta data-server-seo name="twitter:image" content="{{ $criticalSeo['twitterImage'] ?? $criticalSeo['ogImage'] }}">
+            <meta data-server-seo name="twitter:image:alt" content="{{ $criticalSeo['twitterImageAlt'] ?? $criticalSeo['ogImageAlt'] ?? $criticalTitle }}">
+        @endif
+        @if(($criticalSeo['ogType'] ?? null) === 'article')
+            @if(filled($criticalSeo['publishedTime'] ?? null))<meta data-server-seo property="article:published_time" content="{{ $criticalSeo['publishedTime'] }}">@endif
+            @if(filled($criticalSeo['modifiedTime'] ?? null))<meta data-server-seo property="article:modified_time" content="{{ $criticalSeo['modifiedTime'] }}">@endif
+            @if(filled($criticalSeo['section'] ?? null))<meta data-server-seo property="article:section" content="{{ $criticalSeo['section'] }}">@endif
+        @endif
+        @foreach($criticalJsonLd as $schema)
+            <script data-server-seo type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+        @endforeach
 
-        @if(filled($rootSite['favicon_url'] ?? null))
-            <link rel="icon" href="{{ $rootSite['favicon_url'] }}">
-            <link rel="shortcut icon" href="{{ $rootSite['favicon_url'] }}">
-        @endif
+        <link rel="icon" href="{{ $rootSite['favicon_url'] ?? asset('favicon.svg') }}" type="image/svg+xml">
+        <link rel="shortcut icon" href="{{ $rootSite['favicon_url'] ?? asset('favicon.svg') }}">
 
         @php($theme = $rootSite['theme'])
 

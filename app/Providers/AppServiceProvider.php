@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         };
 
         RateLimiter::for('commerce-cart', fn (Request $request) => Limit::perMinute(60)->by($commerceSessionKey($request)));
+        RateLimiter::for('commerce-product-search', fn (Request $request) => Limit::perMinute(90)->by($commerceSessionKey($request)));
         RateLimiter::for('commerce-checkout', fn (Request $request) => Limit::perMinute(10)->by($commerceSessionKey($request)));
         RateLimiter::for('commerce-reviews', fn (Request $request) => [
             Limit::perMinutes(10, 5)->by($commerceSessionKey($request)),

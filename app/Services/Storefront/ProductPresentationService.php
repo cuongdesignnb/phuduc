@@ -70,7 +70,6 @@ class ProductPresentationService
             'description_html' => $product->description,
             'meta_title' => $product->meta_title,
             'meta_description' => $product->meta_description,
-            'meta_keywords' => $product->meta_keywords,
             'price' => $price,
             'price_display' => $this->priceDisplay($price),
             'stock' => (int) $product->stock,
@@ -90,6 +89,7 @@ class ProductPresentationService
             'specifications' => $specifications,
             'review_summary' => [
                 'count' => $reviewCount,
+                'visible_count' => $product->approvedReviews->count(),
                 'average_rating' => $averageRating,
                 'best_rating' => 5,
             ],
@@ -207,7 +207,9 @@ class ProductPresentationService
         return [
             'id' => $image->id,
             'url' => $this->mediaUrl->resolve($image->image_path),
-            'alt' => sprintf('%s – ảnh sản phẩm %d', $fallbackAlt, $sequence),
+            'alt' => filled($image->alt_text)
+                ? trim((string) $image->alt_text)
+                : sprintf('%s – ảnh sản phẩm %d', $fallbackAlt, $sequence),
             'sort_order' => (int) $image->sort_order,
         ];
     }

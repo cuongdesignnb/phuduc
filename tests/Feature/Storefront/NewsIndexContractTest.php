@@ -71,7 +71,7 @@ class NewsIndexContractTest extends TestCase
         ];
     }
 
-    public function test_valid_category_returns_canonical_category_archive(): void
+    public function test_valid_category_query_is_noindex_and_canonicalizes_to_the_news_index(): void
     {
         $category = PostCategory::create(['name' => 'Guides', 'slug' => 'guides']);
         Post::create(['post_category_id' => $category->id, 'title' => 'Battery Guide', 'slug' => 'battery-guide', 'summary' => 'Battery', 'status' => 'published']);
@@ -80,8 +80,8 @@ class NewsIndexContractTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('page.news.filters.category', 'guides')
-                ->where('page.seo.canonical', route('news.index', ['category' => 'guides']))
-                ->where('page.seo.robots', 'index, follow')
+                ->where('page.seo.canonical', route('news.index'))
+                ->where('page.seo.robots', 'noindex, follow')
             );
     }
 

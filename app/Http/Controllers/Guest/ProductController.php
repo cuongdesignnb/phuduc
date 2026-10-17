@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Storefront\ProductCatalogFilterResolver;
 use App\Services\Storefront\ProductCatalogService;
 use App\Services\Storefront\ProductDetailService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -27,5 +28,16 @@ class ProductController extends Controller
     public function show(string $slug, ProductDetailService $detail)
     {
         return Inertia::render('Guest/Product/Show', $detail->page($slug));
+    }
+
+    public function suggestions(Request $request, ProductCatalogService $catalog): JsonResponse
+    {
+        $validated = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        return response()->json([
+            'items' => $catalog->suggestions((string) ($validated['q'] ?? '')),
+        ]);
     }
 }

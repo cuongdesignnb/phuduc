@@ -11,7 +11,7 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             // ─── Site General ───
-            ['key' => 'site.name', 'value' => 'Phú Đức - Xe Điện Công Nghiệp', 'type' => 'text'],
+            ['key' => 'site.name', 'value' => 'Phú Đức', 'type' => 'text'],
             ['key' => 'site.tagline', 'value' => 'Giải pháp xe điện hàng đầu Việt Nam', 'type' => 'text'],
             ['key' => 'site.description', 'value' => 'Phú Đức chuyên cung cấp xe điện công nghiệp, xe điện chở hàng, xe điện du lịch, xe điện sân golf chất lượng cao với bảo hành toàn diện.', 'type' => 'textarea'],
             ['key' => 'site.logo', 'value' => null, 'type' => 'image'],
@@ -37,7 +37,6 @@ class SettingSeeder extends Seeder
             // ─── SEO Defaults ───
             ['key' => 'seo.default_title', 'value' => 'Phú Đức - Xe Điện Công Nghiệp Hàng Đầu Việt Nam', 'type' => 'text'],
             ['key' => 'seo.default_description', 'value' => 'Phú Đức chuyên phân phối xe điện công nghiệp, xe điện chở hàng, xe điện sân golf, xe điện du lịch. Bảo hành chính hãng, hỗ trợ kỹ thuật 24/7.', 'type' => 'textarea'],
-            ['key' => 'seo.default_keywords', 'value' => 'xe điện công nghiệp, xe điện chở hàng, xe golf điện, xe điện du lịch, xe điện nhà xưởng, Phú Đức', 'type' => 'text'],
             ['key' => 'seo.prevent_indexing', 'value' => '0', 'type' => 'boolean'],
         ];
 

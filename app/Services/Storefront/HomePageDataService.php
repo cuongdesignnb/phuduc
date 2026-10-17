@@ -146,14 +146,14 @@ class HomePageDataService
         $ids = collect($config['post_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values();
         $query = Post::query()
             ->where('status', 'published')
-            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'created_at'])
+            ->select(['id', 'post_category_id', 'title', 'slug', 'summary', 'featured_image', 'published_at'])
             ->with('category:id,name');
 
         if (($config['source'] ?? 'latest') === 'manual') {
             $posts = $query->whereIn('id', $ids)->get()->keyBy('id');
             $collection = $ids->take($limit)->map(fn (int $id) => $posts->get($id))->filter();
         } else {
-            $collection = $query->latest('created_at')->latest('id')->limit($limit)->get();
+            $collection = $query->latest('published_at')->latest('id')->limit($limit)->get();
         }
 
         return $collection->map(fn (Post $post) => [
@@ -163,7 +163,7 @@ class HomePageDataService
             'summary' => $post->summary,
             'image_url' => $this->mediaUrl->resolve($post->featured_image),
             'category' => $post->category?->name,
-            'published_at' => $post->created_at?->toDateString(),
+            'published_at' => $post->published_at?->toDateString(),
         ])->values()->all();
     }
 

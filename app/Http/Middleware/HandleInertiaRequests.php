@@ -6,6 +6,7 @@ use App\Services\Admin\AdminNavigationService;
 use App\Services\Admin\AdminPermissionService;
 use App\Services\Storefront\NavigationService;
 use App\Services\Storefront\SiteConfigurationService;
+use App\Services\Storefront\StorefrontSeoService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -27,18 +28,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'site' => fn () => app(SiteConfigurationService::class)->get(),
             'navigation' => fn () => app(NavigationService::class)->get(),
-            'seo' => function () {
-                $site = app(SiteConfigurationService::class)->get();
-
-                return [
-                    'title' => $site['name'],
-                    'description' => $site['description'],
-                    'ogImage' => $site['og_image_url'],
-                    'ogType' => 'website',
-                    'canonical' => url()->current(),
-                    'robots' => $site['prevent_indexing'] ? 'noindex, nofollow' : 'index, follow',
-                ];
-            },
+            'seo' => fn () => app(StorefrontSeoService::class)->meta(),
             'admin' => function (Request $request): array {
                 $user = $request->user();
 

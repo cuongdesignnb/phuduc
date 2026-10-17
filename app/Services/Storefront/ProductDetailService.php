@@ -18,11 +18,11 @@ class ProductDetailService
     public function page(string $slug): array
     {
         $product = Product::query()
-            ->select(['id', 'name', 'slug', 'description', 'price', 'sku', 'stock', 'specifications', 'status', 'meta_title', 'meta_description', 'meta_keywords', 'created_at', 'updated_at'])
+            ->select(['id', 'name', 'slug', 'description', 'price', 'sku', 'stock', 'specifications', 'status', 'meta_title', 'meta_description', 'created_at', 'updated_at'])
             ->where('slug', $slug)
             ->where('status', 'active')
             ->with([
-                'images:id,product_id,image_path,is_360,sort_order',
+                'images:id,product_id,image_path,alt_text,is_360,sort_order',
                 'variants:id,product_id,product_image_id,name,sku,price,stock,note,status,sort_order',
                 'approvedReviews' => fn ($query) => $query
                     ->select(['id', 'product_id', 'customer_name', 'content', 'rating', 'created_at'])
@@ -60,9 +60,9 @@ class ProductDetailService
                 'type' => 'product_detail',
                 'seo' => $this->seo->meta([
                     'title' => $product->meta_title ?: $presented['name'],
-                    'description' => $product->meta_description ?: mb_substr(strip_tags((string) $presented['description_html']), 0, 160),
-                    'keywords' => $product->meta_keywords,
+                    'description' => $product->meta_description ?: $presented['description_html'],
                     'ogImage' => $presented['gallery'][0]['url'] ?? null,
+                    'ogImageAlt' => $presented['name'],
                     'ogType' => 'product',
                     'canonical' => route('products.show', $presented['slug']),
                 ]),

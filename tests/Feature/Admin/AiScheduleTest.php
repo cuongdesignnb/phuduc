@@ -49,7 +49,7 @@ class AiScheduleTest extends TestCase
         Http::fake([
             'https://ai.test/*' => Http::response(['output_text' => json_encode([
                 'title' => 'Bài từ lịch AI', 'excerpt' => 'Tóm tắt', 'content' => '<p>Nội dung từ lịch.</p>',
-                'meta_title' => 'Bài từ lịch AI', 'meta_desc' => 'Mô tả', 'meta_keywords' => 'lịch AI',
+                'meta_title' => 'Bài từ lịch AI', 'meta_desc' => 'Mô tả',
             ], JSON_UNESCAPED_UNICODE)], 200),
         ]);
         $schedule = AiContentSchedule::create([

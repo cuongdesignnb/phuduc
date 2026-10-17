@@ -14,5 +14,7 @@ class ProductRichEditorContractTest extends TestCase
         $this->assertStringContainsString('import AdvancedTextEditor', $source);
         $this->assertStringContainsString('<AdvancedTextEditor id="product-description"', $source);
         $this->assertStringContainsString('media-type="image"', $editor);
+        $this->assertStringContainsString('header: [2, 3, 4, false]', $editor);
+        $this->assertStringNotContainsString("'video'", $editor);
     }
 }

@@ -45,7 +45,6 @@ class AiContentGenerationTest extends TestCase
                         'content' => '<h2>Tiêu chí lựa chọn</h2><p><a href="'.route('products.show', $product->slug).'">Xe chở hàng PhuDuc</a> <a href="https://evil.test/spam">Spam</a></p>',
                         'meta_title' => 'Cách chọn xe chở hàng phù hợp',
                         'meta_desc' => 'Tư vấn cách chọn xe chở hàng phù hợp với nhu cầu vận hành.',
-                        'meta_keywords' => 'xe chở hàng, xe điện',
                         'tags' => ['xe điện'],
                     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)],
                 ]],
@@ -72,7 +71,7 @@ class AiContentGenerationTest extends TestCase
         Http::fake([
             'https://ai.test/*' => Http::response(['output_text' => json_encode([
                 'title' => 'Bài có ảnh', 'excerpt' => 'Tóm tắt', 'content' => '<p>Nội dung chính.</p>',
-                'meta_title' => 'Bài có ảnh', 'meta_desc' => 'Mô tả bài có ảnh', 'meta_keywords' => 'ảnh',
+                'meta_title' => 'Bài có ảnh', 'meta_desc' => 'Mô tả bài có ảnh',
             ], JSON_UNESCAPED_UNICODE)], 200),
             'https://image.test/*' => Http::response(['error' => 'unavailable'], 503),
         ]);
@@ -97,7 +96,7 @@ class AiContentGenerationTest extends TestCase
                 'choices' => [[
                     'message' => ['content' => json_encode([
                         'title' => 'Xe điện nhà xưởng', 'excerpt' => 'Tóm tắt', 'content' => '<p>Nội dung.</p>',
-                        'meta_title' => 'Xe điện nhà xưởng', 'meta_desc' => 'Mô tả', 'meta_keywords' => 'xe điện',
+                        'meta_title' => 'Xe điện nhà xưởng', 'meta_desc' => 'Mô tả',
                     ], JSON_UNESCAPED_UNICODE)],
                 ]],
             ], 200),
@@ -126,7 +125,7 @@ class AiContentGenerationTest extends TestCase
         Http::fake([
             'https://ai.test/*' => Http::response(['output_text' => json_encode([
                 'title' => 'Xe nâng điện PhuDuc', 'excerpt' => 'Mô tả sản phẩm', 'content' => '<p>Mô tả sản phẩm.</p>',
-                'meta_title' => 'Xe nâng điện PhuDuc', 'meta_desc' => 'Mô tả SEO sản phẩm.', 'meta_keywords' => 'xe nâng điện',
+                'meta_title' => 'Xe nâng điện PhuDuc', 'meta_desc' => 'Mô tả SEO sản phẩm.',
             ], JSON_UNESCAPED_UNICODE)], 200),
             'https://image.test/*' => Http::response(['data' => [['b64_json' => $image]]], 200),
         ]);

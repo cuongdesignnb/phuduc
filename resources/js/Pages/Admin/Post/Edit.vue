@@ -29,7 +29,6 @@ const form = useForm({
     content: post?.content || '',
     meta_title: post?.meta_title || '',
     meta_description: post?.meta_description || '',
-    meta_keywords: post?.meta_keywords || '',
     status: post?.status || 'draft',
     featured_media_id: post?.featured_media_id || null,
     gallery_media_ids: galleryMedia.value.map((media) => media.media_id),
@@ -77,7 +76,7 @@ const generateArticle = async (withImages = false) => {
         const response = await window.axios.post(route('admin.ai.content.generate'), {
             type: 'article',
             topic: form.title,
-            keywords: form.meta_keywords.split(/[,\n]+/).map((keyword) => keyword.trim()).filter(Boolean),
+            keywords: [],
             tone: 'professional',
             length: 'medium',
             full_article: true,
@@ -92,7 +91,6 @@ const generateArticle = async (withImages = false) => {
         form.content = generated.content || form.content;
         form.meta_title = generated.meta_title || form.meta_title;
         form.meta_description = generated.meta_desc || form.meta_description;
-        form.meta_keywords = generated.meta_keywords || form.meta_keywords;
         if (withImages && generated.images?.length) {
             const images = generated.images.map((image) => ({ media_id: image.media_id, id: image.media_id, url: image.url, alt_text: image.alt, file_name: image.alt }));
             galleryMedia.value = images;
@@ -126,7 +124,7 @@ const generateArticle = async (withImages = false) => {
                     </div>
                     <AdminFormField label="Tóm tắt" for-id="post-summary" :error="form.errors.summary"><AdminTextarea id="post-summary" v-model="form.summary" rows="4" /></AdminFormField>
                     <AdminFormField label="Nội dung" for-id="post-content" :error="form.errors.content"><AdvancedTextEditor id="post-content" v-model="form.content" :height="360" /></AdminFormField>
-                    <div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Meta title" for-id="post-meta-title" :error="form.errors.meta_title"><AdminTextInput id="post-meta-title" v-model="form.meta_title" /></AdminFormField><AdminFormField label="Meta keywords" for-id="post-meta-keywords" :error="form.errors.meta_keywords"><AdminTextInput id="post-meta-keywords" v-model="form.meta_keywords" /></AdminFormField><AdminFormField label="Meta description" for-id="post-meta-description" :error="form.errors.meta_description"><AdminTextarea id="post-meta-description" v-model="form.meta_description" rows="3" /></AdminFormField></div>
+                    <div class="grid gap-4 md:grid-cols-2"><AdminFormField label="Meta title" for-id="post-meta-title" :error="form.errors.meta_title"><AdminTextInput id="post-meta-title" v-model="form.meta_title" /></AdminFormField><AdminFormField label="Meta description" for-id="post-meta-description" :error="form.errors.meta_description"><AdminTextarea id="post-meta-description" v-model="form.meta_description" rows="3" /></AdminFormField></div>
                     <AdminFormField label="Ảnh nổi bật" :error="form.errors.featured_media_id">
                         <div class="flex items-center gap-3">
                             <img v-if="featuredPreviewUrl" :src="featuredPreviewUrl" :alt="form.title || 'Ảnh nổi bật'" class="h-20 w-32 rounded object-cover" />

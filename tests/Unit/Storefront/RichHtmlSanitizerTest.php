@@ -24,6 +24,23 @@ class RichHtmlSanitizerTest extends TestCase
         $this->assertStringNotContainsString('<iframe', $html);
     }
 
+    public function test_quill_formatting_is_preserved_without_unsafe_styles(): void
+    {
+        $html = app(RichHtmlSanitizer::class)->sanitize(
+            '<p class="ql-align-center" style="color: #e60000; background-color: rgb(255, 255, 0); text-align: center; position: fixed">'
+            .'<u>Gạch chân</u> và <s>gạch xoá</s></p><ol><li data-list="bullet">Mục danh sách</li></ol>'
+        );
+
+        $this->assertStringContainsString('class="ql-align-center"', $html);
+        $this->assertStringContainsString('color: #e60000', $html);
+        $this->assertStringContainsString('background-color: rgb(255, 255, 0)', $html);
+        $this->assertStringContainsString('text-align: center', $html);
+        $this->assertStringContainsString('<u>Gạch chân</u>', $html);
+        $this->assertStringContainsString('<s>gạch xoá</s>', $html);
+        $this->assertStringContainsString('data-list="bullet"', $html);
+        $this->assertStringNotContainsString('position:', $html);
+    }
+
     /**
      * @return array<string, array{string}>
      */
